@@ -46,7 +46,7 @@ const Register = () => {
       city: '',
       state: '',
       zipCode: '',
-      country: 'United States'
+      country: 'India'
     },
     {
       name: {
@@ -235,7 +235,7 @@ const Register = () => {
                     Password <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       id="password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
@@ -268,7 +268,7 @@ const Register = () => {
                     Confirm Password <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
-                    <input
+                    <Input
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
