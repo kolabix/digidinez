@@ -5,7 +5,9 @@ DigiDinez is a full-stack web application that enables restaurants to digitize t
 
 ## 🧱 Tech Stack
 
-- **Frontend**: React (Vite) + Tailwind CSS *(Not built yet)*
+- **Frontend**: Two separate React (Vite) + Tailwind CSS apps *(Not built yet)*
+  - **Admin Dashboard**: Restaurant management interface (desktop/tablet responsive)
+  - **Public Menu**: Customer-facing menu display (mobile-first)
 - **Backend**: Node.js + Express *(Complete)*
 - **Database**: MongoDB Atlas (Cloud) - Mongoose ODM
 - **QR Code Generation**: `qrcode` npm package
@@ -47,16 +49,48 @@ digidinez/
 │   ├── qr-codes/              # Generated QR code images
 │   └── server.js              # Express server entry point
 │
-├── frontend/                   # React frontend (NOT BUILT YET)
+├── admin/                      # Restaurant Admin Dashboard (NOT BUILT YET)
 │   ├── public/
-│   └── src/
-│       ├── assets/             # Images, logos, etc.
-│       ├── components/         # Reusable UI components
-│       ├── pages/              # Login, Dashboard, Public Menu View
-│       ├── services/           # Axios API calls
-│       ├── routes/             # React Router definitions
-│       ├── App.jsx
-│       └── main.jsx
+│   ├── src/
+│   │   ├── assets/             # Images, logos, icons
+│   │   ├── components/         # Reusable admin UI components
+│   │   │   ├── common/         # Button, Input, Modal, etc.
+│   │   │   ├── layout/         # Header, Sidebar, Footer
+│   │   │   └── forms/          # LoginForm, MenuItemForm, etc.
+│   │   ├── pages/              # Login, Dashboard, Menu Management, Profile
+│   │   │   ├── auth/           # Login, Register pages
+│   │   │   ├── dashboard/      # Dashboard, Profile, Stats
+│   │   │   └── menu/           # Menu management pages
+│   │   ├── services/           # Axios API calls for admin
+│   │   ├── hooks/              # Admin-specific React hooks
+│   │   ├── context/            # AuthContext, global state
+│   │   ├── utils/              # Admin helper functions
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── menu/                       # Public Menu Viewer (NOT BUILT YET)
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/             # Menu-specific images, icons
+│   │   ├── components/         # Customer-facing UI components
+│   │   │   ├── menu/           # MenuCard, CategoryFilter, ItemDetails
+│   │   │   └── layout/         # Header, Footer for menu app
+│   │   ├── pages/              # Public menu display, item details
+│   │   ├── services/           # Public API calls (no auth)
+│   │   ├── themes/             # Restaurant-specific themes and branding
+│   │   ├── hooks/              # Menu-specific React hooks
+│   │   ├── utils/              # Menu helper functions
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── shared/                     # Shared utilities between apps (OPTIONAL)
+│   ├── api/                   # Common API configurations
+│   ├── utils/                 # Shared helper functions
+│   └── types/                 # TypeScript types (if needed)
 │
 ├── README.md
 └── .gitignore
@@ -180,10 +214,18 @@ cd backend
 npm install
 npm run dev          # Runs on http://localhost:3001
 
-# Start frontend (when built)
-cd frontend
+# Start admin dashboard (when built)
+cd admin
 npm install
-npm run dev          # Will run on http://localhost:3000
+npm run dev          # Will run on http://localhost:5173
+
+# Start public menu app (when built)
+cd menu
+npm install
+npm run dev          # Will run on http://localhost:3002
+
+# Setup Tailwind CSS for new app
+npm install -D tailwindcss autoprefixer @tailwindcss/vite
 
 # Test backend APIs
 curl -X POST http://localhost:3001/api/auth/login \
@@ -210,37 +252,155 @@ curl -X GET http://localhost:3001/api/restaurants/profile -b cookies.txt
 
 ## 🎯 Frontend Requirements (When Building)
 
+### Admin Dashboard
 - React + Vite
 - axios (for API calls)
 - react-router-dom (routing)
 - tailwindcss (styling)
 - clsx (optional utility)
+- Desktop/tablet responsive design
 
-## 🧪 Backend Testing Examples
+### Public Menu App
+- React + Vite
+- axios (for public API calls)
+- react-router-dom (routing)
+- tailwindcss (styling)
+- Mobile-first responsive design
+- Restaurant theming system
 
+## 🏗️ Frontend Architecture Strategy
+
+DigiDinez uses a **dual-frontend architecture** with two separate React applications:
+
+### 🖥️ Admin Dashboard (`/admin`)
+- **Purpose**: Restaurant management and operations
+- **Users**: Restaurant owners, managers, staff
+- **Device Target**: Desktop and tablet (responsive design)
+- **Features**: Authentication, menu management, profile settings, QR codes, analytics
+- **Deployment**: Single admin portal serving all restaurants
+- **URL Structure**: `admin.digidinez.com` or `app.digidinez.com`
+
+### 📱 Public Menu App (`/menu`)
+- **Purpose**: Customer-facing menu display
+- **Users**: Restaurant customers (diners)
+- **Device Target**: Mobile-first (smartphones)
+- **Features**: Menu browsing, item details, restaurant branding
+- **Deployment**: Per-restaurant customizable themes
+- **URL Structure**: 
+  - Default: `menu.digidinez.com/:restaurantId`
+  - Custom domains: `menu.pizzapalace.com` (future feature)
+
+### 🎯 Benefits of Separation
+- **Optimized UX**: Business tools vs customer experience
+- **Independent scaling**: Admin (few users) vs Menu (many customers)
+- **Custom branding**: Each restaurant can have unique themes
+- **Flexible deployment**: Different hosting strategies per app
+- **White-label potential**: Restaurant-specific domains and branding
+
+## 🎨 Tailwind CSS Configuration (Vite)
+
+### Working Setup for Both Admin and Menu Apps:
+
+1. **Install Tailwind Dependencies:**
 ```bash
-# Login and save cookies
-curl -X POST http://localhost:3001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"identifier": "admin@pizzapalace.com", "password": "password123"}' \
-  -c cookies.txt
-
-# Get menu items
-curl -X GET http://localhost:3001/api/menu/items -b cookies.txt
-
-# Generate QR code
-curl -X POST http://localhost:3001/api/restaurants/generate-qr -b cookies.txt
-
-# View public menu (no auth)
-curl -X GET http://localhost:3001/api/menu/public/{restaurantId}
-
-# Update restaurant profile
-curl -X PUT http://localhost:3001/api/restaurants/profile \
-  -H "Content-Type: application/json" \
-  -d '{"name": "New Restaurant Name"}' \
-  -b cookies.txt
+npm install -D tailwindcss autoprefixer @tailwindcss/vite
 ```
 
----
+2. **Vite Configuration** (`vite.config.js`):
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
-✏️ **Keep this file updated** as new conventions, routes, models, or utilities are added. GitHub Copilot will use this to generate better and more consistent code suggestions.
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+```
+
+3. **Tailwind Config** (`tailwind.config.js`):
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+        }
+      }
+    },
+  },
+  plugins: [],
+}
+```
+
+4. **CSS Setup** (`src/index.css`):
+```css
+@import 'tailwindcss';
+
+/* Custom component styles */
+.btn-primary {
+  background-color: #059669;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #047857;
+}
+
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: #111827;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+```
+
+5. **Important Notes:**
+- **NO PostCSS configuration needed** - @tailwindcss/vite handles everything
+- **Use `@import 'tailwindcss';`** instead of separate base/components/utilities imports
+- **All Tailwind utilities work** out of the box
+- **Custom classes** should be written in regular CSS (not @apply)
