@@ -12,7 +12,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,13 +24,14 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await authService.getCurrentUser();
       if (response.success) {
-        setUser(response.data);
+        setRestaurant(response.data);
       }
     } catch (error) {
       console.log('No active session');
-      setUser(null);
+      setRestaurant(null);
     } finally {
       setLoading(false);
     }
@@ -43,12 +44,15 @@ export const AuthProvider = ({ children }) => {
       
       const response = await authService.login(identifier, password);
       if (response.success) {
-        setUser(response.data);
+        setRestaurant(response.data);
         return { success: true };
+      } else {
+        throw new Error(response.message || 'Login failed');
       }
     } catch (error) {
-      setError(error.message || 'Login failed');
-      return { success: false, error: error.message };
+      const errorMessage = error.message || 'Login failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -61,12 +65,16 @@ export const AuthProvider = ({ children }) => {
       
       const response = await authService.register(restaurantData);
       if (response.success) {
-        setUser(response.data);
-        return { success: true };
+        // Don't set restaurant data immediately after registration
+        // User will need to login after successful registration
+        return { success: true, message: 'Registration successful! Please login to continue.' };
+      } else {
+        throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
-      setError(error.message || 'Registration failed');
-      return { success: false, error: error.message };
+      const errorMessage = error.message || 'Registration failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -74,22 +82,31 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      setLoading(true);
       await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      setUser(null);
+      setRestaurant(null);
+      setError(null);
+      setLoading(false);
     }
   };
 
+  const clearError = () => {
+    setError(null);
+  };
+
   const value = {
-    user,
+    restaurant,
+    loading,
+    error,
     login,
     register,
     logout,
-    loading,
-    error,
-    isAuthenticated: !!user,
+    clearError,
+    checkAuthStatus,
+    isAuthenticated: !!restaurant,
   };
 
   return (

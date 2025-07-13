@@ -1,8 +1,9 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { user, logout, loading } = useAuth();
+  const { restaurant, logout, loading } = useAuth();
 
   if (loading) {
     return (
@@ -12,20 +13,19 @@ const Dashboard = () => {
     );
   }
 
-  if (!user) {
-    window.location.href = '/login';
-    return null;
+  if (!restaurant) {
+    return <Navigate to="/login" replace />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Simple Header */}
+      {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">DigiDinez Admin</h1>
-              <p className="text-sm text-gray-600">Welcome, {user.name}</p>
+              <p className="text-sm text-gray-600">Welcome, {restaurant.name}!</p>
             </div>
             <button
               onClick={logout}
@@ -62,6 +62,32 @@ const Dashboard = () => {
                 <p className="text-sm text-gray-500">Coming in Phase 3</p>
               </div>
             </div>
+
+            {/* Restaurant Info */}
+            {restaurant && (
+              <div className="mt-8 card p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Restaurant Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p><span className="font-medium">Name:</span> {restaurant.name}</p>
+                    <p><span className="font-medium">Email:</span> {restaurant.email}</p>
+                    <p><span className="font-medium">Phone:</span> {restaurant.phone}</p>
+                  </div>
+                  <div>
+                    <p><span className="font-medium">Status:</span> 
+                      <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                        restaurant.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {restaurant.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </p>
+                    {restaurant.address && (
+                      <p><span className="font-medium">Address:</span> {restaurant.address.street}, {restaurant.address.city}, {restaurant.address.state}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

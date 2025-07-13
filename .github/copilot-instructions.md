@@ -208,24 +208,26 @@ GET    /api/restaurants/:id/qr         # Public QR code info (no auth)
 
 ## 💻 Common Local Commands
 
+**⚠️ IMPORTANT TERMINAL NAVIGATION:**
+- Always use full paths with `cd` in terminal commands
+- Copilot terminal resets to root directory, so use: `cd /Users/sahilpurav/Code/digidinez/admin && npm run dev`
+- Never assume you're in the correct directory - always include the full cd path
+
 ```bash
 # Start backend (from project root)
-cd backend
-npm install
-npm run dev          # Runs on http://localhost:3001
+cd /Users/sahilpurav/Code/digidinez/backend && npm install
+cd /Users/sahilpurav/Code/digidinez/backend && npm run dev          # Runs on http://localhost:3001
 
 # Start admin dashboard (when built)
-cd admin
-npm install
-npm run dev          # Will run on http://localhost:5173
+cd /Users/sahilpurav/Code/digidinez/admin && npm install
+cd /Users/sahilpurav/Code/digidinez/admin && npm run dev          # Will run on http://localhost:5173
 
 # Start public menu app (when built)
-cd menu
-npm install
-npm run dev          # Will run on http://localhost:3002
+cd /Users/sahilpurav/Code/digidinez/menu && npm install
+cd /Users/sahilpurav/Code/digidinez/menu && npm run dev          # Will run on http://localhost:3002
 
 # Setup Tailwind CSS for new app
-npm install -D tailwindcss autoprefixer @tailwindcss/vite
+cd /Users/sahilpurav/Code/digidinez/admin && npm install -D tailwindcss autoprefixer @tailwindcss/vite
 
 # Test backend APIs
 curl -X POST http://localhost:3001/api/auth/login \
