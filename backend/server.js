@@ -8,6 +8,7 @@ import connectDB from './config/database.js';
 // Import routes
 import authRoutes from './routes/authRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
+import qrRoutes from './routes/qrRoutes.js';
 import { handleUploadErrors } from './middleware/uploadMiddleware.js';
 
 // Load environment variables
@@ -33,8 +34,9 @@ app.use(cookieParser()); // Parse cookies
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (uploaded images)
+// Serve static files (uploaded images and QR codes)
 app.use('/uploads', express.static('uploads'));
+app.use('/qr-codes', express.static('qr-codes'));
 
 // Add request logging middleware
 app.use((req, res, next) => {
@@ -78,6 +80,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
+app.use('/api/restaurants', qrRoutes);
 
 // Handle upload errors
 app.use(handleUploadErrors);

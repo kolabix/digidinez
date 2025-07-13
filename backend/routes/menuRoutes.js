@@ -10,7 +10,8 @@ import {
   bulkUpdateMenuItems,
   uploadMenuItemImage,
   deleteMenuItemImage,
-  getMenuItemImage
+  getMenuItemImage,
+  getPublicMenu
 } from '../controllers/menuController.js';
 import { protect } from '../middleware/auth.js';
 import {
@@ -24,7 +25,10 @@ import { uploadMenuImage } from '../utils/imageUpload.js';
 
 const router = express.Router();
 
-// All menu routes require authentication
+// Public routes (no authentication required)
+router.get('/public/:restaurantId', getPublicMenu);
+
+// All other menu routes require authentication
 router.use(protect);
 
 // Menu Items CRUD

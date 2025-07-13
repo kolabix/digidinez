@@ -142,11 +142,16 @@ menuItemSchema.statics.findByRestaurant = function(restaurantId, options = {}) {
 };
 
 // Static method to get categories for a restaurant
-menuItemSchema.statics.getCategoriesByRestaurant = function(restaurantId) {
-  return this.distinct('category', { 
-    restaurantId, 
-    isAvailable: true 
-  });
+menuItemSchema.statics.getCategoriesByRestaurant = function(restaurantId, options = {}) {
+  const { availableOnly = false } = options;
+  
+  const query = { restaurantId };
+  
+  if (availableOnly) {
+    query.isAvailable = true;
+  }
+  
+  return this.distinct('category', query);
 };
 
 // Instance method to toggle availability

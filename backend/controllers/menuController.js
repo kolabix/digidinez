@@ -608,3 +608,69 @@ export const getMenuItemImage = async (req, res) => {
     });
   }
 };
+
+// @desc    Get public menu for a restaurant (no authentication required)
+// @route   GET /api/menu/public/:restaurantId
+// @access  Public
+export const getPublicMenu = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    const { category } = req.query;
+
+    // Validate restaurant ID format
+    if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid restaurant ID format'
+      });
+    }
+
+    // Check if restaurant exists and is active
+    const restaurant = await Restaurant.findOne({ 
+      _id: restaurantId, 
+      isActive: true 
+    }).select('name address phone qrCodeUrl');
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found or inactive'
+      });
+    }
+
+    // Build query options for public menu (only available items)
+    const options = {
+      category: category && category !== 'all' ? category : undefined,
+      isAvailable: true, // Only show available items to public
+      limit: 100, // Higher limit for public viewing
+      sort: { category: 1, name: 1 }
+    };
+
+    const menuItems = await MenuItem.findByRestaurant(restaurantId, options);
+    
+    // Get categories for this restaurant (only categories with available items)
+    const categories = await MenuItem.getCategoriesByRestaurant(restaurantId, { availableOnly: true });
+
+    res.json({
+      success: true,
+      count: menuItems.length,
+      data: {
+        restaurant: {
+          id: restaurant._id,
+          name: restaurant.name,
+          address: restaurant.address,
+          phone: restaurant.phone
+        },
+        menuItems,
+        categories
+      }
+    });
+
+  } catch (error) {
+    console.error('Get public menu error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching public menu'
+    });
+  }
+};
