@@ -7,7 +7,10 @@ import {
   deleteMenuItem,
   toggleAvailability,
   getMenuItemsByCategory,
-  bulkUpdateMenuItems
+  bulkUpdateMenuItems,
+  uploadMenuItemImage,
+  deleteMenuItemImage,
+  getMenuItemImage
 } from '../controllers/menuController.js';
 import { protect } from '../middleware/auth.js';
 import {
@@ -17,6 +20,7 @@ import {
   validateCategory,
   validateMenuQuery
 } from '../middleware/validation.js';
+import { uploadMenuImage } from '../utils/imageUpload.js';
 
 const router = express.Router();
 
@@ -41,5 +45,11 @@ router.route('/items/:id')
 
 router.route('/items/:id/toggle')
   .patch(validateObjectId, toggleAvailability);  // PATCH /api/menu/items/:id/toggle
+
+// Image upload routes
+router.route('/items/:id/image')
+  .get(validateObjectId, getMenuItemImage)                                    // GET /api/menu/items/:id/image
+  .post(validateObjectId, uploadMenuImage.single('image'), uploadMenuItemImage) // POST /api/menu/items/:id/image
+  .delete(validateObjectId, deleteMenuItemImage);                             // DELETE /api/menu/items/:id/image
 
 export default router;

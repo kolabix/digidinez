@@ -107,6 +107,11 @@ menuItemSchema.virtual('formattedPrice').get(function() {
   return `$${this.price.toFixed(2)}`;
 });
 
+// Virtual for image URL
+menuItemSchema.virtual('imageUrl').get(function() {
+  return this.image ? `/uploads/menu-images/${this.image}` : null;
+});
+
 // Virtual to populate restaurant info
 menuItemSchema.virtual('restaurant', {
   ref: 'Restaurant',

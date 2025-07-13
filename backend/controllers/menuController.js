@@ -1,5 +1,6 @@
 import { MenuItem, Restaurant } from '../models/index.js';
 import { validationResult } from 'express-validator';
+import { deleteImageFile, getImagePath, getImageUrl, getImageInfo } from '../utils/imageUpload.js';
 
 // @desc    Get all menu items for authenticated restaurant
 // @route   GET /api/menu/items
@@ -423,6 +424,187 @@ export const bulkUpdateMenuItems = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error during bulk update'
+    });
+  }
+};
+
+// @desc    Upload image for menu item
+// @route   POST /api/menu/items/:id/image
+// @access  Private
+export const uploadMenuItemImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find menu item
+    const menuItem = await MenuItem.findOne({
+      _id: id,
+      restaurantId: req.restaurant.id
+    });
+
+    if (!menuItem) {
+      // If menu item not found, delete the uploaded file
+      if (req.file) {
+        deleteImageFile(req.file.path);
+      }
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item not found'
+      });
+    }
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+
+    // Delete old image if exists
+    if (menuItem.image) {
+      const oldImagePath = getImagePath(menuItem.image);
+      deleteImageFile(oldImagePath);
+    }
+
+    // Update menu item with new image
+    menuItem.image = req.file.filename;
+    await menuItem.save();
+
+    // Get image info
+    const imageInfo = getImageInfo(req.file.filename);
+
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: {
+        menuItem: {
+          id: menuItem._id,
+          name: menuItem.name,
+          image: imageInfo
+        }
+      }
+    });
+
+  } catch (error) {
+    // Delete uploaded file on error
+    if (req.file) {
+      deleteImageFile(req.file.path);
+    }
+    
+    console.error('Upload image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while uploading image'
+    });
+  }
+};
+
+// @desc    Delete image for menu item
+// @route   DELETE /api/menu/items/:id/image
+// @access  Private
+export const deleteMenuItemImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find menu item
+    const menuItem = await MenuItem.findOne({
+      _id: id,
+      restaurantId: req.restaurant.id
+    });
+
+    if (!menuItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item not found'
+      });
+    }
+
+    if (!menuItem.image) {
+      return res.status(400).json({
+        success: false,
+        message: 'Menu item has no image to delete'
+      });
+    }
+
+    // Delete image file
+    const imagePath = getImagePath(menuItem.image);
+    const deleted = deleteImageFile(imagePath);
+
+    // Update menu item (remove image reference)
+    menuItem.image = null;
+    await menuItem.save();
+
+    res.json({
+      success: true,
+      message: 'Image deleted successfully',
+      data: {
+        fileDeleted: deleted,
+        menuItem: {
+          id: menuItem._id,
+          name: menuItem.name,
+          image: null
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Delete image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting image'
+    });
+  }
+};
+
+// @desc    Get image info for menu item
+// @route   GET /api/menu/items/:id/image
+// @access  Private
+export const getMenuItemImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find menu item
+    const menuItem = await MenuItem.findOne({
+      _id: id,
+      restaurantId: req.restaurant.id
+    });
+
+    if (!menuItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item not found'
+      });
+    }
+
+    if (!menuItem.image) {
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item has no image'
+      });
+    }
+
+    // Get image info
+    const imageInfo = getImageInfo(menuItem.image);
+
+    if (!imageInfo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Image file not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        image: imageInfo
+      }
+    });
+
+  } catch (error) {
+    console.error('Get image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while getting image info'
     });
   }
 };
