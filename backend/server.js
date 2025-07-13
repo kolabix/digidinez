@@ -8,7 +8,7 @@ import connectDB from './config/database.js';
 // Import routes
 import authRoutes from './routes/authRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
-import qrRoutes from './routes/qrRoutes.js';
+import restaurantRoutes from './routes/restaurantRoutes.js';
 import { handleUploadErrors } from './middleware/uploadMiddleware.js';
 
 // Load environment variables
@@ -80,13 +80,10 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
-app.use('/api/restaurants', qrRoutes);
+app.use('/api/restaurants', restaurantRoutes);
 
 // Handle upload errors
 app.use(handleUploadErrors);
-
-// TODO: Add more routes here
-// app.use('/api/restaurants', restaurantRoutes);
 
 // 404 handler
 app.use((req, res) => {

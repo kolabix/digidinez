@@ -190,3 +190,66 @@ export const validateMenuQuery = [
   
   handleValidationErrors
 ];
+
+// Validation rules for restaurant profile updates
+export const validateUpdateProfile = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Restaurant name must be between 2 and 100 characters'),
+  
+  body('email')
+    .optional()
+    .trim()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email address'),
+  
+  body('phone')
+    .optional()
+    .trim()
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
+    .withMessage('Please provide a valid phone number'),
+  
+  body('address.street')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Street address cannot exceed 200 characters'),
+  
+  body('address.city')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('City name cannot exceed 100 characters'),
+  
+  body('address.state')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('State name cannot exceed 100 characters'),
+  
+  body('address.zipCode')
+    .optional()
+    .trim()
+    .isLength({ max: 20 })
+    .withMessage('ZIP code cannot exceed 20 characters'),
+  
+  body('address.country')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Country name must be between 2 and 100 characters'),
+  
+  handleValidationErrors
+];
+
+// Validation rules for restaurant status toggle
+export const validateStatusToggle = [
+  body('isActive')
+    .isBoolean()
+    .withMessage('isActive must be a boolean value'),
+  
+  handleValidationErrors
+];

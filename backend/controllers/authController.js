@@ -41,22 +41,28 @@ export const register = async (req, res) => {
       });
     }
 
-    // Check if restaurant already exists
-    const existingRestaurant = await Restaurant.findOne({
-      $or: [{ email }, { phone }]
-    });
-
-    if (existingRestaurant) {
+    // Check if email already exists
+    const existingEmail = await Restaurant.findOne({ email: email.toLowerCase() });
+    if (existingEmail) {
       return res.status(409).json({
         success: false,
-        message: 'Restaurant with this email or phone already exists'
+        message: 'Email address is already registered'
+      });
+    }
+
+    // Check if phone already exists
+    const existingPhone = await Restaurant.findOne({ phone });
+    if (existingPhone) {
+      return res.status(409).json({
+        success: false,
+        message: 'Phone number is already registered'
       });
     }
 
     // Create restaurant
     const restaurant = await Restaurant.create({
       name,
-      email,
+      email: email.toLowerCase(),
       phone,
       password,
       address: address || {}
