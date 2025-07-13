@@ -34,7 +34,8 @@ const Input = ({
         onChange={onChange}
         onBlur={onBlur}
         className={clsx(
-          'input-field',
+          'w-full px-3 py-2 border border-gray-300 rounded-lg transition-colors duration-200',
+          'focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-200',
           hasError && 'border-red-300 focus:border-red-500 focus:ring-red-200',
           className
         )}

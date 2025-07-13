@@ -338,53 +338,6 @@ export default defineConfig({
   --color-primary-900: oklch(0.324 0.135 160.53);
   --color-primary-950: oklch(0.192 0.084 161.35);
 }
-
-/* Custom component styles */
-.btn-primary {
-  background-color: #059669;
-  color: white;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-  background-color: #047857;
-}
-
-.btn-secondary {
-  background-color: #e5e7eb;
-  color: #111827;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: #d1d5db;
-}
-
-.input-field {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: #059669;
-  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
-}
-
-.card {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-}
 ```
 
 5. **Important Notes:**
@@ -392,4 +345,8 @@ export default defineConfig({
 - **Use `@import 'tailwindcss';`** instead of separate base/components/utilities imports
 - **Custom colors defined with `@theme` directive** using OKLCH color space
 - **All Tailwind utilities work** out of the box (bg-primary-600, text-primary-700, etc.)
-- **Custom classes** should be written in regular CSS (not @apply)
+- **Use ONLY Tailwind utility classes** - no custom CSS classes needed
+- **Common patterns**: 
+  - Buttons: `bg-primary-600 text-white hover:bg-primary-700 px-4 py-2 rounded-lg`
+  - Cards: `bg-white shadow rounded-lg border border-gray-200 p-6`
+  - Inputs: `w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-primary-600`

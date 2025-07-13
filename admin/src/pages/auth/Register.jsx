@@ -101,6 +101,7 @@ const Register = () => {
 
     setIsSubmitting(true);
     setSuccessMessage('');
+    clearError(); // Clear any previous auth errors
     
     // Prepare restaurant data
     const restaurantData = {
@@ -121,12 +122,23 @@ const Register = () => {
     
     if (result.success) {
       setSuccessMessage(result.message);
-      // Redirect to login after 2 seconds
+      // Clear form after successful registration
+      resetForm();
+      // Redirect to login after 3 seconds
       setTimeout(() => {
         navigate('/login');
-      }, 2000);
+      }, 3000);
     } else {
-      setFormErrors({ general: result.error });
+      // Handle validation errors from backend
+      if (result.validationErrors) {
+        const newErrors = {};
+        result.validationErrors.forEach(err => {
+          newErrors[err.field] = err.message;
+        });
+        setFormErrors(newErrors);
+      } else {
+        setFormErrors({ general: result.error });
+      }
     }
     
     setIsSubmitting(false);
@@ -154,7 +166,7 @@ const Register = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="card py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10 border border-gray-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Success message */}
             {successMessage && (

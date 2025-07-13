@@ -26,8 +26,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const response = await authService.getCurrentUser();
-      if (response.success) {
-        setRestaurant(response.data);
+      if (response.success && response.data.restaurant) {
+        setRestaurant(response.data.restaurant);
       }
     } catch (error) {
       console.log('No active session');
@@ -43,16 +43,24 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       
       const response = await authService.login(identifier, password);
-      if (response.success) {
-        setRestaurant(response.data);
+      if (response.success && response.data.restaurant) {
+        setRestaurant(response.data.restaurant);
         return { success: true };
       } else {
         throw new Error(response.message || 'Login failed');
       }
     } catch (error) {
-      const errorMessage = error.message || 'Login failed';
+      console.error('Login error:', error);
+      let errorMessage = 'Login failed';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.errors && error.errors.length > 0) {
+        errorMessage = error.errors[0].message;
+      }
+      
       setError(errorMessage);
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, validationErrors: error.errors };
     } finally {
       setLoading(false);
     }
@@ -72,9 +80,17 @@ export const AuthProvider = ({ children }) => {
         throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
-      const errorMessage = error.message || 'Registration failed';
+      console.error('Registration error:', error);
+      let errorMessage = 'Registration failed';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.errors && error.errors.length > 0) {
+        errorMessage = error.errors[0].message;
+      }
+      
       setError(errorMessage);
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, validationErrors: error.errors };
     } finally {
       setLoading(false);
     }

@@ -59,13 +59,23 @@ const Login = () => {
     }
 
     setIsSubmitting(true);
+    clearError(); // Clear any previous auth errors
     
     const result = await login(values.identifier, values.password);
     
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setFormErrors({ general: result.error });
+      // Handle validation errors from backend
+      if (result.validationErrors) {
+        const newErrors = {};
+        result.validationErrors.forEach(err => {
+          newErrors[err.field] = err.message;
+        });
+        setFormErrors(newErrors);
+      } else {
+        setFormErrors({ general: result.error });
+      }
     }
     
     setIsSubmitting(false);
@@ -89,7 +99,7 @@ const Login = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="card py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10 border border-gray-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* General error display */}
             {(error || errors.general) && (

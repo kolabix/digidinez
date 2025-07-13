@@ -40,7 +40,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="card p-8">
+          <div className="bg-white p-8 shadow rounded-lg border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Restaurant Dashboard
             </h2>
@@ -49,15 +49,15 @@ const Dashboard = () => {
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="card p-6 text-center">
+              <div className="bg-white p-6 text-center shadow rounded-lg border border-gray-200">
                 <h3 className="font-medium text-gray-900 mb-2">Menu Management</h3>
                 <p className="text-sm text-gray-500">Coming in Phase 4</p>
               </div>
-              <div className="card p-6 text-center">
+              <div className="bg-white p-6 text-center shadow rounded-lg border border-gray-200">
                 <h3 className="font-medium text-gray-900 mb-2">QR Codes</h3>
                 <p className="text-sm text-gray-500">Coming in Phase 5</p>
               </div>
-              <div className="card p-6 text-center">
+              <div className="bg-white p-6 text-center shadow rounded-lg border border-gray-200">
                 <h3 className="font-medium text-gray-900 mb-2">Restaurant Profile</h3>
                 <p className="text-sm text-gray-500">Coming in Phase 3</p>
               </div>
@@ -65,7 +65,7 @@ const Dashboard = () => {
 
             {/* Restaurant Info */}
             {restaurant && (
-              <div className="mt-8 card p-6">
+              <div className="mt-8 bg-white p-6 shadow rounded-lg border border-gray-200">
                 <h3 className="font-semibold text-gray-900 mb-4">Restaurant Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
