@@ -1,5 +1,19 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-primary-50: oklch(0.971 0.013 164.54);
+  --color-primary-100: oklch(0.936 0.032 163.22);
+  --color-primary-200: oklch(0.885 0.062 162.47);
+  --color-primary-300: oklch(0.807 0.108 161.61);
+  --color-primary-400: oklch(0.707 0.162 160.77);
+  --color-primary-500: oklch(0.618 0.201 160.29);
+  --color-primary-600: oklch(0.524 0.201 159.75);
+  --color-primary-700: oklch(0.449 0.182 159.72);
+  --color-primary-800: oklch(0.380 0.156 159.91);
+  --color-primary-900: oklch(0.324 0.135 160.53);
+  --color-primary-950: oklch(0.192 0.084 161.35);
+}
+
 /* Custom component styles */
 .btn-primary {
   background-color: #059669;

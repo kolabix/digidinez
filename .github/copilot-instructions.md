@@ -319,39 +319,25 @@ export default defineConfig({
 })
 ```
 
-3. **Tailwind Config** (`tailwind.config.js`):
-```javascript
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
-        }
-      }
-    },
-  },
-  plugins: [],
-}
-```
+3. **⚠️ NO tailwind.config.js needed** - Tailwind CSS v4 removed traditional config files
 
-4. **CSS Setup** (`src/index.css`):
+4. **CSS Setup with Custom Colors** (`src/index.css`):
 ```css
 @import 'tailwindcss';
+
+@theme {
+  --color-primary-50: oklch(0.971 0.013 164.54);
+  --color-primary-100: oklch(0.936 0.032 163.22);
+  --color-primary-200: oklch(0.885 0.062 162.47);
+  --color-primary-300: oklch(0.807 0.108 161.61);
+  --color-primary-400: oklch(0.707 0.162 160.77);
+  --color-primary-500: oklch(0.618 0.201 160.29);
+  --color-primary-600: oklch(0.524 0.201 159.75);
+  --color-primary-700: oklch(0.449 0.182 159.72);
+  --color-primary-800: oklch(0.380 0.156 159.91);
+  --color-primary-900: oklch(0.324 0.135 160.53);
+  --color-primary-950: oklch(0.192 0.084 161.35);
+}
 
 /* Custom component styles */
 .btn-primary {
@@ -404,5 +390,6 @@ export default {
 5. **Important Notes:**
 - **NO PostCSS configuration needed** - @tailwindcss/vite handles everything
 - **Use `@import 'tailwindcss';`** instead of separate base/components/utilities imports
-- **All Tailwind utilities work** out of the box
+- **Custom colors defined with `@theme` directive** using OKLCH color space
+- **All Tailwind utilities work** out of the box (bg-primary-600, text-primary-700, etc.)
 - **Custom classes** should be written in regular CSS (not @apply)
