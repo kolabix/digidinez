@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import useForm from '../../hooks/useForm';
@@ -8,8 +8,10 @@ import Button from '../../components/common/Button';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState('');
   const { login, loading, error, isAuthenticated, clearError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -17,6 +19,17 @@ const Login = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
+
+  // Handle registration success message
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setRegistrationSuccess(location.state.successMessage);
+      // Clear the message after 5 seconds
+      setTimeout(() => {
+        setRegistrationSuccess('');
+      }, 5000);
+    }
+  }, [location.state]);
 
   // Clear errors when component mounts
   useEffect(() => {
@@ -101,6 +114,13 @@ const Login = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10 border border-gray-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Registration success message */}
+            {registrationSuccess && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                {registrationSuccess}
+              </div>
+            )}
+
             {/* General error display */}
             {(error || errors.general) && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">

@@ -121,13 +121,12 @@ const Register = () => {
     const result = await register(restaurantData);
     
     if (result.success) {
-      setSuccessMessage(result.message);
-      // Clear form after successful registration
-      resetForm();
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      // Immediately redirect to login with success message
+      navigate('/login', { 
+        state: { 
+          successMessage: result.message || 'Registration successful! Please login to continue.' 
+        } 
+      });
     } else {
       // Handle validation errors from backend
       if (result.validationErrors) {
