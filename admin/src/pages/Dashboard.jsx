@@ -1,6 +1,6 @@
-import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
+import Button from '../components/common/Button';
 
 const Dashboard = () => {
   const { restaurant, logout, loading } = useAuth();
@@ -27,12 +27,12 @@ const Dashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">DigiDinez Admin</h1>
               <p className="text-sm text-gray-600">Welcome, {restaurant.name}!</p>
             </div>
-            <button
+            <Button
               onClick={logout}
-              className="btn-secondary"
+              variant="secondary"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </div>
       </header>
