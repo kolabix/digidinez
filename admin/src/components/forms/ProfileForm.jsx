@@ -1,28 +1,76 @@
-import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, forwardRef, useImperativeHandle } from 'react';
 import useForm from '../../hooks/useForm';
 import Input from '../common/Input';
 
 const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: ''
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    setFormValues,
+    validateForm,
+    setFormErrors
+  } = useForm(
+    {
+      name: '',
+      email: '',
+      phone: '',
+      address: {
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: ''
+      }
+    },
+    {
+      name: {
+        required: true,
+        minLength: 2,
+        message: 'Restaurant name must be at least 2 characters'
+      },
+      email: {
+        required: true,
+        type: 'email',
+        message: 'Please enter a valid email address'
+      },
+      phone: {
+        required: true,
+        type: 'phone',
+        message: 'Please enter a valid phone number'
+      },
+      'address.street': {
+        minLength: 5,
+        message: 'Street address should be at least 5 characters'
+      },
+      'address.city': {
+        minLength: 2,
+        message: 'City name should be at least 2 characters'
+      },
+      'address.state': {
+        minLength: 2,
+        message: 'State should be at least 2 characters'
+      },
+      'address.zipCode': {
+        validate: (value) => {
+          if (value && !/^[A-Za-z0-9\s\-]{3,10}$/.test(value)) {
+            return 'Please enter a valid postal code (3-10 characters, letters, numbers, spaces, or dashes)';
+          }
+        }
+      },
+      'address.country': {
+        minLength: 2,
+        message: 'Country should be at least 2 characters'
+      }
     }
-  });
-
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
+  );
 
   // Initialize form data when profile loads
   useEffect(() => {
     if (profile) {
-      setFormData({
+      setFormValues({
         name: profile.name || '',
         email: profile.email || '',
         phone: profile.phone || '',
@@ -35,127 +83,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
         }
       });
     }
-  }, [profile]);
-
-  // Validation rules
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'name':
-        if (!value.trim()) return 'Restaurant name is required';
-        if (value.length < 2) return 'Restaurant name must be at least 2 characters';
-        return '';
-      
-      case 'email':
-        if (!value.trim()) return 'Email is required';
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) return 'Please enter a valid email address';
-        return '';
-      
-      case 'phone':
-        if (!value.trim()) return 'Phone number is required';
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-        if (!phoneRegex.test(value.replace(/[\s\-\(\)]/g, ''))) {
-          return 'Please enter a valid phone number';
-        }
-        return '';
-
-      // Address field validations
-      case 'street':
-        if (value && value.length < 5) return 'Street address should be at least 5 characters';
-        return '';
-      
-      case 'city':
-        if (value && value.length < 2) return 'City name should be at least 2 characters';
-        return '';
-      
-      case 'state':
-        if (value && value.length < 2) return 'State should be at least 2 characters';
-        return '';
-      
-      case 'zipCode':
-        if (value && !/^\d{5}(-\d{4})?$/.test(value)) {
-          return 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)';
-        }
-        return '';
-      
-      case 'country':
-        if (value && value.length < 2) return 'Country should be at least 2 characters';
-        return '';
-      
-      default:
-        return '';
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Handle nested address fields
-    if (['street', 'city', 'state', 'zipCode', 'country'].includes(name)) {
-      setFormData(prev => ({
-        ...prev,
-        address: {
-          ...prev.address,
-          [name]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-
-    // Mark field as touched
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-
-    // Validate on change
-    const error = validateField(name, value);
-    setErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
-
-  // Handle address changes (keeping for backward compatibility if needed)
-  const handleAddressChange = (addressData) => {
-    setFormData(prev => ({
-      ...prev,
-      address: addressData
-    }));
-  };
-
-  // Validate entire form
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Validate basic fields
-    newErrors.name = validateField('name', formData.name);
-    newErrors.email = validateField('email', formData.email);
-    newErrors.phone = validateField('phone', formData.phone);
-
-    setErrors(newErrors);
-
-    // Return true if no errors
-    return !Object.values(newErrors).some(error => error);
-  };
+  }, [profile]); // Remove setFormValues from dependency array
 
   // Expose submit function to parent component
   useImperativeHandle(ref, () => ({
     submitForm: () => {
-      // Mark all fields as touched
-      setTouched({
-        name: true,
-        email: true,
-        phone: true
-      });
-
       if (validateForm()) {
-        onSave(formData);
+        onSave(values);
       }
     }
   }));
@@ -164,29 +98,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Mark all fields as touched
-    setTouched({
-      name: true,
-      email: true,
-      phone: true
-    });
-
     if (validateForm()) {
       try {
-        await onSave(formData);
+        await onSave(values);
       } catch (err) {
         // Error handling is done in parent component
       }
     }
-  };
-
-  // Handle field blur
-  const handleBlur = (e) => {
-    const { name } = e.target;
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
   };
 
   return (
@@ -206,8 +124,8 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 name="name"
                 label="Restaurant Name"
                 required
-                value={formData.name}
-                onChange={handleInputChange}
+                value={values.name}
+                onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.name}
                 touched={touched.name}
@@ -222,8 +140,8 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 name="email"
                 label="Email Address"
                 required
-                value={formData.email}
-                onChange={handleInputChange}
+                value={values.email}
+                onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.email}
                 touched={touched.email}
@@ -238,8 +156,8 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 name="phone"
                 label="Phone Number"
                 required
-                value={formData.phone}
-                onChange={handleInputChange}
+                value={values.phone}
+                onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.phone}
                 touched={touched.phone}
@@ -262,13 +180,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
             <div>
               <Input
                 type="text"
-                name="street"
+                name="address.street"
                 label="Street Address"
-                value={formData.address.street}
-                onChange={handleInputChange}
+                value={values.address.street}
+                onChange={handleChange}
                 onBlur={handleBlur}
-                error={errors.street}
-                touched={touched.street}
+                error={errors['address.street']}
+                touched={touched['address.street']}
                 placeholder="123 Main Street"
               />
             </div>
@@ -278,13 +196,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
               <div>
                 <Input
                   type="text"
-                  name="city"
+                  name="address.city"
                   label="City"
-                  value={formData.address.city}
-                  onChange={handleInputChange}
+                  value={values.address.city}
+                  onChange={handleChange}
                   onBlur={handleBlur}
-                  error={errors.city}
-                  touched={touched.city}
+                  error={errors['address.city']}
+                  touched={touched['address.city']}
                   placeholder="New York"
                 />
               </div>
@@ -292,13 +210,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
               <div>
                 <Input
                   type="text"
-                  name="state"
+                  name="address.state"
                   label="State / Province"
-                  value={formData.address.state}
-                  onChange={handleInputChange}
+                  value={values.address.state}
+                  onChange={handleChange}
                   onBlur={handleBlur}
-                  error={errors.state}
-                  touched={touched.state}
+                  error={errors['address.state']}
+                  touched={touched['address.state']}
                   placeholder="NY"
                 />
               </div>
@@ -309,29 +227,29 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
               <div>
                 <Input
                   type="text"
-                  name="zipCode"
+                  name="address.zipCode"
                   label="ZIP / Postal Code"
-                  value={formData.address.zipCode}
-                  onChange={handleInputChange}
+                  value={values.address.zipCode}
+                  onChange={handleChange}
                   onBlur={handleBlur}
-                  error={errors.zipCode}
-                  touched={touched.zipCode}
+                  error={errors['address.zipCode']}
+                  touched={touched['address.zipCode']}
                   placeholder="10001"
                 />
               </div>
 
               <div>
-                <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="address.country" className="block text-sm font-medium text-gray-700">
                   Country
                 </label>
                 <select
-                  id="country"
-                  name="country"
-                  value={formData.address.country}
-                  onChange={handleInputChange}
+                  id="address.country"
+                  name="address.country"
+                  value={values.address.country}
+                  onChange={handleChange}
                   onBlur={handleBlur}
                   className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                    errors.country && touched.country
+                    errors['address.country'] && touched['address.country']
                       ? 'border-red-300 focus:border-red-500'
                       : 'border-gray-300 focus:border-primary-500'
                   }`}
@@ -367,8 +285,8 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                   <option value="Colombia">Colombia</option>
                   <option value="Other">Other</option>
                 </select>
-                {errors.country && touched.country && (
-                  <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+                {errors['address.country'] && touched['address.country'] && (
+                  <p className="mt-1 text-sm text-red-600">{errors['address.country']}</p>
                 )}
               </div>
             </div>
