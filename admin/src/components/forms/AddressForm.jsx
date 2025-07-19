@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Input from '../../components/common/Input';
+import Input from '../common/Input';
 
 const AddressForm = ({ address, onAddressChange }) => {
   const [addressData, setAddressData] = useState({

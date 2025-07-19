@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Layout from '../../components/layout/Layout';
-import ProfileForm from './ProfileForm';
+import ProfileForm from '../../components/forms/ProfileForm';
 import useRestaurant from '../../hooks/useRestaurant';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';

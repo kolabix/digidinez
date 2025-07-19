@@ -2,8 +2,8 @@ import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import AddressForm from './AddressForm';
 import useForm from '../../hooks/useForm';
-import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
+import Button from '../common/Button';
+import Input from '../common/Input';
 
 const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
   const [formData, setFormData] = useState({
