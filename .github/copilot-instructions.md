@@ -308,6 +308,33 @@ admin/src/hooks/
 
 ### ✅ Conventions
 
+### 🚨 **React Import Convention - MANDATORY**
+
+**Rule:** Never import React itself in component files. Only import the specific hooks and features you need.
+
+#### **Correct Import Patterns:**
+
+```jsx
+// ✅ CORRECT - Import only what you need
+import { useState, useEffect, useRef } from 'react';
+import { createContext, useContext } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
+
+// ❌ WRONG - Do not import React
+import React, { useState, useEffect } from 'react';
+import React from 'react';
+```
+
+#### **Common Import Patterns:**
+- **Basic components**: No imports needed for JSX
+- **State management**: `import { useState } from 'react';`
+- **Side effects**: `import { useEffect } from 'react';`
+- **Refs**: `import { useRef } from 'react';`
+- **Context**: `import { createContext, useContext } from 'react';`
+- **Advanced patterns**: `import { forwardRef, useImperativeHandle } from 'react';`
+
+**This convention applies to ALL React components and hooks in the project.**
+
 ### 🚨 **React StrictMode Double Execution Fix - MANDATORY**
 
 **Problem:** React StrictMode in development intentionally runs effects twice to help detect side effects. This causes API calls in `useEffect` to execute twice, leading to duplicate network requests.
@@ -317,7 +344,7 @@ admin/src/hooks/
 #### **Standard Pattern for API Calls in useEffect:**
 
 ```jsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const MyComponent = () => {
   const [data, setData] = useState(null);

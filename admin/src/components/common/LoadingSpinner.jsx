@@ -1,4 +1,3 @@
-import React from 'react';
 import clsx from 'clsx';
 
 const LoadingSpinner = ({ size = 'md', text, className = '' }) => {
