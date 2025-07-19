@@ -13,6 +13,7 @@ const Profile = () => {
   const [notification, setNotification] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [dialogAction, setDialogAction] = useState(null); // Store the action when dialog opens
   const hasFetchedRef = useRef(false);
   const { 
     profile, 
@@ -54,7 +55,7 @@ const Profile = () => {
     try {
       await toggleStatus();
       showNotification(
-        `Restaurant ${profile?.isActive ? 'deactivated' : 'activated'} successfully!`, 
+        `Restaurant ${dialogAction?.isCurrentlyActive ? 'deactivated' : 'activated'} successfully!`, 
         'success'
       );
     } catch (err) {
@@ -62,6 +63,7 @@ const Profile = () => {
     } finally {
       setIsTogglingStatus(false);
       setShowConfirmDialog(false);
+      setDialogAction(null);
     }
   };
 
@@ -113,12 +115,15 @@ const Profile = () => {
         {/* Confirmation Dialog */}
         <ConfirmDialog
           isOpen={showConfirmDialog}
-          title={`${profile?.isActive ? 'Deactivate' : 'Activate'} Restaurant`}
-          message={`Are you sure you want to ${profile?.isActive ? 'deactivate' : 'activate'} your restaurant? This will ${profile?.isActive ? 'hide' : 'show'} your menu from customers.`}
-          confirmText={profile?.isActive ? 'Deactivate' : 'Activate'}
-          confirmVariant={profile?.isActive ? 'danger' : 'success'}
+          title={`${dialogAction?.actionText || 'Toggle'} Restaurant`}
+          message={`Are you sure you want to ${dialogAction?.actionText?.toLowerCase() || 'toggle'} your restaurant? This will ${dialogAction?.isCurrentlyActive ? 'hide' : 'show'} your menu from customers.`}
+          confirmText={dialogAction?.actionText || 'Confirm'}
+          confirmVariant={dialogAction?.actionVariant || 'danger'}
           onConfirm={handleStatusToggle}
-          onCancel={() => setShowConfirmDialog(false)}
+          onCancel={() => {
+            setShowConfirmDialog(false);
+            setDialogAction(null);
+          }}
           loading={isTogglingStatus}
         />
 
@@ -254,7 +259,15 @@ const Profile = () => {
               </div>
               <div className="flex items-center justify-center sm:justify-end">
                 <button 
-                  onClick={() => setShowConfirmDialog(true)}
+                  onClick={() => {
+                    // Capture the current state when opening dialog
+                    setDialogAction({
+                      isCurrentlyActive: profile?.isActive,
+                      actionText: profile?.isActive ? 'Deactivate' : 'Activate',
+                      actionVariant: profile?.isActive ? 'danger' : 'success'
+                    });
+                    setShowConfirmDialog(true);
+                  }}
                   disabled={isTogglingStatus}
                   className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
                     profile?.isActive ? 'bg-primary-600' : 'bg-gray-200'
