@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import Layout from '../../components/layout/Layout';
-import ProfileForm from '../../components/forms/ProfileForm';
-import useRestaurant from '../../hooks/useRestaurant';
-import Button from '../../components/common/Button';
-import Toast from '../../components/common/Toast';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ConfirmDialog from '../../components/common/ConfirmDialog';
+import Layout from '../components/layout/Layout';
+import ProfileForm from '../components/forms/ProfileForm';
+import useRestaurant from '../hooks/useRestaurant';
+import Button from '../components/common/Button';
+import Toast from '../components/common/Toast';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);

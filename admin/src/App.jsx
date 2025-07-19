@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
-import Profile from './pages/profile/Profile';
+import Profile from './pages/Profile';
 import Layout from './components/layout/Layout';
 
 // Protected Route Component
