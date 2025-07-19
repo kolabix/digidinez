@@ -33,12 +33,9 @@ export const protect = async (req, res, next) => {
         });
       }
 
-      if (!restaurant.isActive) {
-        return res.status(401).json({
-          success: false,
-          message: 'Account is deactivated. Access denied.'
-        });
-      }
+      // Note: We don't check isActive here because restaurant owners
+      // should always be able to access their admin dashboard.
+      // isActive only controls public menu visibility, not admin access.
 
       // Add restaurant to request object
       req.restaurant = {
@@ -93,7 +90,9 @@ export const optionalAuth = async (req, res, next) => {
         // Get restaurant from token
         const restaurant = await Restaurant.findById(decoded.id);
 
-        if (restaurant && restaurant.isActive) {
+        if (restaurant) {
+          // Note: We don't check isActive here because restaurant owners
+          // should always be able to access their admin dashboard.
           // Add restaurant to request object
           req.restaurant = {
             id: restaurant._id,

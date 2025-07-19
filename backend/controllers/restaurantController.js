@@ -177,11 +177,25 @@ export const updateProfile = async (req, res) => {
 // @access  Private
 export const toggleStatus = async (req, res) => {
   try {
+    // Check for validation errors first
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('Validation errors in toggleStatus:', errors.array());
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
     const restaurantId = req.restaurant.id;
     const { isActive } = req.body;
 
-    // Validate isActive field
+    console.log(`🔄 Toggle Status Request - Restaurant: ${restaurantId}, New Status: ${isActive}`);
+
+    // Additional validation
     if (typeof isActive !== 'boolean') {
+      console.log('❌ Invalid isActive type:', typeof isActive, isActive);
       return res.status(400).json({
         success: false,
         message: 'isActive field must be a boolean value'
@@ -198,11 +212,14 @@ export const toggleStatus = async (req, res) => {
     );
 
     if (!updatedRestaurant) {
+      console.log('❌ Restaurant not found:', restaurantId);
       return res.status(404).json({
         success: false,
         message: 'Restaurant not found'
       });
     }
+
+    console.log(`✅ Status updated successfully - ${updatedRestaurant.name} is now ${isActive ? 'ACTIVE' : 'INACTIVE'}`);
 
     res.json({
       success: true,
@@ -211,17 +228,23 @@ export const toggleStatus = async (req, res) => {
         restaurant: {
           id: updatedRestaurant._id,
           name: updatedRestaurant.name,
+          email: updatedRestaurant.email,
+          phone: updatedRestaurant.phone,
+          address: updatedRestaurant.address,
           isActive: updatedRestaurant.isActive,
+          qrCodeUrl: updatedRestaurant.qrCodeUrl,
+          fullAddress: updatedRestaurant.fullAddress,
           updatedAt: updatedRestaurant.updatedAt
         }
       }
     });
 
   } catch (error) {
-    console.error('Toggle status error:', error);
+    console.error('❌ Toggle status error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while updating status'
+      message: 'Server error while updating status',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

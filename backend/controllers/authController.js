@@ -147,13 +147,9 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if restaurant is active
-    if (!restaurant.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated. Please contact support.'
-      });
-    }
+    // Note: We don't check isActive here because restaurant owners
+    // should always be able to log in to manage their restaurant.
+    // isActive only controls public menu visibility, not admin access.
 
     // Verify password
     const isPasswordValid = await restaurant.comparePassword(password);

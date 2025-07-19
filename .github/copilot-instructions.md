@@ -115,6 +115,48 @@ digidinez/
 - Tailwind CSS should be used for all UI styling.
 - Authentication middleware uses `req.restaurant` (not `req.user`).
 
+### 🚨 **CRITICAL API Response Structure**
+**Backend APIs wrap entity data in nested objects - Frontend services MUST extract correctly:**
+
+```javascript
+// ❌ WRONG - Common mistake in frontend services
+const response = await api.get('/restaurants/profile');
+setProfile(response.data); // This sets {restaurant: {...}} instead of {...}
+
+// ✅ CORRECT - Extract the nested entity data
+const response = await api.get('/restaurants/profile');
+setProfile(response.data.restaurant); // Extract the actual restaurant object
+
+// Backend response structure:
+{
+  "success": true,
+  "data": {
+    "restaurant": {        // ← Entity is nested here
+      "id": "...",
+      "name": "Pizza Hut",
+      "email": "admin@pizzahut.com",
+      // ... actual restaurant data
+    }
+  }
+}
+
+// Menu items follow same pattern:
+{
+  "success": true,
+  "data": {
+    "menuItems": [...],    // ← Array of menu items
+    "totalItems": 5,
+    "categories": [...]
+  }
+}
+```
+
+**When creating frontend services, ALWAYS:**
+- Check the actual backend controller response structure
+- Extract the nested entity data: `response.data.restaurant`, `response.data.menuItems`, etc.
+- Test API integration to verify data flows correctly to UI components
+- Use console.log to debug response structure if data appears as "undefined"
+
 ## 🏗️ Development Phases
 
 ### ✅ Phase 1: Backend API Development - COMPLETE
