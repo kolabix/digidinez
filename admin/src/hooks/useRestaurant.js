@@ -19,16 +19,23 @@ const useRestaurant = () => {
 
   // Fetch fresh profile data from backend
   const fetchProfile = useCallback(async () => {
+    console.log('🚀 useRestaurant: Starting fetchProfile...');
     setLoading(true);
     setError(null);
     
     try {
+      console.log('🚀 useRestaurant: Calling restaurantService.getProfile()...');
       const response = await restaurantService.getProfile();
+      console.log('✅ useRestaurant: Got response:', response);
+      
       if (response.success) {
-        setProfile(response.data);
+        // Extract restaurant data from the response wrapper
+        const restaurantData = response.data.restaurant;
+        setProfile(restaurantData);
+        console.log('✅ useRestaurant: Profile set:', restaurantData);
         // Update auth context with fresh data
         if (updateUser) {
-          updateUser(response.data);
+          updateUser(restaurantData);
         }
       }
     } catch (err) {
@@ -51,13 +58,14 @@ const useRestaurant = () => {
     try {
       const response = await restaurantService.updateProfile(updateData);
       if (response.success) {
-        // Update with actual server response
-        setProfile(response.data);
+        // Extract restaurant data from the response wrapper
+        const restaurantData = response.data.restaurant;
+        setProfile(restaurantData);
         // Update auth context
         if (updateUser) {
-          updateUser(response.data);
+          updateUser(restaurantData);
         }
-        return { success: true, data: response.data };
+        return { success: true, data: restaurantData };
       }
     } catch (err) {
       // Rollback optimistic update on error
@@ -86,12 +94,13 @@ const useRestaurant = () => {
     try {
       const response = await restaurantService.toggleStatus(newStatus);
       if (response.success) {
-        setProfile(response.data);
+        const restaurantData = response.data.restaurant;
+        setProfile(restaurantData);
         // Update auth context
         if (updateUser) {
-          updateUser(response.data);
+          updateUser(restaurantData);
         }
-        return { success: true, data: response.data };
+        return { success: true, data: restaurantData };
       }
     } catch (err) {
       // Rollback on error
@@ -120,12 +129,13 @@ const useRestaurant = () => {
     try {
       const response = await restaurantService.updateAddress(addressData);
       if (response.success) {
-        setProfile(response.data);
+        const restaurantData = response.data.restaurant;
+        setProfile(restaurantData);
         // Update auth context
         if (updateUser) {
-          updateUser(response.data);
+          updateUser(restaurantData);
         }
-        return { success: true, data: response.data };
+        return { success: true, data: restaurantData };
       }
     } catch (err) {
       // Rollback on error

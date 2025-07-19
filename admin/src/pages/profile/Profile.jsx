@@ -20,6 +20,19 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
+  // Debug logging to see what data we're getting
+  useEffect(() => {
+    console.log('🔍 Profile Debug:', {
+      profile,
+      loading,
+      error,
+      profileName: profile?.name,
+      profileEmail: profile?.email,
+      profilePhone: profile?.phone,
+      profileAddress: profile?.address
+    });
+  }, [profile, loading, error]);
+
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
