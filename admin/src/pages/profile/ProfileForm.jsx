@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import AddressForm from './AddressForm';
 import useForm from '../../hooks/useForm';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 
-const ProfileForm = ({ profile, onSave, onCancel, loading }) => {
+const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -113,6 +113,22 @@ const ProfileForm = ({ profile, onSave, onCancel, loading }) => {
     return !Object.values(newErrors).some(error => error);
   };
 
+  // Expose submit function to parent component
+  useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      // Mark all fields as touched
+      setTouched({
+        name: true,
+        email: true,
+        phone: true
+      });
+
+      if (validateForm()) {
+        onSave(formData);
+      }
+    }
+  }));
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -208,36 +224,10 @@ const ProfileForm = ({ profile, onSave, onCancel, loading }) => {
         address={formData.address}
         onAddressChange={handleAddressChange}
       />
-
-      {/* Form Actions */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <div className="flex items-center justify-end space-x-3">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onCancel}
-              disabled={loading}
-              className="flex items-center space-x-2"
-            >
-              <XMarkIcon className="h-4 w-4" />
-              <span>Cancel</span>
-            </Button>
-            
-            <Button
-              type="submit"
-              loading={loading}
-              disabled={loading}
-              className="flex items-center space-x-2"
-            >
-              {!loading && <CheckIcon className="h-4 w-4" />}
-              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
-            </Button>
-          </div>
-        </div>
-      </div>
     </form>
   );
-};
+});
+
+ProfileForm.displayName = 'ProfileForm';
 
 export default ProfileForm;

@@ -15,6 +15,7 @@ const Profile = () => {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [dialogAction, setDialogAction] = useState(null); // Store the action when dialog opens
   const hasFetchedRef = useRef(false);
+  const profileFormRef = useRef(null);
   const { 
     profile, 
     loading, 
@@ -127,8 +128,8 @@ const Profile = () => {
           loading={isTogglingStatus}
         />
 
-        {/* Page Header */}
-        <div className="bg-white shadow rounded-lg">
+        {/* Page Header - Now Sticky */}
+        <div className="sticky top-0 z-10 bg-white shadow rounded-lg mb-6">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div>
@@ -158,10 +159,25 @@ const Profile = () => {
                     <Button 
                       variant="secondary"
                       onClick={handleCancel}
+                      disabled={loading}
                       className="flex items-center justify-center space-x-2 flex-1 sm:flex-initial"
                     >
                       <XMarkIcon className="h-4 w-4" />
                       <span>Cancel</span>
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        // Trigger form submission via ref
+                        if (profileFormRef.current) {
+                          profileFormRef.current.submitForm();
+                        }
+                      }}
+                      loading={loading}
+                      disabled={loading}
+                      className="flex items-center justify-center space-x-2 flex-1 sm:flex-initial"
+                    >
+                      {!loading && <CheckIcon className="h-4 w-4" />}
+                      <span>{loading ? 'Saving...' : 'Save Changes'}</span>
                     </Button>
                   </div>
                 )}
@@ -173,6 +189,7 @@ const Profile = () => {
         {/* Profile Content */}
         {isEditing ? (
           <ProfileForm 
+            ref={profileFormRef}
             profile={profile}
             onSave={handleSave}
             onCancel={handleCancel}
