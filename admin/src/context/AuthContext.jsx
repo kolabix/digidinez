@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import authService from '../services/authService';
 
 const AuthContext = createContext();
@@ -15,10 +15,15 @@ export const AuthProvider = ({ children }) => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const hasCheckedAuthRef = useRef(false);
 
   // Check if user is already logged in on app start
   useEffect(() => {
-    checkAuthStatus();
+    // Prevent duplicate calls in React StrictMode
+    if (!hasCheckedAuthRef.current) {
+      hasCheckedAuthRef.current = true;
+      checkAuthStatus();
+    }
   }, []);
 
   const checkAuthStatus = async () => {

@@ -308,6 +308,56 @@ admin/src/hooks/
 
 ### ✅ Conventions
 
+### 🚨 **React StrictMode Double Execution Fix - MANDATORY**
+
+**Problem:** React StrictMode in development intentionally runs effects twice to help detect side effects. This causes API calls in `useEffect` to execute twice, leading to duplicate network requests.
+
+**Solution:** Always use the useRef pattern to prevent duplicate API calls in useEffect hooks.
+
+#### **Standard Pattern for API Calls in useEffect:**
+
+```jsx
+import React, { useState, useEffect, useRef } from 'react';
+
+const MyComponent = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const hasExecutedRef = useRef(false);
+
+  useEffect(() => {
+    // Prevent duplicate calls in React StrictMode
+    if (!hasExecutedRef.current) {
+      hasExecutedRef.current = true;
+      fetchData();
+    }
+  }, []);
+
+  const fetchData = async () => {
+    // API call logic here
+  };
+
+  return <div>{/* component JSX */}</div>;
+};
+```
+
+#### **When to Use This Pattern:**
+- ✅ **ANY useEffect that makes API calls**
+- ✅ **Authentication checks** (AuthContext)
+- ✅ **Data fetching on component mount**
+- ✅ **One-time initialization effects**
+
+#### **Components Already Fixed:**
+- ✅ `admin/src/pages/profile/Profile.jsx` - Profile data fetching
+- ✅ `admin/src/context/AuthContext.jsx` - Authentication check
+
+#### **Migration Checklist for New Components:**
+- [ ] Add `import { useRef } from 'react'`
+- [ ] Create `const hasExecutedRef = useRef(false);`
+- [ ] Wrap API calls in `if (!hasExecutedRef.current)` check
+- [ ] Set `hasExecutedRef.current = true;` before API call
+
+**This pattern MUST be used for all future components with useEffect API calls.**
+
 ### 📅 Phase 4: Menu Management System - UPCOMING
 **Estimated Timeline: 3-4 weeks**
 
