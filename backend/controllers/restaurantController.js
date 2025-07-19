@@ -180,7 +180,6 @@ export const toggleStatus = async (req, res) => {
     // Check for validation errors first
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('Validation errors in toggleStatus:', errors.array());
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -191,11 +190,8 @@ export const toggleStatus = async (req, res) => {
     const restaurantId = req.restaurant.id;
     const { isActive } = req.body;
 
-    console.log(`🔄 Toggle Status Request - Restaurant: ${restaurantId}, New Status: ${isActive}`);
-
     // Additional validation
     if (typeof isActive !== 'boolean') {
-      console.log('❌ Invalid isActive type:', typeof isActive, isActive);
       return res.status(400).json({
         success: false,
         message: 'isActive field must be a boolean value'
@@ -212,14 +208,11 @@ export const toggleStatus = async (req, res) => {
     );
 
     if (!updatedRestaurant) {
-      console.log('❌ Restaurant not found:', restaurantId);
       return res.status(404).json({
         success: false,
         message: 'Restaurant not found'
       });
     }
-
-    console.log(`✅ Status updated successfully - ${updatedRestaurant.name} is now ${isActive ? 'ACTIVE' : 'INACTIVE'}`);
 
     res.json({
       success: true,
@@ -240,7 +233,7 @@ export const toggleStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Toggle status error:', error);
+    console.error('Toggle status error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error while updating status',

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Input from '../../components/common/Input';
 
 const AddressForm = ({ address, onAddressChange }) => {
   const [addressData, setAddressData] = useState({
@@ -102,100 +103,64 @@ const AddressForm = ({ address, onAddressChange }) => {
         <div className="grid grid-cols-1 gap-6">
           {/* Street Address */}
           <div>
-            <label htmlFor="street" className="block text-sm font-medium text-gray-700">
-              Street Address
-            </label>
-            <input
+            <Input
               type="text"
-              id="street"
               name="street"
+              label="Street Address"
               value={addressData.street}
               onChange={handleInputChange}
               onBlur={handleBlur}
-              className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                errors.street && touched.street
-                  ? 'border-red-300 focus:border-red-500'
-                  : 'border-gray-300 focus:border-primary-500'
-              }`}
+              error={errors.street}
+              touched={touched.street}
               placeholder="123 Main Street"
             />
-            {errors.street && touched.street && (
-              <p className="mt-1 text-sm text-red-600">{errors.street}</p>
-            )}
           </div>
 
           {/* City and State */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                City
-              </label>
-              <input
+              <Input
                 type="text"
-                id="city"
                 name="city"
+                label="City"
                 value={addressData.city}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.city && touched.city
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-primary-500'
-                }`}
+                error={errors.city}
+                touched={touched.city}
                 placeholder="New York"
               />
-              {errors.city && touched.city && (
-                <p className="mt-1 text-sm text-red-600">{errors.city}</p>
-              )}
             </div>
 
             <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                State / Province
-              </label>
-              <input
+              <Input
                 type="text"
-                id="state"
                 name="state"
+                label="State / Province"
                 value={addressData.state}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.state && touched.state
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-primary-500'
-                }`}
+                error={errors.state}
+                touched={touched.state}
                 placeholder="NY"
               />
-              {errors.state && touched.state && (
-                <p className="mt-1 text-sm text-red-600">{errors.state}</p>
-              )}
             </div>
           </div>
 
           {/* ZIP Code and Country */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                ZIP / Postal Code
-              </label>
-              <input
+              <Input
                 type="text"
-                id="zipCode"
                 name="zipCode"
+                label="ZIP / Postal Code"
                 value={addressData.zipCode}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.zipCode && touched.zipCode
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-primary-500'
-                }`}
+                error={errors.zipCode}
+                touched={touched.zipCode}
                 placeholder="10001"
               />
-              {errors.zipCode && touched.zipCode && (
-                <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>
-              )}
             </div>
 
             <div>

@@ -19,20 +19,16 @@ const useRestaurant = () => {
 
   // Fetch fresh profile data from backend
   const fetchProfile = useCallback(async () => {
-    console.log('🚀 useRestaurant: Starting fetchProfile...');
     setLoading(true);
     setError(null);
     
     try {
-      console.log('🚀 useRestaurant: Calling restaurantService.getProfile()...');
       const response = await restaurantService.getProfile();
-      console.log('✅ useRestaurant: Got response:', response);
       
       if (response.success) {
         // Extract restaurant data from the response wrapper
         const restaurantData = response.data.restaurant;
         setProfile(restaurantData);
-        console.log('✅ useRestaurant: Profile set:', restaurantData);
         // Update auth context with fresh data
         if (updateUser) {
           updateUser(restaurantData);

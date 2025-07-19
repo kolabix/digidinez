@@ -27,15 +27,12 @@ const restaurantService = {
   // Toggle restaurant status (Active/Inactive)
   async toggleStatus(newStatus) {
     try {
-      console.log('🔄 Frontend: Sending toggle status request:', { isActive: newStatus, type: typeof newStatus });
       const response = await api.patch('/restaurants/status', {
         isActive: newStatus
       });
-      console.log('✅ Frontend: Toggle status response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ Frontend: Toggle status error:', error);
-      console.error('❌ Frontend: Error response:', error.response?.data);
+      console.error('Toggle status error:', error);
       throw error;
     }
   },

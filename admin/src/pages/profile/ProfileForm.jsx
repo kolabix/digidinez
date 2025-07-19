@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import AddressForm from './AddressForm';
 import useForm from '../../hooks/useForm';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
 
 const ProfileForm = ({ profile, onSave, onCancel, loading }) => {
   const [formData, setFormData] = useState({
@@ -152,74 +154,50 @@ const ProfileForm = ({ profile, onSave, onCancel, loading }) => {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {/* Restaurant Name */}
             <div className="sm:col-span-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Restaurant Name *
-              </label>
-              <input
+              <Input
                 type="text"
-                id="name"
                 name="name"
+                label="Restaurant Name"
+                required
                 value={formData.name}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.name && touched.name
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-primary-500'
-                }`}
+                error={errors.name}
+                touched={touched.name}
                 placeholder="Enter your restaurant name"
               />
-              {errors.name && touched.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-              )}
             </div>
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address *
-              </label>
-              <input
+              <Input
                 type="email"
-                id="email"
                 name="email"
+                label="Email Address"
+                required
                 value={formData.email}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.email && touched.email
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-primary-500'
-                }`}
+                error={errors.email}
+                touched={touched.email}
                 placeholder="restaurant@example.com"
               />
-              {errors.email && touched.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
             </div>
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone Number *
-              </label>
-              <input
+              <Input
                 type="tel"
-                id="phone"
                 name="phone"
+                label="Phone Number"
+                required
                 value={formData.phone}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                  errors.phone && touched.phone
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-primary-500'
-                }`}
+                error={errors.phone}
+                touched={touched.phone}
                 placeholder="+1 (555) 123-4567"
               />
-              {errors.phone && touched.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-              )}
             </div>
           </div>
         </div>
@@ -235,33 +213,26 @@ const ProfileForm = ({ profile, onSave, onCancel, loading }) => {
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <div className="flex items-center justify-end space-x-3">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onCancel}
               disabled={loading}
-              className="bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors"
+              className="flex items-center space-x-2"
             >
               <XMarkIcon className="h-4 w-4" />
               <span>Cancel</span>
-            </button>
+            </Button>
             
-            <button
+            <Button
               type="submit"
+              loading={loading}
               disabled={loading}
-              className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors"
+              className="flex items-center space-x-2"
             >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="h-4 w-4" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
+              {!loading && <CheckIcon className="h-4 w-4" />}
+              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+            </Button>
           </div>
         </div>
       </div>

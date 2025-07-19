@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Layout from '../../components/layout/Layout';
 import ProfileForm from './ProfileForm';
 import useRestaurant from '../../hooks/useRestaurant';
+import Button from '../../components/common/Button';
+import Toast from '../../components/common/Toast';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const hasFetchedRef = useRef(false);
   const { 
     profile, 
     loading, 
@@ -17,21 +24,12 @@ const Profile = () => {
   } = useRestaurant();
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  // Debug logging to see what data we're getting
-  useEffect(() => {
-    console.log('🔍 Profile Debug:', {
-      profile,
-      loading,
-      error,
-      profileName: profile?.name,
-      profileEmail: profile?.email,
-      profilePhone: profile?.phone,
-      profileAddress: profile?.address
-    });
-  }, [profile, loading, error]);
+    // Prevent duplicate calls in React StrictMode
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      fetchProfile();
+    }
+  }, [fetchProfile]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -52,6 +50,7 @@ const Profile = () => {
   };
 
   const handleStatusToggle = async () => {
+    setIsTogglingStatus(true);
     try {
       await toggleStatus();
       showNotification(
@@ -60,20 +59,24 @@ const Profile = () => {
       );
     } catch (err) {
       showNotification(err.message || 'Failed to update status', 'error');
+    } finally {
+      setIsTogglingStatus(false);
+      setShowConfirmDialog(false);
     }
   };
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 5000);
+  };
+
+  const closeNotification = () => {
+    setNotification(null);
   };
 
   if (loading && !profile) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
+        <LoadingSpinner size="lg" text="Loading profile..." className="h-64" />
       </Layout>
     );
   }
@@ -83,12 +86,13 @@ const Profile = () => {
       <Layout>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-800">Error loading profile: {error}</p>
-          <button 
+          <Button 
+            variant="danger"
             onClick={fetchProfile}
-            className="mt-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700"
+            className="mt-2"
           >
             Retry
-          </button>
+          </Button>
         </div>
       </Layout>
     );
@@ -97,33 +101,39 @@ const Profile = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Notification */}
+        {/* Notifications */}
         {notification && (
-          <div className={`rounded-lg p-4 ${
-            notification.type === 'success' 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
-          }`}>
-            <p className={`text-sm ${
-              notification.type === 'success' ? 'text-green-800' : 'text-red-800'
-            }`}>
-              {notification.message}
-            </p>
-          </div>
+          <Toast 
+            type={notification.type}
+            message={notification.message}
+            onClose={closeNotification}
+          />
         )}
+
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={showConfirmDialog}
+          title={`${profile?.isActive ? 'Deactivate' : 'Activate'} Restaurant`}
+          message={`Are you sure you want to ${profile?.isActive ? 'deactivate' : 'activate'} your restaurant? This will ${profile?.isActive ? 'hide' : 'show'} your menu from customers.`}
+          confirmText={profile?.isActive ? 'Deactivate' : 'Activate'}
+          confirmVariant={profile?.isActive ? 'danger' : 'success'}
+          onConfirm={handleStatusToggle}
+          onCancel={() => setShowConfirmDialog(false)}
+          loading={isTogglingStatus}
+        />
 
         {/* Page Header */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Restaurant Profile</h1>
                 <p className="mt-1 text-sm text-gray-500">
                   Manage your restaurant information and settings
                 </p>
               </div>
-              <div className="flex items-center space-x-3">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
+                <span className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   profile?.isActive 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
@@ -131,22 +141,23 @@ const Profile = () => {
                   {profile?.isActive ? 'Active' : 'Inactive'}
                 </span>
                 {!isEditing ? (
-                  <button 
+                  <Button 
                     onClick={handleEditToggle}
-                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
+                    className="flex items-center justify-center space-x-2 w-full sm:w-auto"
                   >
                     <PencilIcon className="h-4 w-4" />
                     <span>Edit Profile</span>
-                  </button>
+                  </Button>
                 ) : (
                   <div className="flex space-x-2">
-                    <button 
+                    <Button 
+                      variant="secondary"
                       onClick={handleCancel}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
+                      className="flex items-center justify-center space-x-2 flex-1 sm:flex-initial"
                     >
                       <XMarkIcon className="h-4 w-4" />
                       <span>Cancel</span>
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -230,8 +241,8 @@ const Profile = () => {
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
               Restaurant Status
             </h3>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="flex-1">
                 <p className="text-sm text-gray-600">
                   Your restaurant is currently <span className={`font-medium ${profile?.isActive ? 'text-green-600' : 'text-red-600'}`}>
                     {profile?.isActive ? 'active' : 'inactive'}
@@ -241,17 +252,19 @@ const Profile = () => {
                   Toggle this setting to temporarily {profile?.isActive ? 'disable' : 'enable'} your restaurant's public menu.
                 </p>
               </div>
-              <button 
-                onClick={handleStatusToggle}
-                disabled={loading}
-                className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
-                  profile?.isActive ? 'bg-primary-600' : 'bg-gray-200'
-                } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span className={`${
-                  profile?.isActive ? 'translate-x-5' : 'translate-x-0'
-                } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}></span>
-              </button>
+              <div className="flex items-center justify-center sm:justify-end">
+                <button 
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={isTogglingStatus}
+                  className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
+                    profile?.isActive ? 'bg-primary-600' : 'bg-gray-200'
+                  } ${isTogglingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <span className={`${
+                    profile?.isActive ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}></span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
