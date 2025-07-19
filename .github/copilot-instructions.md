@@ -8,6 +8,14 @@
 ## �🔧 Project Overview
 DigiDinez is a full-stack web application that enables restaurants to digitize their menus via QR codes. Restaurant owners can log in, manage their digital menu, and generate a live QR code that customers can scan to view the menu on their phones — no app required.
 
+**🇮🇳 Target Market: India**
+- Primary market is India with Indian restaurants as the main users
+- All validation rules, formats, and defaults are India-specific
+- Phone numbers follow Indian format (+91-XXXXXXXXXX)
+- Postal codes follow Indian PIN code format (6 digits)
+- Default country is India with Indian states in dropdowns
+- Currency formatting and business practices align with Indian standards
+
 ## 🧱 Tech Stack
 
 - **Frontend**: Two separate React (Vite) + Tailwind CSS apps *(Not built yet)*

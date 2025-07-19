@@ -22,7 +22,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
         city: '',
         state: '',
         zipCode: '',
-        country: ''
+        country: 'India'
       }
     },
     {
@@ -38,8 +38,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
       },
       phone: {
         required: true,
-        type: 'phone',
-        message: 'Please enter a valid phone number'
+        validate: (value) => {
+          // Indian phone number validation: 10 digits with optional +91
+          const indianPhoneRegex = /^(\+91[-\s]?)?[6-9]\d{9}$/;
+          if (!indianPhoneRegex.test(value.replace(/\s/g, ''))) {
+            return 'Please enter a valid Indian phone number (10 digits starting with 6-9)';
+          }
+        }
       },
       'address.street': {
         minLength: 5,
@@ -55,8 +60,9 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
       },
       'address.zipCode': {
         validate: (value) => {
-          if (value && !/^[A-Za-z0-9\s\-]{3,10}$/.test(value)) {
-            return 'Please enter a valid postal code (3-10 characters, letters, numbers, spaces, or dashes)';
+          // Indian PIN code validation: 6 digits
+          if (value && !/^\d{6}$/.test(value)) {
+            return 'Please enter a valid PIN code (6 digits)';
           }
         }
       },
@@ -79,7 +85,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
           city: profile.address?.city || '',
           state: profile.address?.state || '',
           zipCode: profile.address?.zipCode || '',
-          country: profile.address?.country || ''
+          country: profile.address?.country || 'India'
         }
       });
     }
@@ -161,7 +167,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 onBlur={handleBlur}
                 error={errors.phone}
                 touched={touched.phone}
-                placeholder="+1 (555) 123-4567"
+                placeholder="+91 98765 43210"
               />
             </div>
           </div>
@@ -187,7 +193,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 onBlur={handleBlur}
                 error={errors['address.street']}
                 touched={touched['address.street']}
-                placeholder="123 Main Street"
+                placeholder="123 MG Road"
               />
             </div>
 
@@ -203,22 +209,67 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                   onBlur={handleBlur}
                   error={errors['address.city']}
                   touched={touched['address.city']}
-                  placeholder="New York"
+                  placeholder="Mumbai"
                 />
               </div>
 
               <div>
-                <Input
-                  type="text"
+                <label htmlFor="address.state" className="block text-sm font-medium text-gray-700">
+                  State / Province
+                </label>
+                <select
+                  id="address.state"
                   name="address.state"
-                  label="State / Province"
                   value={values.address.state}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={errors['address.state']}
-                  touched={touched['address.state']}
-                  placeholder="NY"
-                />
+                  className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    errors['address.state'] && touched['address.state']
+                      ? 'border-red-300 focus:border-red-500'
+                      : 'border-gray-300 focus:border-primary-500'
+                  }`}
+                >
+                  <option value="">Select State</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Himachal Pradesh">Himachal Pradesh</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Manipur">Manipur</option>
+                  <option value="Meghalaya">Meghalaya</option>
+                  <option value="Mizoram">Mizoram</option>
+                  <option value="Nagaland">Nagaland</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Sikkim">Sikkim</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Telangana">Telangana</option>
+                  <option value="Tripura">Tripura</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                  <option value="Chandigarh">Chandigarh</option>
+                  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                  <option value="Ladakh">Ladakh</option>
+                  <option value="Lakshadweep">Lakshadweep</option>
+                  <option value="Puducherry">Puducherry</option>
+                </select>
+                {errors['address.state'] && touched['address.state'] && (
+                  <p className="mt-1 text-sm text-red-600">{errors['address.state']}</p>
+                )}
               </div>
             </div>
 
@@ -228,13 +279,13 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 <Input
                   type="text"
                   name="address.zipCode"
-                  label="ZIP / Postal Code"
+                  label="PIN Code"
                   value={values.address.zipCode}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={errors['address.zipCode']}
                   touched={touched['address.zipCode']}
-                  placeholder="10001"
+                  placeholder="400001"
                 />
               </div>
 
@@ -255,34 +306,18 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                   }`}
                 >
                   <option value="">Select a country</option>
+                  <option value="India">India</option>
                   <option value="United States">United States</option>
-                  <option value="Canada">Canada</option>
                   <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
                   <option value="Australia">Australia</option>
                   <option value="Germany">Germany</option>
                   <option value="France">France</option>
                   <option value="Italy">Italy</option>
                   <option value="Spain">Spain</option>
                   <option value="Netherlands">Netherlands</option>
-                  <option value="Belgium">Belgium</option>
-                  <option value="Switzerland">Switzerland</option>
-                  <option value="Austria">Austria</option>
-                  <option value="Sweden">Sweden</option>
-                  <option value="Norway">Norway</option>
-                  <option value="Denmark">Denmark</option>
-                  <option value="Finland">Finland</option>
-                  <option value="Ireland">Ireland</option>
-                  <option value="Portugal">Portugal</option>
-                  <option value="Greece">Greece</option>
-                  <option value="Japan">Japan</option>
-                  <option value="South Korea">South Korea</option>
                   <option value="Singapore">Singapore</option>
-                  <option value="New Zealand">New Zealand</option>
-                  <option value="Mexico">Mexico</option>
-                  <option value="Brazil">Brazil</option>
-                  <option value="Argentina">Argentina</option>
-                  <option value="Chile">Chile</option>
-                  <option value="Colombia">Colombia</option>
+                  <option value="United Arab Emirates">United Arab Emirates</option>
                   <option value="Other">Other</option>
                 </select>
                 {errors['address.country'] && touched['address.country'] && (

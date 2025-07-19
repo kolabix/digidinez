@@ -44,8 +44,13 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
       },
       phone: {
         required: true,
-        type: 'phone',
-        message: 'Valid phone number is required'
+        validate: (value) => {
+          // Indian phone number validation: 10 digits with optional +91
+          const indianPhoneRegex = /^(\+91[-\s]?)?[6-9]\d{9}$/;
+          if (!indianPhoneRegex.test(value.replace(/\s/g, ''))) {
+            return 'Please enter a valid Indian phone number (10 digits starting with 6-9)';
+          }
+        }
       },
       password: {
         required: true,
@@ -71,6 +76,14 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
       state: {
         required: true,
         message: 'State is required'
+      },
+      zipCode: {
+        validate: (value) => {
+          // Indian PIN code validation: 6 digits
+          if (value && !/^\d{6}$/.test(value)) {
+            return 'Please enter a valid PIN code (6 digits)';
+          }
+        }
       }
     }
   );
@@ -177,7 +190,7 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
             label="Phone Number"
             name="phone"
             type="tel"
-            placeholder="+1234567890"
+            placeholder="+91 98765 43210"
             value={values.phone}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -279,7 +292,7 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
             label="City"
             name="city"
             type="text"
-            placeholder="City"
+            placeholder="Mumbai"
             value={values.city}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -288,24 +301,71 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
             required
           />
 
-          <Input
-            label="State"
-            name="state"
-            type="text"
-            placeholder="State"
-            value={values.state}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={errors.state}
-            touched={touched.state}
-            required
-          />
+          <div className="space-y-1">
+            <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+              State <span className="text-red-500 ml-1">*</span>
+            </label>
+            <select
+              id="state"
+              name="state"
+              value={values.state}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                errors.state && touched.state
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-gray-300 focus:border-primary-500'
+              }`}
+              required
+            >
+              <option value="">Select State</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option>
+              <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Assam">Assam</option>
+              <option value="Bihar">Bihar</option>
+              <option value="Chhattisgarh">Chhattisgarh</option>
+              <option value="Goa">Goa</option>
+              <option value="Gujarat">Gujarat</option>
+              <option value="Haryana">Haryana</option>
+              <option value="Himachal Pradesh">Himachal Pradesh</option>
+              <option value="Jharkhand">Jharkhand</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Kerala">Kerala</option>
+              <option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Manipur">Manipur</option>
+              <option value="Meghalaya">Meghalaya</option>
+              <option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option>
+              <option value="Odisha">Odisha</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Rajasthan">Rajasthan</option>
+              <option value="Sikkim">Sikkim</option>
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Telangana">Telangana</option>
+              <option value="Tripura">Tripura</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option>
+              <option value="Uttarakhand">Uttarakhand</option>
+              <option value="West Bengal">West Bengal</option>
+              <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+              <option value="Chandigarh">Chandigarh</option>
+              <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+              <option value="Ladakh">Ladakh</option>
+              <option value="Lakshadweep">Lakshadweep</option>
+              <option value="Puducherry">Puducherry</option>
+            </select>
+            {touched.state && errors.state && (
+              <p className="text-sm text-red-600">{errors.state}</p>
+            )}
+          </div>
 
           <Input
-            label="ZIP Code"
+            label="PIN Code"
             name="zipCode"
             type="text"
-            placeholder="12345"
+            placeholder="400001"
             value={values.zipCode}
             onChange={handleChange}
             onBlur={handleBlur}
@@ -314,17 +374,40 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
           />
         </div>
 
-        <Input
-          label="Country"
-          name="country"
-          type="text"
-          placeholder="Country"
-          value={values.country}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={errors.country}
-          touched={touched.country}
-        />
+        <div className="space-y-1">
+          <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+            Country
+          </label>
+          <select
+            id="country"
+            name="country"
+            value={values.country}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+              errors.country && touched.country
+                ? 'border-red-300 focus:border-red-500'
+                : 'border-gray-300 focus:border-primary-500'
+            }`}
+          >
+            <option value="India">India</option>
+            <option value="United States">United States</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Canada">Canada</option>
+            <option value="Australia">Australia</option>
+            <option value="Germany">Germany</option>
+            <option value="France">France</option>
+            <option value="Italy">Italy</option>
+            <option value="Spain">Spain</option>
+            <option value="Netherlands">Netherlands</option>
+            <option value="Singapore">Singapore</option>
+            <option value="United Arab Emirates">United Arab Emirates</option>
+            <option value="Other">Other</option>
+          </select>
+          {touched.country && errors.country && (
+            <p className="text-sm text-red-600">{errors.country}</p>
+          )}
+        </div>
       </div>
 
       <Button
