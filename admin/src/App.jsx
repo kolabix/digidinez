@@ -18,6 +18,9 @@ function App() {
             {/* Protected Routes */}
             <Route path="/dashboard" element={<Dashboard />} />
             
+            {/* Profile Routes - Placeholder for Phase 3 */}
+            <Route path="/profile" element={<div className="p-6"><h1>Profile - Coming Soon</h1></div>} />
+            
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>

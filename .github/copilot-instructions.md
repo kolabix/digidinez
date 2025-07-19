@@ -110,6 +110,430 @@ digidinez/
 - Tailwind CSS should be used for all UI styling.
 - Authentication middleware uses `req.restaurant` (not `req.user`).
 
+## 🏗️ Development Phases
+
+### ✅ Phase 1: Backend API Development - COMPLETE
+- ✅ Full backend infrastructure with Node.js + Express + MongoDB
+- ✅ Authentication system with JWT cookies
+- ✅ Menu management CRUD operations
+- ✅ Restaurant profile management
+- ✅ QR code generation system
+- ✅ Image upload system
+- ✅ 20+ API endpoints with comprehensive validation
+
+### ✅ Phase 2: Admin Authentication Frontend - COMPLETE
+- ✅ React + Vite + Tailwind CSS setup
+- ✅ Authentication context and hooks
+- ✅ Login/Register pages with validation
+- ✅ Reusable UI components (Button, Input)
+- ✅ API service layer with axios
+- ✅ Protected routing system
+- ✅ Responsive design foundation
+
+### 🚧 Phase 3: Restaurant Profile Management - IN PROGRESS
+**Current Priority - Detailed Implementation Plan**
+
+#### 🎯 Objectives
+Build a comprehensive restaurant profile management system that allows restaurant owners to view, edit, and manage their restaurant information, address details, and operational status.
+
+#### 📁 File Structure to Create
+```
+admin/src/
+├── pages/profile/
+│   ├── Profile.jsx              # Main profile page with view/edit toggle
+│   ├── ProfileForm.jsx          # Editable profile form component
+│   └── AddressForm.jsx          # Address management subcomponent
+├── services/
+│   └── restaurantService.js     # API calls for restaurant operations
+├── components/layout/
+│   ├── Sidebar.jsx             # Navigation sidebar
+│   ├── Header.jsx              # App header with user info
+│   └── Layout.jsx              # Main layout wrapper
+└── hooks/
+    └── useRestaurant.js        # Custom hook for restaurant operations
+```
+
+#### 🔧 Core Components to Build
+
+##### 1. **Navigation System**
+- **Sidebar Component** (`components/layout/Sidebar.jsx`)
+  - Dashboard link
+  - Profile management link
+  - Menu management link (placeholder)
+  - QR codes link (placeholder)
+  - Responsive collapse on mobile
+  - Active state indicators
+
+- **Header Component** (`components/layout/Header.jsx`)
+  - DigiDinez branding
+  - Restaurant name display
+  - User menu dropdown (logout, profile)
+  - Mobile menu toggle
+
+- **Layout Wrapper** (`components/layout/Layout.jsx`)
+  - Combines Header + Sidebar + Main content
+  - Responsive grid layout
+  - Consistent spacing and styling
+
+##### 2. **Profile Management Pages**
+- **Profile Page** (`pages/profile/Profile.jsx`)
+  - View mode: Display restaurant information in cards
+  - Edit mode: Toggle to editable form
+  - Restaurant status toggle (Active/Inactive)
+  - Success/error notifications
+  - Loading states
+
+- **Profile Form** (`pages/profile/ProfileForm.jsx`)
+  - Restaurant name, email, phone editing
+  - Form validation with real-time feedback
+  - Save/Cancel actions
+  - Integration with backend validation
+
+- **Address Form** (`pages/profile/AddressForm.jsx`)
+  - Street, city, state, zip, country fields
+  - Address validation
+  - Google Maps integration (future phase)
+  - Formatted address display
+
+##### 3. **API Service Layer**
+- **Restaurant Service** (`services/restaurantService.js`)
+  ```javascript
+  // API functions to implement:
+  - getProfile()          // GET /api/restaurants/profile
+  - updateProfile(data)   // PUT /api/restaurants/profile
+  - toggleStatus()        // PATCH /api/restaurants/status
+  - getStats()           // GET /api/restaurants/stats (future)
+  ```
+
+##### 4. **Custom Hooks**
+- **useRestaurant Hook** (`hooks/useRestaurant.js`)
+  - Profile data management
+  - Update operations with optimistic updates
+  - Loading and error states
+  - Cache management for profile data
+
+#### 📋 Implementation Checklist
+
+**Week 1: Navigation & Layout**
+- [ ] Create Sidebar component with navigation links
+- [ ] Build Header component with user menu
+- [ ] Implement Layout wrapper component
+- [ ] Update Dashboard to use new layout
+- [ ] Add routing for profile pages
+
+**Week 2: Profile Management**
+- [ ] Build Profile page with view/edit modes
+- [ ] Create ProfileForm with validation
+- [ ] Implement AddressForm component
+- [ ] Add restaurant status toggle functionality
+- [ ] Create restaurantService API layer
+
+**Week 3: Integration & Polish**
+- [ ] Build useRestaurant custom hook
+- [ ] Add loading states and error handling
+- [ ] Implement success/error notifications
+- [ ] Add form validation and feedback
+- [ ] Testing and bug fixes
+
+#### 🎨 UI/UX Requirements
+- **Responsive Design**: Desktop/tablet optimized with mobile consideration
+- **Form Validation**: Real-time validation with clear error messages
+- **Loading States**: Skeleton loaders and spinners
+- **Notifications**: Toast notifications for success/error feedback
+- **Accessibility**: Proper ARIA labels and keyboard navigation
+- **Consistent Styling**: Follow established Tailwind patterns
+
+#### 🔌 Backend Integration
+**Existing API Endpoints to Use:**
+- `GET /api/restaurants/profile` - Fetch restaurant profile
+- `PUT /api/restaurants/profile` - Update restaurant profile
+- `PATCH /api/restaurants/status` - Toggle active/inactive status
+
+**Data Validation:**
+- Email uniqueness validation
+- Phone number uniqueness validation
+- Required field validation
+- Address format validation
+
+#### 📱 Mobile Considerations
+- Collapsible sidebar for mobile
+- Touch-friendly form inputs
+- Optimized for tablet editing
+- Responsive card layouts
+
+#### ⚡ **ACCELERATED 1-DAY IMPLEMENTATION PLAN**
+**Phase 3 Complete Sprint - 8-10 Hour Timeline**
+
+##### **🌅 Session 1: Layout Foundation (2 hours)**
+**Files to Create:**
+```
+admin/src/components/layout/
+├── Layout.jsx      # Main layout with sidebar + header + content area
+├── Sidebar.jsx     # Navigation with Dashboard, Profile, Menu, QR links  
+└── Header.jsx      # DigiDinez branding + user menu + logout dropdown
+```
+
+**Implementation Tasks:**
+- [ ] Create `Layout.jsx` - Responsive grid layout (sidebar + main content)
+- [ ] Build `Sidebar.jsx` - Navigation links with active states
+- [ ] Build `Header.jsx` - Restaurant name display + user dropdown
+- [ ] Implement responsive mobile menu toggle
+- [ ] Add Tailwind CSS styling with primary color scheme
+
+**Success Criteria:**
+- Layout renders correctly on desktop/tablet/mobile
+- Sidebar shows proper navigation links
+- Header displays restaurant name from AuthContext
+- Mobile hamburger menu functions properly
+
+##### **🌞 Session 2: Navigation Integration (2 hours)**
+**Files to Modify:**
+```
+admin/src/
+├── App.jsx         # Add profile routing
+├── pages/Dashboard.jsx  # Wrap with Layout component
+└── components/layout/   # Connect navigation links
+```
+
+**Implementation Tasks:**
+- [ ] Update `App.jsx` routing to include `/profile/*` routes
+- [ ] Modify `Dashboard.jsx` to use `<Layout>` wrapper component
+- [ ] Connect sidebar navigation links to actual routes
+- [ ] Test navigation between Dashboard and Profile pages
+- [ ] Add active state indicators for current page
+
+**Success Criteria:**
+- All navigation links work correctly
+- Dashboard page uses new layout
+- Profile route is accessible (placeholder page)
+- Active states highlight current page
+- Mobile menu collapses after navigation
+
+##### **🌞 Session 3: API Service Layer (2 hours)**
+**Files to Create:**
+```
+admin/src/
+├── services/restaurantService.js  # API calls for restaurant operations
+└── hooks/useRestaurant.js         # Custom hook with state management
+```
+
+**Implementation Tasks:**
+- [ ] Create `restaurantService.js` with API functions:
+  - `getProfile()` - GET /api/restaurants/profile
+  - `updateProfile(data)` - PUT /api/restaurants/profile
+  - `toggleStatus()` - PATCH /api/restaurants/status
+- [ ] Build `useRestaurant.js` custom hook:
+  - Profile data state management
+  - Loading and error states
+  - Optimistic updates for better UX
+- [ ] Test backend integration with existing endpoints
+- [ ] Handle authentication headers and error responses
+
+**Success Criteria:**
+- All API calls work with backend endpoints
+- useRestaurant hook manages loading/error states
+- Data flows correctly from backend to frontend
+- Error handling covers network failures
+- Authentication tokens are properly sent
+
+##### **🌆 Session 4: Profile Pages (2 hours)**
+**Files to Create:**
+```
+admin/src/pages/profile/
+├── Profile.jsx     # Main profile page with view/edit toggle
+├── ProfileForm.jsx # Restaurant info form (name, email, phone)
+└── AddressForm.jsx # Address fields with validation
+```
+
+**Implementation Tasks:**
+- [ ] Create `Profile.jsx` - Main profile page:
+  - View mode: Display restaurant info in organized cards
+  - Edit mode: Toggle to editable forms
+  - Restaurant status toggle (Active/Inactive)
+  - Integration with useRestaurant hook
+- [ ] Build `ProfileForm.jsx` - Restaurant details form:
+  - Name, email, phone input fields
+  - Real-time validation with visual feedback
+  - Save/Cancel buttons with confirmation
+- [ ] Build `AddressForm.jsx` - Address management:
+  - Street, city, state, zip, country fields
+  - Address validation and formatting
+  - Integration with main profile form
+- [ ] Add routing and navigation to profile pages
+
+**Success Criteria:**
+- Profile page displays restaurant data correctly
+- View/edit mode toggle works smoothly
+- Forms validate input with real-time feedback
+- Status toggle updates backend immediately
+- All form fields connect to backend API
+
+##### **🌆 Session 5: Polish & Testing (2 hours)**
+**Files to Create/Modify:**
+```
+admin/src/components/common/
+├── Notification.jsx    # Toast notifications for success/error
+└── LoadingSpinner.jsx  # Loading states and spinners
+
+admin/src/pages/profile/ # Add polish to all profile components
+```
+
+**Implementation Tasks:**
+- [ ] Create `Notification.jsx` - Toast notification system:
+  - Success notifications for saved changes
+  - Error notifications with detailed messages
+  - Auto-dismiss and manual close options
+- [ ] Add loading states throughout profile pages:
+  - Skeleton loaders for initial data fetch
+  - Spinner during form submissions
+  - Disabled states during API calls
+- [ ] Implement comprehensive form validation:
+  - Required field validation
+  - Email/phone format validation
+  - Backend error handling and display
+- [ ] Mobile responsiveness testing and fixes:
+  - Test all components on mobile/tablet
+  - Ensure forms are touch-friendly
+  - Fix any layout issues
+- [ ] Final testing and bug fixes:
+  - Test all user flows
+  - Verify backend integration
+  - Check error edge cases
+
+**Success Criteria:**
+- Notifications appear for all user actions
+- Loading states provide clear feedback
+- Forms validate comprehensively
+- Mobile experience is smooth and usable
+- All edge cases are handled gracefully
+
+#### 🎯 **End-of-Day Success Metrics**
+**Phase 3 Complete When:**
+- ✅ Complete navigation system with sidebar and header
+- ✅ Functional profile management with view/edit modes
+- ✅ Working backend integration for all profile operations
+- ✅ Status toggle functionality (Active/Inactive restaurant)
+- ✅ Form validation with comprehensive error handling
+- ✅ Mobile responsive design with touch-friendly interface
+- ✅ Loading states and notifications for all user actions
+- ✅ Clean, polished UI following established Tailwind patterns
+
+#### 📋 **Implementation Order**
+1. **Start with Layout** - Foundation for all admin pages
+2. **Add Navigation** - Connect routes and test flow
+3. **Build API Layer** - Ensure backend connectivity
+4. **Create Profile Pages** - Core functionality
+5. **Add Polish** - Loading states, notifications, validation
+
+**Estimated Total Time: 8-10 hours for complete Phase 3 implementation**
+
+### 📅 Phase 4: Menu Management System - UPCOMING
+**Estimated Timeline: 3-4 weeks**
+
+#### 🎯 Core Features
+- **Menu Items CRUD Interface**
+  - Create, read, update, delete menu items
+  - Category management (11 predefined categories)
+  - Bulk operations (enable/disable multiple items)
+  - Advanced filtering and search
+
+- **Menu Item Form System**
+  - Comprehensive item details (name, description, price)
+  - Category selection with visual indicators
+  - Tags and allergens management
+  - Spicy level selector (1-5 scale)
+  - Preparation time estimation
+  - Availability toggle
+
+- **Image Management System**
+  - Drag & drop image upload
+  - Image preview and cropping
+  - Multiple format support (JPEG, PNG, WebP)
+  - Image optimization and resizing
+  - Bulk image operations
+
+#### 📁 Key Components
+```
+admin/src/pages/menu/
+├── MenuDashboard.jsx       # Overview with stats
+├── MenuList.jsx           # List view with filters
+├── MenuItemForm.jsx       # Create/edit menu item
+├── MenuItemCard.jsx       # Individual item display
+├── CategoryManager.jsx    # Category organization
+└── BulkActions.jsx        # Bulk edit operations
+
+admin/src/components/menu/
+├── ImageUpload.jsx        # Image upload component
+├── CategorySelector.jsx   # Category selection UI
+├── TagsInput.jsx         # Tags management
+├── AllergenSelector.jsx  # Allergen selection
+└── SpicyLevelSelector.jsx # Spice level picker
+```
+
+#### 🔌 API Integration
+- Full integration with existing menu endpoints
+- Real-time availability updates
+- Image upload with progress tracking
+- Optimistic UI updates
+
+### 📅 Phase 5: QR Code & Public Menu System - FINAL
+**Estimated Timeline: 2-3 weeks**
+
+#### 🎯 Core Features
+- **QR Code Management**
+  - Generate QR codes for restaurant menu
+  - Download QR codes in multiple formats
+  - QR code customization (colors, logos)
+  - Print-ready QR code templates
+
+- **Public Menu Preview**
+  - Live preview of customer-facing menu
+  - Mobile responsiveness testing
+  - Restaurant branding preview
+  - Direct link sharing
+
+- **Analytics Dashboard**
+  - Menu view statistics
+  - Popular items tracking
+  - QR code scan analytics
+  - Customer engagement metrics
+
+#### 📁 Key Components
+```
+admin/src/pages/qr/
+├── QRDashboard.jsx        # QR code management
+├── QRGenerator.jsx        # QR code creation
+├── QRCustomizer.jsx       # QR code styling
+├── MenuPreview.jsx        # Public menu preview
+└── Analytics.jsx          # Usage statistics
+
+admin/src/components/qr/
+├── QRCodeDisplay.jsx      # QR code visualization
+├── QRDownloader.jsx       # Download options
+├── MenuThemeSelector.jsx  # Theme customization
+└── StatsCard.jsx          # Analytics display
+```
+
+#### 🎨 Advanced Features
+- **QR Code Customization**
+  - Restaurant logo integration
+  - Color scheme matching
+  - Custom call-to-action text
+  - Print-ready templates
+
+- **Menu Theming System**
+  - Restaurant-specific color schemes
+  - Font selection for public menu
+  - Layout customization options
+  - Mobile optimization settings
+
+### 🎯 Success Metrics
+- **Phase 3**: Complete restaurant profile management with 100% backend integration
+- **Phase 4**: Full menu CRUD with image uploads and advanced features
+- **Phase 5**: QR code generation and public menu preview system
+
+Each phase builds upon the previous one, creating a comprehensive restaurant management system that seamlessly integrates with the robust backend API.
+
 ## 🚀 Backend API Status: COMPLETE
 
 ### 🔐 Authentication System
@@ -207,6 +631,12 @@ GET    /api/restaurants/:id/qr         # Public QR code info (no auth)
 - Protected routes with authentication middleware
 
 ## 💻 Common Local Commands
+
+**🚨 SERVERS ALREADY RUNNING - DO NOT START:**
+- **Backend API**: http://localhost:3001/api/health ✅ RUNNING
+- **Admin Dashboard**: http://localhost:5173/ ✅ RUNNING
+- **DO NOT** use terminal commands to start servers - they are already active
+- Focus only on code development and file creation/editing
 
 **⚠️ IMPORTANT TERMINAL NAVIGATION:**
 - Always use full paths with `cd` in terminal commands
