@@ -1,4 +1,4 @@
-import { MenuItem, Restaurant } from '../models/index.js';
+import { MenuItem, Restaurant, MenuCategory, Tag } from '../models/index.js';
 import { validationResult } from 'express-validator';
 import { deleteImageFile, getImagePath, getImageUrl, getImageInfo } from '../utils/imageUpload.js';
 
@@ -92,20 +92,22 @@ export const createMenuItem = async (req, res) => {
       name,
       description,
       price,
-      category,
-      tags,
+      categoryIds,
+      tagIds,
       nutritionInfo,
       allergens,
       spicyLevel,
       preparationTime,
-      isAvailable = true
+      isAvailable = true,
+      isVeg = true,
+      isSpicy = false
     } = req.body;
 
     // Validation
-    if (!name || !price || !category) {
+    if (!name || !price) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, price, and category'
+        message: 'Please provide name and price'
       });
     }
 
@@ -114,6 +116,36 @@ export const createMenuItem = async (req, res) => {
         success: false,
         message: 'Price must be greater than 0'
       });
+    }
+
+    // Validate category IDs if provided
+    if (categoryIds && categoryIds.length > 0) {
+      const validCategories = await MenuCategory.find({
+        _id: { $in: categoryIds },
+        restaurantId: req.restaurant.id
+      });
+      
+      if (validCategories.length !== categoryIds.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'One or more invalid category IDs'
+        });
+      }
+    }
+
+    // Validate tag IDs if provided
+    if (tagIds && tagIds.length > 0) {
+      const validTags = await Tag.find({
+        _id: { $in: tagIds },
+        restaurantId: req.restaurant.id
+      });
+      
+      if (validTags.length !== tagIds.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'One or more invalid tag IDs'
+        });
+      }
     }
 
     // Check if menu item with same name exists for this restaurant
@@ -134,18 +166,23 @@ export const createMenuItem = async (req, res) => {
       name: name.trim(),
       description: description?.trim(),
       price: parseFloat(price),
-      category: category.toLowerCase(),
-      tags: tags || [],
+      categoryIds: categoryIds || [],
+      tagIds: tagIds || [],
       nutritionInfo: nutritionInfo || {},
       allergens: allergens || [],
       spicyLevel: spicyLevel || 0,
       preparationTime: preparationTime || null,
       isAvailable,
+      isVeg,
+      isSpicy,
       restaurantId: req.restaurant.id
     });
 
-    // Populate restaurant info
-    await menuItem.populate('restaurant', 'name email');
+    // Populate category and tag info
+    await menuItem.populate([
+      { path: 'categoryIds', select: 'name' },
+      { path: 'tagIds', select: 'name color' }
+    ]);
 
     res.status(201).json({
       success: true,
@@ -671,6 +708,308 @@ export const getPublicMenu = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while fetching public menu'
+    });
+  }
+};
+
+// @desc    Get all menu categories for authenticated restaurant
+// @route   GET /api/menu/categories
+// @access  Private
+export const getMenuCategories = async (req, res) => {
+  try {
+    const categories = await MenuCategory.findByRestaurant(req.restaurant.id);
+    
+    res.json({
+      success: true,
+      count: categories.length,
+      data: {
+        categories
+      }
+    });
+
+  } catch (error) {
+    console.error('Get menu categories error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching categories'
+    });
+  }
+};
+
+// @desc    Create new menu category
+// @route   POST /api/menu/categories
+// @access  Private
+export const createMenuCategory = async (req, res) => {
+  try {
+    const { name, sortOrder } = req.body;
+
+    const category = await MenuCategory.create({
+      name,
+      sortOrder,
+      restaurantId: req.restaurant.id
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Category created successfully',
+      data: {
+        category
+      }
+    });
+
+  } catch (error) {
+    console.error('Create category error:', error);
+    
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category with this name already exists'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while creating category'
+    });
+  }
+};
+
+// @desc    Update menu category
+// @route   PUT /api/menu/categories/:id
+// @access  Private
+export const updateMenuCategory = async (req, res) => {
+  try {
+    const category = await MenuCategory.findOneAndUpdate(
+      { _id: req.params.id, restaurantId: req.restaurant.id },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: 'Category not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Category updated successfully',
+      data: {
+        category
+      }
+    });
+
+  } catch (error) {
+    console.error('Update category error:', error);
+    
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category with this name already exists'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating category'
+    });
+  }
+};
+
+// @desc    Delete menu category
+// @route   DELETE /api/menu/categories/:id
+// @access  Private
+export const deleteMenuCategory = async (req, res) => {
+  try {
+    const category = await MenuCategory.findOne({
+      _id: req.params.id,
+      restaurantId: req.restaurant.id
+    });
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: 'Category not found'
+      });
+    }
+
+    // Check if any menu items are using this category
+    const menuItemsCount = await MenuItem.countDocuments({
+      restaurantId: req.restaurant.id,
+      categoryIds: req.params.id
+    });
+
+    if (menuItemsCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete category. ${menuItemsCount} menu items are using this category.`
+      });
+    }
+
+    await MenuCategory.deleteOne({ _id: req.params.id });
+
+    res.json({
+      success: true,
+      message: 'Category deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete category error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting category'
+    });
+  }
+};
+
+// @desc    Get all tags for authenticated restaurant
+// @route   GET /api/menu/tags
+// @access  Private
+export const getTags = async (req, res) => {
+  try {
+    const tags = await Tag.findByRestaurant(req.restaurant.id);
+    
+    res.json({
+      success: true,
+      count: tags.length,
+      data: {
+        tags
+      }
+    });
+
+  } catch (error) {
+    console.error('Get tags error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching tags'
+    });
+  }
+};
+
+// @desc    Create new tag
+// @route   POST /api/menu/tags
+// @access  Private
+export const createTag = async (req, res) => {
+  try {
+    const { name, color } = req.body;
+
+    const tag = await Tag.create({
+      name,
+      color,
+      restaurantId: req.restaurant.id
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Tag created successfully',
+      data: {
+        tag
+      }
+    });
+
+  } catch (error) {
+    console.error('Create tag error:', error);
+    
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tag with this name already exists'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while creating tag'
+    });
+  }
+};
+
+// @desc    Update tag
+// @route   PUT /api/menu/tags/:id
+// @access  Private
+export const updateTag = async (req, res) => {
+  try {
+    const tag = await Tag.findOneAndUpdate(
+      { _id: req.params.id, restaurantId: req.restaurant.id },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!tag) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tag not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Tag updated successfully',
+      data: {
+        tag
+      }
+    });
+
+  } catch (error) {
+    console.error('Update tag error:', error);
+    
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tag with this name already exists'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating tag'
+    });
+  }
+};
+
+// @desc    Delete tag
+// @route   DELETE /api/menu/tags/:id
+// @access  Private
+export const deleteTag = async (req, res) => {
+  try {
+    const tag = await Tag.findOne({
+      _id: req.params.id,
+      restaurantId: req.restaurant.id
+    });
+
+    if (!tag) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tag not found'
+      });
+    }
+
+    // Check if any menu items are using this tag
+    const menuItemsCount = await MenuItem.countDocuments({
+      restaurantId: req.restaurant.id,
+      tagIds: req.params.id
+    });
+
+    if (menuItemsCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete tag. ${menuItemsCount} menu items are using this tag.`
+      });
+    }
+
+    await Tag.deleteOne({ _id: req.params.id });
+
+    res.json({
+      success: true,
+      message: 'Tag deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete tag error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting tag'
     });
   }
 };

@@ -39,9 +39,11 @@ digidinez/
 │   │   ├── menuController.js   # Menu CRUD + image upload + public menu
 │   │   ├── qrController.js     # QR code generation and management
 │   │   └── restaurantController.js # Profile management + stats
-│   ├── models/                 # Mongoose schemas
-│   │   ├── Restaurant.js       # Restaurant model with auth methods
-│   │   ├── MenuItem.js         # Menu item model with categories
+│   ├── models/                 # Mongoose schemas (ENHANCED)
+│   │   ├── Restaurant.js       # Restaurant model with auth methods (India-specific)
+│   │   ├── MenuItem.js         # Enhanced menu item model with categories/tags
+│   │   ├── MenuCategory.js     # Menu category model (NEW)
+│   │   ├── Tag.js             # Tag model for flexible labeling (NEW)
 │   │   └── index.js           # Model exports
 │   ├── routes/                 # Express route definitions
 │   │   ├── authRoutes.js      # Auth endpoints
@@ -517,18 +519,19 @@ POST /api/auth/logout      # Logout and clear cookie
 GET  /api/auth/me          # Get current user profile
 ```
 
-### 🍽️ Menu Management System
-- ✅ Complete CRUD operations for menu items
-- ✅ 11 predefined categories (appetizers, main-course, desserts, etc.)
-- ✅ Advanced features: tags, allergens, spicy level, prep time
-- ✅ Availability toggle for items
+### 🍽️ Menu Management System - ENHANCED
+- ✅ Complete CRUD operations for menu items with category/tag relationships
+- ✅ Flexible category system per restaurant (create, update, delete categories)
+- ✅ Tag system for flexible labeling (e.g., "high protein", "jain special")
+- ✅ Enhanced features: vegetarian/spicy indicators, nutrition info, allergens
+- ✅ Advanced search with text indexing on name and description
 - ✅ Image upload system with validation (JPEG, PNG, WebP, 5MB max)
-- ✅ Public menu API for customer viewing (no auth required)
+- ✅ Public menu API with populated category/tag data
 
-**Endpoints:**
+**Menu Items Endpoints:**
 ```
-GET    /api/menu/items                    # Get restaurant's menu items
-POST   /api/menu/items                    # Create new menu item
+GET    /api/menu/items                    # Get restaurant's menu items (with population)
+POST   /api/menu/items                    # Create new menu item (with categoryIds/tagIds)
 GET    /api/menu/items/:id                # Get specific menu item
 PUT    /api/menu/items/:id                # Update menu item
 DELETE /api/menu/items/:id                # Delete menu item
@@ -537,6 +540,22 @@ POST   /api/menu/items/:id/image          # Upload item image
 GET    /api/menu/items/:id/image          # Get item image info
 DELETE /api/menu/items/:id/image          # Delete item image
 GET    /api/menu/public/:restaurantId     # Public menu (no auth)
+```
+
+**Category Management Endpoints:** *(NEW)*
+```
+GET    /api/menu/categories               # Get restaurant's categories
+POST   /api/menu/categories               # Create new category
+PUT    /api/menu/categories/:id           # Update category
+DELETE /api/menu/categories/:id           # Delete category (if no items use it)
+```
+
+**Tag Management Endpoints:** *(NEW)*
+```
+GET    /api/menu/tags                     # Get restaurant's tags
+POST   /api/menu/tags                     # Create new tag
+PUT    /api/menu/tags/:id                 # Update tag
+DELETE /api/menu/tags/:id                 # Delete tag (if no items use it)
 ```
 
 ### 🏢 Restaurant Profile Management
@@ -568,19 +587,38 @@ DELETE /api/restaurants/qr             # Delete QR code
 GET    /api/restaurants/:id/qr         # Public QR code info (no auth)
 ```
 
-### 📊 Database Models
+### 📊 Database Models - ENHANCED SCHEMA
 
 **Restaurant Model:**
 - name, email (unique), phone (unique), password (hashed)
-- address (street, city, state, zipCode, country)
+- address (street, city, state, zipCode, country) - India-specific validation
 - isActive, qrCodeUrl, timestamps
 - Authentication methods: comparePassword(), generateAuthToken()
+- Virtual: fullAddress
 
-**MenuItem Model:**
-- name, description, price, category
-- restaurantId (reference), image, isAvailable
-- tags[], allergens[], spicyLevel, preparationTime
-- Static methods: findByRestaurant(), getCategoriesByRestaurant()
+**MenuCategory Model:** *(NEW)*
+- name, sortOrder, isActive, restaurantId (reference)
+- Compound unique index: (restaurantId, name)
+- Static methods: findByRestaurant()
+- Instance methods: getMenuItemsCount()
+
+**Tag Model:** *(NEW)*
+- name, slug (auto-generated), color, isActive, restaurantId (reference)
+- Compound unique index: (restaurantId, name), (restaurantId, slug)
+- Pre-save hook: generates kebab-case slug from name
+- Static methods: findByRestaurant()
+- Instance methods: getMenuItemsCount()
+
+**MenuItem Model:** *(ENHANCED)*
+- name, description, price, isVeg, isSpicy, spicyLevel (0-5)
+- restaurantId (reference), categoryIds[], tagIds[]
+- image (object: filename, path, size, mimetype, uploadedAt)
+- preparationTime, sortOrder, isAvailable
+- nutritionInfo: calories, protein, carbs, fat
+- allergens[] (predefined list), timestamps
+- Virtuals: formattedPrice (₹), imageUrl, spicyLevelText, preparationTimeText
+- Text search index on name + description
+- Static methods: findByRestaurant(), getCategoriesByRestaurant(), searchItems()
 
 ## 📁 File Storage
 - **Menu Images**: `/uploads/menu-images/` (local filesystem)

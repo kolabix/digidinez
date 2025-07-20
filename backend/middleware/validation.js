@@ -30,26 +30,45 @@ export const validateCreateMenuItem = [
     .isFloat({ min: 0.01 })
     .withMessage('Price must be a positive number'),
   
-  body('category')
-    .isIn([
-      'appetizers',
-      'main-course', 
-      'desserts',
-      'beverages',
-      'salads',
-      'soups',
-      'sides',
-      'specials',
-      'vegetarian',
-      'vegan',
-      'other'
-    ])
-    .withMessage('Invalid category'),
-  
-  body('tags')
+  body('categoryIds')
     .optional()
     .isArray()
-    .withMessage('Tags must be an array'),
+    .withMessage('Category IDs must be an array')
+    .custom((categoryIds) => {
+      if (categoryIds && categoryIds.length > 0) {
+        for (const id of categoryIds) {
+          if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            throw new Error('Invalid category ID format');
+          }
+        }
+      }
+      return true;
+    }),
+  
+  body('tagIds')
+    .optional()
+    .isArray()
+    .withMessage('Tag IDs must be an array')
+    .custom((tagIds) => {
+      if (tagIds && tagIds.length > 0) {
+        for (const id of tagIds) {
+          if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            throw new Error('Invalid tag ID format');
+          }
+        }
+      }
+      return true;
+    }),
+
+  body('isVeg')
+    .optional()
+    .isBoolean()
+    .withMessage('isVeg must be a boolean'),
+
+  body('isSpicy')
+    .optional()
+    .isBoolean()
+    .withMessage('isSpicy must be a boolean'),
   
   body('spicyLevel')
     .optional()
@@ -58,8 +77,8 @@ export const validateCreateMenuItem = [
   
   body('preparationTime')
     .optional()
-    .isInt({ min: 1, max: 120 })
-    .withMessage('Preparation time must be between 1 and 120 minutes'),
+    .isInt({ min: 1, max: 180 })
+    .withMessage('Preparation time must be between 1 and 180 minutes'),
   
   body('isAvailable')
     .optional()
@@ -250,6 +269,76 @@ export const validateStatusToggle = [
   body('isActive')
     .isBoolean()
     .withMessage('isActive must be a boolean value'),
+  
+  handleValidationErrors
+];
+
+// Validation rules for menu categories
+export const validateCreateMenuCategory = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Category name must be between 2 and 50 characters'),
+  
+  body('sortOrder')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Sort order must be a positive number'),
+  
+  handleValidationErrors
+];
+
+export const validateUpdateMenuCategory = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Category name must be between 2 and 50 characters'),
+  
+  body('sortOrder')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Sort order must be a positive number'),
+  
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
+  
+  handleValidationErrors
+];
+
+// Validation rules for tags
+export const validateCreateTag = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 30 })
+    .withMessage('Tag name must be between 2 and 30 characters'),
+  
+  body('color')
+    .optional()
+    .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+    .withMessage('Color must be a valid hex color'),
+  
+  handleValidationErrors
+];
+
+export const validateUpdateTag = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 30 })
+    .withMessage('Tag name must be between 2 and 30 characters'),
+  
+  body('color')
+    .optional()
+    .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+    .withMessage('Color must be a valid hex color'),
+  
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
   
   handleValidationErrors
 ];

@@ -15,81 +15,67 @@ const menuItemSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: [true, 'Price is required'],
-    min: [0, 'Price cannot be negative'],
-    set: function(val) {
-      return Math.round(val * 100) / 100; // Round to 2 decimal places
+    min: [0, 'Price must be a positive number'],
+    set: function(value) {
+      return Math.round(value * 100) / 100; // Round to 2 decimal places
     }
-  },
-  category: {
-    type: String,
-    required: [true, 'Category is required'],
-    trim: true,
-    enum: {
-      values: [
-        'appetizers',
-        'main-course',
-        'desserts',
-        'beverages',
-        'salads',
-        'soups',
-        'sides',
-        'specials',
-        'vegetarian',
-        'vegan',
-        'other'
-      ],
-      message: 'Category must be a valid menu category'
-    }
-  },
-  image: {
-    type: String,
-    default: null,
-    trim: true
-  },
-  isAvailable: {
-    type: Boolean,
-    default: true
   },
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Restaurant',
     required: [true, 'Restaurant ID is required']
   },
-  tags: [{
-    type: String,
-    trim: true,
-    lowercase: true
+  categoryIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MenuCategory'
   }],
-  nutritionInfo: {
-    calories: { type: Number, min: 0 },
-    protein: { type: Number, min: 0 },
-    carbs: { type: Number, min: 0 },
-    fat: { type: Number, min: 0 }
+  tagIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Tag'
+  }],
+  image: {
+    filename: String,
+    path: String,
+    size: Number,
+    mimetype: String,
+    uploadedAt: { type: Date, default: Date.now }
   },
-  allergens: [{
-    type: String,
-    enum: [
-      'dairy',
-      'eggs',
-      'fish',
-      'shellfish',
-      'tree-nuts',
-      'peanuts',
-      'wheat',
-      'soy',
-      'sesame'
-    ]
-  }],
+  isAvailable: {
+    type: Boolean,
+    default: true
+  },
+  isVeg: {
+    type: Boolean,
+    default: true // Default to vegetarian for Indian market
+  },
+  isSpicy: {
+    type: Boolean,
+    default: false
+  },
   spicyLevel: {
     type: Number,
-    min: 0,
-    max: 5,
+    min: [0, 'Spicy level must be between 0 and 5'],
+    max: [5, 'Spicy level must be between 0 and 5'],
     default: 0
   },
   preparationTime: {
     type: Number, // in minutes
-    min: 0,
-    max: 120
+    min: [1, 'Preparation time must be at least 1 minute'],
+    max: [180, 'Preparation time cannot exceed 180 minutes']
+  },
+  nutritionInfo: {
+    calories: { type: Number, min: 0 },
+    protein: { type: Number, min: 0 }, // in grams
+    carbs: { type: Number, min: 0 }, // in grams
+    fat: { type: Number, min: 0 } // in grams
+  },
+  allergens: [{
+    type: String,
+    enum: ['dairy', 'eggs', 'fish', 'shellfish', 'tree-nuts', 'peanuts', 'wheat', 'soy', 'sesame']
+  }],
+  sortOrder: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true,
@@ -97,61 +83,118 @@ const menuItemSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes for performance
-menuItemSchema.index({ restaurantId: 1, category: 1 });
+// Indexes for performance and search
 menuItemSchema.index({ restaurantId: 1, isAvailable: 1 });
-menuItemSchema.index({ restaurantId: 1, name: 'text', description: 'text' });
+menuItemSchema.index({ restaurantId: 1, categoryIds: 1 });
+menuItemSchema.index({ restaurantId: 1, tagIds: 1 });
+menuItemSchema.index({ restaurantId: 1, sortOrder: 1 });
 
-// Virtual for formatted price
+// Text search index for name and description
+menuItemSchema.index({ 
+  name: 'text', 
+  description: 'text' 
+}, {
+  weights: {
+    name: 10,
+    description: 5
+  }
+});
+
+// Virtual for formatted price (Indian Rupees)
 menuItemSchema.virtual('formattedPrice').get(function() {
-  return `$${this.price.toFixed(2)}`;
+  return `₹${this.price.toFixed(2)}`;
 });
 
 // Virtual for image URL
 menuItemSchema.virtual('imageUrl').get(function() {
-  return this.image ? `/uploads/menu-images/${this.image}` : null;
-});
-
-// Virtual to populate restaurant info
-menuItemSchema.virtual('restaurant', {
-  ref: 'Restaurant',
-  localField: 'restaurantId',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Static method to find items by restaurant
-menuItemSchema.statics.findByRestaurant = function(restaurantId, options = {}) {
-  const {
-    category,
-    isAvailable = true,
-    limit = 50,
-    sort = { category: 1, name: 1 }
-  } = options;
-
-  const query = { restaurantId, isAvailable };
-  
-  if (category && category !== 'all') {
-    query.category = category;
+  if (this.image && this.image.filename) {
+    return `/uploads/menu-images/${this.image.filename}`;
   }
+  return null;
+});
 
-  return this.find(query)
-    .sort(sort)
-    .limit(limit)
-    .select('-__v');
-};
+// Virtual for spicy level description
+menuItemSchema.virtual('spicyLevelText').get(function() {
+  const levels = ['Not Spicy', 'Mild', 'Medium', 'Hot', 'Very Hot', 'Extremely Hot'];
+  return levels[this.spicyLevel] || 'Not Spicy';
+});
 
-// Static method to get categories for a restaurant
-menuItemSchema.statics.getCategoriesByRestaurant = function(restaurantId, options = {}) {
-  const { availableOnly = false } = options;
-  
+// Virtual for preparation time formatted
+menuItemSchema.virtual('preparationTimeText').get(function() {
+  if (!this.preparationTime) return null;
+  if (this.preparationTime < 60) {
+    return `${this.preparationTime} mins`;
+  }
+  const hours = Math.floor(this.preparationTime / 60);
+  const minutes = this.preparationTime % 60;
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+});
+
+// Static method to find menu items by restaurant
+menuItemSchema.statics.findByRestaurant = function(restaurantId, options = {}) {
   const query = { restaurantId };
   
-  if (availableOnly) {
+  if (options.availableOnly) {
     query.isAvailable = true;
   }
   
-  return this.distinct('category', query);
+  if (options.categoryIds && options.categoryIds.length > 0) {
+    query.categoryIds = { $in: options.categoryIds };
+  }
+  
+  if (options.tagIds && options.tagIds.length > 0) {
+    query.tagIds = { $in: options.tagIds };
+  }
+  
+  if (options.isVeg !== undefined) {
+    query.isVeg = options.isVeg;
+  }
+  
+  if (options.maxSpicyLevel !== undefined) {
+    query.spicyLevel = { $lte: options.maxSpicyLevel };
+  }
+  
+  const sort = options.sortBy || { sortOrder: 1, name: 1 };
+  
+  return this.find(query)
+    .populate('categoryIds', 'name')
+    .populate('tagIds', 'name color')
+    .sort(sort);
+};
+
+// Static method to get categories by restaurant
+menuItemSchema.statics.getCategoriesByRestaurant = function(restaurantId) {
+  return this.aggregate([
+    { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId) } },
+    { $unwind: '$categoryIds' },
+    { $group: { _id: '$categoryIds' } },
+    { $lookup: { 
+        from: 'menucategories', 
+        localField: '_id', 
+        foreignField: '_id', 
+        as: 'category' 
+    }},
+    { $unwind: '$category' },
+    { $replaceRoot: { newRoot: '$category' } },
+    { $sort: { sortOrder: 1, name: 1 } }
+  ]);
+};
+
+// Static method to search menu items
+menuItemSchema.statics.searchItems = function(restaurantId, searchTerm, options = {}) {
+  const query = {
+    restaurantId,
+    $text: { $search: searchTerm }
+  };
+  
+  if (options.availableOnly) {
+    query.isAvailable = true;
+  }
+  
+  return this.find(query, { score: { $meta: 'textScore' } })
+    .populate('categoryIds', 'name')
+    .populate('tagIds', 'name color')
+    .sort({ score: { $meta: 'textScore' } });
 };
 
 // Instance method to toggle availability
@@ -159,13 +202,5 @@ menuItemSchema.methods.toggleAvailability = function() {
   this.isAvailable = !this.isAvailable;
   return this.save();
 };
-
-// Pre-save middleware to ensure price formatting
-menuItemSchema.pre('save', function(next) {
-  if (this.isModified('price')) {
-    this.price = Math.round(this.price * 100) / 100;
-  }
-  next();
-});
 
 export default mongoose.model('MenuItem', menuItemSchema);

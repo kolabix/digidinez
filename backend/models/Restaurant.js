@@ -29,18 +29,23 @@ const restaurantSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: [true, 'Phone number is required'],
+    unique: true,
     trim: true,
     match: [
-      /^[\+]?[1-9][\d]{0,15}$/,
-      'Please enter a valid phone number'
+      /^[\+]?91[\d]{10}$/,
+      'Please enter a valid Indian phone number (+91XXXXXXXXXX)'
     ]
   },
   address: {
     street: { type: String, trim: true },
     city: { type: String, trim: true },
     state: { type: String, trim: true },
-    zipCode: { type: String, trim: true },
-    country: { type: String, trim: true, default: 'US' }
+    zipCode: { 
+      type: String, 
+      trim: true,
+      match: [/^[1-9][0-9]{5}$/, 'Please enter a valid Indian PIN code (6 digits)']
+    },
+    country: { type: String, trim: true, default: 'India' }
   },
   isActive: {
     type: Boolean,
@@ -62,6 +67,7 @@ const restaurantSchema = new mongoose.Schema({
 
 // Index for performance
 restaurantSchema.index({ email: 1 });
+restaurantSchema.index({ phone: 1 });
 
 // Hash password before saving
 restaurantSchema.pre('save', async function(next) {
