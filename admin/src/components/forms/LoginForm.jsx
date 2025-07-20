@@ -12,17 +12,16 @@ export const LoginForm = ({ onSubmit, loading, error }) => {
     errors,
     touched,
     isSubmitting,
-    setIsSubmitting,
     handleChange,
     handleBlur,
     validateForm,
     setFormErrors
-  } = useForm(
-    {
+  } = useForm({
+    initialValues: {
       identifier: '',
       password: ''
     },
-    {
+    validationRules: {
       identifier: {
         required: true,
         message: 'Email or phone number is required'
@@ -33,7 +32,7 @@ export const LoginForm = ({ onSubmit, loading, error }) => {
         message: 'Password is required'
       }
     }
-  );
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,8 +40,6 @@ export const LoginForm = ({ onSubmit, loading, error }) => {
     if (!validateForm()) {
       return;
     }
-
-    setIsSubmitting(true);
     
     const result = await onSubmit(values);
     
@@ -58,8 +55,6 @@ export const LoginForm = ({ onSubmit, loading, error }) => {
         setFormErrors({ general: result.error });
       }
     }
-    
-    setIsSubmitting(false);
   };
 
   const togglePasswordVisibility = () => {
