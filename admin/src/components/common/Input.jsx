@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-const Input = ({
+export const Input = ({
   label,
   name,
   type = 'text',
@@ -46,5 +46,3 @@ const Input = ({
     </div>
   );
 };
-
-export default Input;

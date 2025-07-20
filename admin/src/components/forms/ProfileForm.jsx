@@ -1,8 +1,21 @@
 import { useEffect, forwardRef, useImperativeHandle } from 'react';
 import useForm from '../../hooks/useForm';
-import Input from '../common/Input';
+import { Input } from '../common/Input';
 
-const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
+export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
+  const initialValues = {
+    name: '',
+    email: '',
+    phone: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'India'
+    }
+  };
+
   const {
     values,
     errors,
@@ -13,18 +26,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
     validateForm,
     setFormErrors
   } = useForm(
-    {
-      name: '',
-      email: '',
-      phone: '',
-      address: {
-        street: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: 'India'
-      }
-    },
+    initialValues,
     {
       name: {
         required: true,
@@ -76,7 +78,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
   // Initialize form data when profile loads
   useEffect(() => {
     if (profile) {
-      setFormValues({
+      const formData = {
         name: profile.name || '',
         email: profile.email || '',
         phone: profile.phone || '',
@@ -87,9 +89,12 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
           zipCode: profile.address?.zipCode || '',
           country: profile.address?.country || 'India'
         }
-      });
+      };
+      setFormValues(formData);
+    } else {
+      setFormValues(initialValues);
     }
-  }, [profile]); // Remove setFormValues from dependency array
+  }, [profile, setFormValues]);
 
   // Expose submit function to parent component
   useImperativeHandle(ref, () => ({
@@ -113,6 +118,9 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
     }
   };
 
+  // Ensure values.address exists
+  const address = values.address || initialValues.address;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
@@ -130,7 +138,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 name="name"
                 label="Restaurant Name"
                 required
-                value={values.name}
+                value={values.name || ''}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.name}
@@ -146,7 +154,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 name="email"
                 label="Email Address"
                 required
-                value={values.email}
+                value={values.email || ''}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.email}
@@ -162,7 +170,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 name="phone"
                 label="Phone Number"
                 required
-                value={values.phone}
+                value={values.phone || ''}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors.phone}
@@ -188,7 +196,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 type="text"
                 name="address.street"
                 label="Street Address"
-                value={values.address.street}
+                value={address.street}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={errors['address.street']}
@@ -204,7 +212,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                   type="text"
                   name="address.city"
                   label="City"
-                  value={values.address.city}
+                  value={address.city}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={errors['address.city']}
@@ -220,7 +228,7 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                 <select
                   id="address.state"
                   name="address.state"
-                  value={values.address.state}
+                  value={address.state}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
@@ -260,10 +268,9 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
                   <option value="West Bengal">West Bengal</option>
                   <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                   <option value="Chandigarh">Chandigarh</option>
-                  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option value="Dadra and Nagar Haveli">Dadra and Nagar Haveli</option>
+                  <option value="Daman and Diu">Daman and Diu</option>
                   <option value="Delhi">Delhi</option>
-                  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                  <option value="Ladakh">Ladakh</option>
                   <option value="Lakshadweep">Lakshadweep</option>
                   <option value="Puducherry">Puducherry</option>
                 </select>
@@ -273,14 +280,14 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
               </div>
             </div>
 
-            {/* ZIP Code and Country */}
+            {/* PIN Code and Country */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <Input
                   type="text"
                   name="address.zipCode"
                   label="PIN Code"
-                  value={values.address.zipCode}
+                  value={address.zipCode}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   error={errors['address.zipCode']}
@@ -290,39 +297,18 @@ const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => 
               </div>
 
               <div>
-                <label htmlFor="address.country" className="block text-sm font-medium text-gray-700">
-                  Country
-                </label>
-                <select
-                  id="address.country"
+                <Input
+                  type="text"
                   name="address.country"
-                  value={values.address.country}
+                  label="Country"
+                  value={address.country}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                    errors['address.country'] && touched['address.country']
-                      ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-300 focus:border-primary-500'
-                  }`}
-                >
-                  <option value="">Select a country</option>
-                  <option value="India">India</option>
-                  <option value="United States">United States</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Australia">Australia</option>
-                  <option value="Germany">Germany</option>
-                  <option value="France">France</option>
-                  <option value="Italy">Italy</option>
-                  <option value="Spain">Spain</option>
-                  <option value="Netherlands">Netherlands</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="United Arab Emirates">United Arab Emirates</option>
-                  <option value="Other">Other</option>
-                </select>
-                {errors['address.country'] && touched['address.country'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['address.country']}</p>
-                )}
+                  error={errors['address.country']}
+                  touched={touched['address.country']}
+                  placeholder="India"
+                  disabled
+                />
               </div>
             </div>
 

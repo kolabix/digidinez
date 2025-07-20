@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-const LoadingSpinner = ({ size = 'md', text, className = '' }) => {
+export const LoadingSpinner = ({ size = 'md', text, className = '' }) => {
   const sizes = {
     sm: 'h-4 w-4',
     md: 'h-8 w-8',
@@ -36,5 +36,3 @@ const LoadingSpinner = ({ size = 'md', text, className = '' }) => {
     </div>
   );
 };
-
-export default LoadingSpinner;

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import RegisterForm from '../../components/forms/RegisterForm';
+import { RegisterForm } from '../../components/forms/RegisterForm';
 
-const Register = () => {
+export const Register = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const { register, loading, error, isAuthenticated, clearError } = useAuth();
   const navigate = useNavigate();
@@ -78,5 +78,3 @@ const Register = () => {
     </div>
   );
 };
-
-export default Register;

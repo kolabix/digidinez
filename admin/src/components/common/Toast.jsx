@@ -1,15 +1,52 @@
-import { useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
-const Toast = ({ type = 'success', message, onClose, duration = 4000 }) => {
-  useEffect(() => {
-    if (duration && onClose) {
-      const timer = setTimeout(onClose, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [duration, onClose]);
+const ToastContext = createContext(null);
 
+// Event emitter for toast notifications
+const toastEventTarget = new EventTarget();
+const TOAST_EVENT = 'TOAST_EVENT';
+
+export const ToastProvider = ({ children }) => {
+  const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    const handleToast = (event) => {
+      const { type, message, duration = 4000 } = event.detail;
+      const id = Date.now();
+      setToasts(prev => [...prev, { id, type, message, duration }]);
+      if (duration) {
+        setTimeout(() => removeToast(id), duration);
+      }
+    };
+
+    toastEventTarget.addEventListener(TOAST_EVENT, handleToast);
+    return () => toastEventTarget.removeEventListener(TOAST_EVENT, handleToast);
+  }, []);
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  return (
+    <>
+      {children}
+      <div className="fixed top-4 right-4 z-50 space-y-4">
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            type={toast.type}
+            message={toast.message}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
+const Toast = ({ type = 'success', message, onClose }) => {
   const icons = {
     success: CheckCircleIcon,
     error: XCircleIcon,
@@ -32,7 +69,7 @@ const Toast = ({ type = 'success', message, onClose, duration = 4000 }) => {
 
   return (
     <div className={clsx(
-      'fixed top-4 right-4 max-w-sm w-full bg-white shadow-lg rounded-lg border-l-4 p-4 z-50 transform transition-all duration-300 ease-in-out',
+      'max-w-sm w-full bg-white shadow-lg rounded-lg border-l-4 p-4 transform transition-all duration-300 ease-in-out',
       styles[type]
     )}>
       <div className="flex items-start">
@@ -53,4 +90,27 @@ const Toast = ({ type = 'success', message, onClose, duration = 4000 }) => {
   );
 };
 
-export default Toast;
+// Static methods that dispatch events instead of using hooks
+export const toast = {
+  success: (message, duration) => {
+    toastEventTarget.dispatchEvent(
+      new CustomEvent(TOAST_EVENT, {
+        detail: { type: 'success', message, duration }
+      })
+    );
+  },
+  error: (message, duration) => {
+    toastEventTarget.dispatchEvent(
+      new CustomEvent(TOAST_EVENT, {
+        detail: { type: 'error', message, duration }
+      })
+    );
+  },
+  warning: (message, duration) => {
+    toastEventTarget.dispatchEvent(
+      new CustomEvent(TOAST_EVENT, {
+        detail: { type: 'warning', message, duration }
+      })
+    );
+  }
+};

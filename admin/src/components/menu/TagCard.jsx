@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import Button from '../common/Button';
-import ConfirmDialog from '../common/ConfirmDialog';
+import { Button } from '../common/Button';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 
-const TagCard = ({ 
+export const TagCard = ({ 
   tag, 
   onEdit, 
   onDelete, 
@@ -196,5 +196,3 @@ const TagCard = ({
     </>
   );
 };
-
-export default TagCard;

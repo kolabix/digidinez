@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import useCategories from '../../hooks/useCategories';
-import Button from '../../components/common/Button';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import Toast from '../../components/common/Toast';
-import CategoryList from '../../components/menu/CategoryList';
-import CategoryForm from '../../components/menu/CategoryForm';
+import { useCategories } from '../../hooks/useCategories';
+import { Button } from '../../components/common/Button';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { toast } from '../../components/common/Toast';
+import { CategoryList } from '../../components/menu/CategoryList';
+import { CategoryForm } from '../../components/menu/CategoryForm';
 
-const Categories = () => {
+export const Categories = () => {
   const {
     categories,
     loading,
@@ -20,11 +20,6 @@ const Categories = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
-  const [toast, setToast] = useState(null);
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
 
   const handleAddCategory = () => {
     setEditingCategory(null);
@@ -42,17 +37,17 @@ const Categories = () => {
       
       if (editingCategory) {
         await updateCategory(editingCategory._id, formData);
-        showToast('Category updated successfully');
+        toast.success('Category updated successfully');
       } else {
         await createCategory(formData);
-        showToast('Category created successfully');
+        toast.success('Category created successfully');
       }
       
       setShowForm(false);
       setEditingCategory(null);
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to save category';
-      showToast(message, 'error');
+      toast.error(message);
       throw error;
     } finally {
       setFormLoading(false);
@@ -62,20 +57,20 @@ const Categories = () => {
   const handleDeleteCategory = async (categoryId) => {
     try {
       await deleteCategory(categoryId);
-      showToast('Category deleted successfully');
+      toast.success('Category deleted successfully');
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to delete category';
-      showToast(message, 'error');
+      toast.error(message);
     }
   };
 
   const handleReorderCategories = async (reorderedCategories) => {
     try {
       await reorderCategories(reorderedCategories);
-      showToast('Categories reordered successfully');
+      toast.success('Categories reordered successfully');
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to reorder categories';
-      showToast(message, 'error');
+      toast.error(message);
     }
   };
 
@@ -207,17 +202,6 @@ const Categories = () => {
         onSubmit={handleFormSubmit}
         loading={formLoading}
       />
-
-      {/* Toast Notifications */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 };
-
-export default Categories;

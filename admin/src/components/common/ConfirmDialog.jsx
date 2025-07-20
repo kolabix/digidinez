@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import Button from './Button';
+import { Button } from './Button';
 
-const ConfirmDialog = ({ 
+export const ConfirmDialog = ({ 
   isOpen, 
   title, 
   message, 
@@ -92,5 +92,3 @@ const ConfirmDialog = ({
     </div>
   );
 };
-
-export default ConfirmDialog;

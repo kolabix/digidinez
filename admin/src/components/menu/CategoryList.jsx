@@ -16,7 +16,7 @@ import {
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import CategoryCard from './CategoryCard';
+import { CategoryCard } from './CategoryCard';
 
 // Sortable wrapper for individual category cards
 const SortableCategoryCard = ({ category, onEdit, onDelete }) => {
@@ -47,7 +47,7 @@ const SortableCategoryCard = ({ category, onEdit, onDelete }) => {
   );
 };
 
-const CategoryList = ({ categories, onEdit, onDelete, onReorder }) => {
+export const CategoryList = ({ categories, onEdit, onDelete, onReorder }) => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -111,5 +111,3 @@ const CategoryList = ({ categories, onEdit, onDelete, onReorder }) => {
     </DndContext>
   );
 };
-
-export default CategoryList;

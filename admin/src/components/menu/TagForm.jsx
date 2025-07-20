@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import useForm from '../../hooks/useForm';
-import Button from '../common/Button';
-import Input from '../common/Input';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
 
-const TagForm = ({ isOpen, onClose, onSubmit, tag = null, existingTags = [] }) => {
+export const TagForm = ({ isOpen, onClose, onSubmit, tag = null, existingTags = [] }) => {
   const [selectedColor, setSelectedColor] = useState('#3B82F6');
 
   // Predefined color options for quick selection
@@ -198,5 +198,3 @@ const TagForm = ({ isOpen, onClose, onSubmit, tag = null, existingTags = [] }) =
     </div>
   );
 };
-
-export default TagForm;

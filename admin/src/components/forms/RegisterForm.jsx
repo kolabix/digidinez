@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import useForm from '../../hooks/useForm';
-import Input from '../common/Input';
-import Button from '../common/Button';
+import { Input } from '../common/Input';
+import { Button } from '../common/Button';
 
-const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
+export const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -423,5 +423,3 @@ const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
     </form>
   );
 };
-
-export default RegisterForm;

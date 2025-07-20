@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { MagnifyingGlassIcon, PlusIcon, TagIcon } from '@heroicons/react/24/outline';
-import TagCard from './TagCard';
-import Button from '../common/Button';
-import Input from '../common/Input';
-import LoadingSpinner from '../common/LoadingSpinner';
+import { TagCard } from './TagCard';
+import { Button } from '../common/Button';
+import { LoadingSpinner } from '../common/LoadingSpinner';
 
-const TagList = ({ 
+export const TagList = ({ 
   tags, 
   loading, 
   onCreateTag, 
@@ -155,5 +154,3 @@ const TagList = ({
     </div>
   );
 };
-
-export default TagList;

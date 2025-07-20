@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import Button from '../common/Button';
-import ConfirmDialog from '../common/ConfirmDialog';
+import { Button } from '../common/Button';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 
-const CategoryCard = ({ category, onEdit, onDelete, isDragging, dragHandleProps }) => {
+export const CategoryCard = ({ category, onEdit, onDelete, isDragging, dragHandleProps }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDelete = () => {
@@ -85,5 +85,3 @@ const CategoryCard = ({ category, onEdit, onDelete, isDragging, dragHandleProps 
     </>
   );
 };
-
-export default CategoryCard;

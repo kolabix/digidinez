@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { TagIcon } from '@heroicons/react/24/outline';
 import { useTags } from '../../hooks/useTags';
-import TagList from '../../components/menu/TagList';
-import TagForm from '../../components/menu/TagForm';
-import Toast from '../../components/common/Toast';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { TagList } from '../../components/menu/TagList';
+import { TagForm } from '../../components/menu/TagForm';
+import { toast } from '../../components/common/Toast';
 
-const Tags = () => {
+export const Tags = () => {
   const {
     tags,
     loading,
@@ -20,16 +19,6 @@ const Tags = () => {
 
   const [showTagForm, setShowTagForm] = useState(false);
   const [editingTag, setEditingTag] = useState(null);
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-
-  // Show toast notification
-  const showToast = (message, type = 'success') => {
-    setToast({ show: true, message, type });
-    // Auto-hide toast after 5 seconds
-    setTimeout(() => {
-      setToast({ show: false, message: '', type: 'success' });
-    }, 5000);
-  };
 
   // Handle create tag
   const handleCreateTag = () => {
@@ -48,15 +37,15 @@ const Tags = () => {
     try {
       if (editingTag) {
         await updateTag(editingTag._id, tagData);
-        showToast('Tag updated successfully');
+        toast.success('Tag updated successfully');
       } else {
         await createTag(tagData);
-        showToast('Tag created successfully');
+        toast.success('Tag created successfully');
       }
       setShowTagForm(false);
       setEditingTag(null);
     } catch (error) {
-      showToast(error.message || 'Operation failed', 'error');
+      toast.error(error.message || 'Operation failed');
     }
   };
 
@@ -64,9 +53,9 @@ const Tags = () => {
   const handleDeleteTag = async (tagId) => {
     try {
       await deleteTag(tagId);
-      showToast('Tag deleted successfully');
+      toast.success('Tag deleted successfully');
     } catch (error) {
-      showToast(error.message || 'Failed to delete tag', 'error');
+      toast.error(error.message || 'Failed to delete tag');
     }
   };
 
@@ -75,9 +64,9 @@ const Tags = () => {
     try {
       const tag = tags.find(t => t._id === tagId);
       await toggleTagStatus(tagId);
-      showToast(`Tag ${tag?.isActive ? 'deactivated' : 'activated'} successfully`);
+      toast.success(`Tag ${tag?.isActive ? 'deactivated' : 'activated'} successfully`);
     } catch (error) {
-      showToast(error.message || 'Failed to update tag status', 'error');
+      toast.error(error.message || 'Failed to update tag status');
     }
   };
 
@@ -143,17 +132,6 @@ const Tags = () => {
         tag={editingTag}
         existingTags={tags}
       />
-
-      {/* Toast Notifications */}
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ show: false, message: '', type: 'success' })}
-        />
-      )}
     </div>
   );
 };
-
-export default Tags;

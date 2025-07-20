@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import useForm from '../../hooks/useForm';
-import Button from '../common/Button';
-import Input from '../common/Input';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
 
-const CategoryForm = ({ 
+export const CategoryForm = ({ 
   category = null, 
   isOpen, 
   onClose, 
@@ -136,5 +136,3 @@ const CategoryForm = ({
     </div>
   );
 };
-
-export default CategoryForm;

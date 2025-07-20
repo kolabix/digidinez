@@ -8,7 +8,7 @@ import {
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 
-const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
+export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
   const { restaurant, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -117,5 +117,3 @@ const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
     </div>
   );
 };
-
-export default Header;

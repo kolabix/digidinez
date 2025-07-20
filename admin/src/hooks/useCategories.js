@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import categoryService from '../services/categoryService';
 
-const useCategories = () => {
+export const useCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -93,5 +93,3 @@ const useCategories = () => {
     reorderCategories
   };
 };
-
-export default useCategories;

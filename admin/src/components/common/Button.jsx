@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-const Button = ({
+export const Button = ({
   children,
   type = 'button',
   variant = 'primary',
@@ -50,5 +50,3 @@ const Button = ({
     </button>
   );
 };
-
-export default Button;

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import Header from './Header';
-import Sidebar from './Sidebar';
+import { Outlet } from 'react-router-dom';
+import { Header } from './Header';
+import { Sidebar } from './Sidebar';
 
-const Layout = ({ children }) => {
+export const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -17,20 +18,18 @@ const Layout = ({ children }) => {
         isMobileMenuOpen={isMobileMenuOpen}
       />
       
-      <div className="flex">
-        {/* Sidebar */}
-        <Sidebar 
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-        />
-        
-        {/* Main Content */}
-        <main className="flex-1 lg:ml-64">
-          <div className="p-6">
-            {children}
-          </div>
-        </main>
-      </div>
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
+      
+      {/* Main Content */}
+      <main className="lg:pl-64">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+          <Outlet />
+        </div>
+      </main>
       
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
@@ -42,5 +41,3 @@ const Layout = ({ children }) => {
     </div>
   );
 };
-
-export default Layout;
