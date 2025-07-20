@@ -4,6 +4,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import Categories from './pages/menu/Categories';
 import Layout from './components/layout/Layout';
 
 // Protected Route Component
@@ -72,14 +73,19 @@ function AppContent() {
         </ProtectedRoute>
       } />
       
-      {/* Future phases - placeholders */}
-      <Route path="/menu/*" element={
+      {/* Menu Management Routes */}
+      <Route path="/menu" element={
         <ProtectedRoute>
           <Layout>
-            <div className="text-center py-12">
-              <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
-              <p className="text-gray-600 mt-2">Coming in Phase 4</p>
-            </div>
+            <Categories />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/menu/categories" element={
+        <ProtectedRoute>
+          <Layout>
+            <Categories />
           </Layout>
         </ProtectedRoute>
       } />

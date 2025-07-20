@@ -17,6 +17,7 @@ import {
   createMenuCategory,
   updateMenuCategory,
   deleteMenuCategory,
+  reorderCategories,
   // Tag methods
   getTags,
   createTag,
@@ -74,6 +75,9 @@ router.route('/items/:id/image')
 router.route('/categories')
   .get(getMenuCategories)                                 // GET /api/menu/categories
   .post(validateCreateMenuCategory, createMenuCategory);  // POST /api/menu/categories
+
+router.route('/categories/reorder')
+  .patch(reorderCategories);                              // PATCH /api/menu/categories/reorder
 
 router.route('/categories/:id')
   .put(validateObjectId, validateUpdateMenuCategory, updateMenuCategory)  // PUT /api/menu/categories/:id

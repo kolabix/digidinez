@@ -27,10 +27,10 @@ const Sidebar = ({ isOpen, onClose }) => {
     },
     {
       name: 'Menu Management',
-      href: '/menu',
+      href: '/menu/categories',
       icon: DocumentTextIcon,
       current: location.pathname.startsWith('/menu'),
-      disabled: true // Phase 4
+      disabled: false // Phase 4 - Session 1 Complete
     },
     {
       name: 'QR Codes',

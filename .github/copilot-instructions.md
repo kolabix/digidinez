@@ -176,7 +176,48 @@ digidinez/
 5. **ConfirmDialog for destructive actions** - Status toggles, deletions, etc.
 6. **LoadingSpinner during async operations** - Show loading states clearly
 
-### 📋 **Component Migration Checklist:**
+### � **Form Development Rules - MANDATORY:**
+**When generating ANY form in the admin folder:**
+
+1. **ALWAYS use the `useForm` hook** for form state management:
+```jsx
+import { useForm } from '../hooks/useForm';
+
+const MyFormComponent = () => {
+  const { values, errors, handleChange, handleSubmit, setFieldError } = useForm({
+    initialValues: { name: '', email: '' },
+    onSubmit: async (formData) => {
+      // Handle form submission
+    }
+  });
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Input
+        label="Name"
+        name="name"
+        value={values.name}
+        onChange={handleChange}
+        error={errors.name}
+      />
+      <Button type="submit" variant="primary">Save</Button>
+    </form>
+  );
+};
+```
+
+2. **ALWAYS use React components instead of HTML elements:**
+   - ✅ `<Button variant="primary">` instead of `<button>`
+   - ✅ `<Input label="Name" />` instead of `<input>`
+   - ✅ `<LoadingSpinner />` for loading states
+   - ✅ `<Toast />` for notifications
+
+3. **Form validation pattern:**
+   - Use `useForm` hook for validation logic
+   - Display errors using `error` prop on `<Input>`
+   - Handle server errors with `setFieldError()`
+
+### �📋 **Component Migration Checklist:**
 When working on any admin page:
 - [ ] Replace all `<button>` with `<Button variant="...">`
 - [ ] Replace all `<input>` with `<Input label="..." />`
@@ -395,54 +436,259 @@ const MyComponent = () => {
 
 **This pattern MUST be used for all future components with useEffect API calls.**
 
-### 📅 Phase 4: Menu Management System - UPCOMING
-**Estimated Timeline: 3-4 weeks**
+### 🚨 **useForm Infinite Loop Prevention - MANDATORY**
 
-#### 🎯 Core Features
-- **Menu Items CRUD Interface**
-  - Create, read, update, delete menu items
-  - Category management (11 predefined categories)
-  - Bulk operations (enable/disable multiple items)
-  - Advanced filtering and search
+**Problem:** When using the `useForm` hook in components with `useEffect`, functions like `resetForm` and `setFormErrors` can cause infinite loops if they're included in dependency arrays without being wrapped in `useCallback`.
 
-- **Menu Item Form System**
-  - Comprehensive item details (name, description, price)
-  - Category selection with visual indicators
-  - Tags and allergens management
-  - Spicy level selector (1-5 scale)
-  - Preparation time estimation
-  - Availability toggle
+**Root Cause:** Functions in React components are recreated on every render. When these functions are dependencies in `useEffect`, the effect runs infinitely because the function reference changes each time.
 
-- **Image Management System**
-  - Drag & drop image upload
-  - Image preview and cropping
-  - Multiple format support (JPEG, PNG, WebP)
-  - Image optimization and resizing
-  - Bulk image operations
+#### **Symptoms:**
+- Console error: "Maximum update depth exceeded"
+- Browser becomes unresponsive
+- Component re-renders continuously
 
-#### 📁 Key Components
+#### **Solution:** Wrap all functions returned by `useForm` in `useCallback`
+
+**In `useForm.js` - ALWAYS wrap these functions:**
+```javascript
+// ✅ CORRECT - Wrapped in useCallback
+const resetForm = useCallback(() => {
+  setValues(initialValues);
+  setErrors({});
+  setTouched({});
+  setIsSubmitting(false);
+}, [initialValues]);
+
+const setFormErrors = useCallback((apiErrors) => {
+  if (typeof apiErrors === 'string') {
+    setErrors({ general: apiErrors });
+  } else if (typeof apiErrors === 'object') {
+    setErrors(apiErrors);
+  }
+}, []);
+
+const setFormValues = useCallback((newValues) => {
+  setValues(newValues);
+}, []);
+
+// ❌ WRONG - Not wrapped, causes infinite loops
+const resetForm = () => {
+  setValues(initialValues);
+  setErrors({});
+  setTouched({});
+  setIsSubmitting(false);
+};
+```
+
+**In Form Components - Avoid function dependencies when possible:**
+```javascript
+// ✅ PREFERRED - Use setFormValues directly instead of resetForm
+useEffect(() => {
+  if (editData) {
+    setFormValues(editData);
+  } else {
+    setFormValues(initialValues); // Better than resetForm()
+  }
+}, [editData, setFormValues]); // setFormValues is wrapped in useCallback
+
+// ❌ PROBLEMATIC - resetForm in dependencies
+useEffect(() => {
+  if (!editData) {
+    resetForm(); // Avoid this pattern
+  }
+}, [editData, resetForm]);
+```
+
+#### **Functions That Must Be Wrapped in useCallback:**
+- ✅ `resetForm`
+- ✅ `setFormErrors` 
+- ✅ `setFormValues`
+- ✅ `validateForm`
+- ✅ Any custom form utility functions
+
+#### **Components Already Fixed:**
+- ✅ `admin/src/hooks/useForm.js` - All returned functions wrapped
+- ✅ `admin/src/components/menu/CategoryForm.jsx` - Uses setFormValues instead of resetForm
+- ✅ `admin/src/components/forms/ProfileForm.jsx` - Previous fix applied
+
+**This pattern MUST be implemented in ALL form-related hooks and components.**
+
+### 📅 Phase 4: Menu Management System - 5 FOCUSED SESSIONS
+**Restaurant-facing admin panel to manage digital menus in structured development sessions.**
+
+#### 🎯 Development Strategy
+This phase is built in **5 focused development sessions**, each with specific scope and visual outcomes:
+
+---
+
+## ✅ **Session 1: Menu Category Management (CRUD + Reordering)**
+
+**Goal:** Enable restaurant to create, view, edit, delete, and reorder menu categories.
+
+**Backend Requirements:**
+- Mongoose model `MenuCategory` with fields: `name`, `restaurantId`, `sortOrder`
+- Routes: `GET /categories`, `POST /categories`, `PUT /categories/:id`, `DELETE /categories/:id`, `PATCH /categories/reorder`
+- Restaurant-scoped categories with sort order persistence
+
+**Frontend Requirements:**
+- Category list view with drag-and-drop reordering
+- Add/Edit/Delete category forms
+- Visual feedback for changes
+- Integration with `react-beautiful-dnd` or similar drag library
+
+**Definition of Done:**
+- Admin can visually manage categories and reorder them
+- Changes persist in database and reflect immediately in UI
+
+---
+
+## ✅ **Session 2: Tag Management + Inline Tag Support**
+
+**Goal:** Allow restaurants to define custom tags and assign them to menu items.
+
+**Backend Requirements:**
+- Mongoose model `Tag` with fields: `name`, `slug`, `restaurantId`
+- Routes: `GET /tags`, `POST /tags`, `DELETE /tags/:id`
+- Auto-generate `slug` using kebab-case of name
+- Ensure uniqueness of tag `name` per restaurant
+
+**Frontend Requirements:**
+- Tag management interface
+- Multi-select tag picker for menu items
+- Inline tag creation capability
+- Autocomplete suggestions from existing tags
+- Prevent duplicate tag creation
+
+**Definition of Done:**
+- Admin can manage tags and assign them during item creation/editing
+- Smooth inline tag creation workflow
+
+---
+
+## ✅ **Session 3: Menu Item CRUD with Tag + Category Selection**
+
+**Goal:** Enable full menu item management with comprehensive field support.
+
+**Backend Requirements:**
+- Enhanced `MenuItem` model with fields:
+  - `name`, `price`, `description`, `restaurantId`, `isAvailable`
+  - `isVeg`, `isSpicy`, `spicyLevel`, `categoryIds`, `tagIds`
+  - `nutritionInfo`, `allergens`, `preparationTime`
+- CRUD routes: `GET /items`, `POST /items`, `PUT /items/:id`, `DELETE /items/:id`
+- Population of category and tag relationships
+
+**Frontend Requirements:**
+- Menu item list with filtering and search
+- Comprehensive Add/Edit form with:
+  - Category multi-select dropdown
+  - Tag multi-select with inline creation
+  - Availability, Vegetarian, Spicy toggles
+  - Spicy level slider (1-5 scale)
+  - Nutrition information fields
+  - Allergen selection checkboxes
+
+**Definition of Done:**
+- Admin can create and manage complete menu items with all relevant fields
+- Form validation and error handling implemented
+- List view shows items with visual indicators (veg, spicy, etc.)
+
+---
+
+## ✅ **Session 4: Bulk Upload via Excel/CSV**
+
+**Goal:** Allow restaurant admins to bulk upload menu data from Excel/CSV files.
+
+**Backend Requirements:**
+- File upload endpoint using `multer`
+- Excel/CSV parsing with `xlsx` or `csv-parser`
+- Auto-creation of new categories/tags if not found
+- Field validation for: name, price, category, tags, etc.
+- Batch processing with error reporting
+
+**Frontend Requirements:**
+- File upload interface with drag-and-drop support
+- Upload progress indicator
+- Success/failure results display with row-by-row feedback
+- Downloadable sample template (Excel/CSV)
+- Data preview before final import
+
+**Definition of Done:**
+- Admin uploads a valid Excel file and sees new items created
+- Clear feedback on successful imports and validation errors
+- Sample template helps admin format data correctly
+
+---
+
+## ✅ **Session 5: Image Upload (Basic) + Placeholder System**
+
+**Goal:** Enable image uploads for menu items with MVP-safe implementation.
+
+**Backend Requirements:**
+- Add `image` field to `MenuItem` model
+- File upload using `multer` middleware
+- Image storage in `/uploads/menu-images/` with unique filenames
+- Static file serving route for images
+- Image validation (format, size limits)
+
+**Frontend Requirements:**
+- Image upload field in menu item form
+- Thumbnail preview in list and edit views
+- Fallback placeholder for items without images
+- Basic image validation on frontend
+- Visual upload progress indicator
+
+**Definition of Done:**
+- Admin can upload images for menu items
+- Images appear correctly in list and detail views
+- Graceful handling of missing images with placeholders
+
+---
+
+#### 📁 **Phase 4 File Structure**
 ```
 admin/src/pages/menu/
-├── MenuDashboard.jsx       # Overview with stats
-├── MenuList.jsx           # List view with filters
-├── MenuItemForm.jsx       # Create/edit menu item
-├── MenuItemCard.jsx       # Individual item display
-├── CategoryManager.jsx    # Category organization
-└── BulkActions.jsx        # Bulk edit operations
+├── Categories.jsx          # Session 1: Category management
+├── Tags.jsx               # Session 2: Tag management  
+├── MenuItems.jsx          # Session 3: Menu item CRUD
+├── BulkUpload.jsx         # Session 4: Excel/CSV upload
+└── components/
+    ├── CategoryList.jsx    # Drag-drop category reordering
+    ├── TagSelector.jsx     # Multi-select with inline creation
+    ├── MenuItemForm.jsx    # Comprehensive item form
+    ├── MenuItemCard.jsx    # Item display with indicators
+    ├── BulkUploader.jsx    # File upload with progress
+    └── ImageUpload.jsx     # Session 5: Image upload component
 
-admin/src/components/menu/
-├── ImageUpload.jsx        # Image upload component
-├── CategorySelector.jsx   # Category selection UI
-├── TagsInput.jsx         # Tags management
-├── AllergenSelector.jsx  # Allergen selection
-└── SpicyLevelSelector.jsx # Spice level picker
+admin/src/services/
+├── categoryService.js      # Category CRUD operations
+├── tagService.js          # Tag management APIs  
+├── menuItemService.js     # Menu item CRUD operations
+└── bulkUploadService.js   # File upload and processing
+
+backend/models/
+├── MenuCategory.js        # Category model (enhanced)
+├── Tag.js                # Tag model (enhanced)  
+└── MenuItem.js           # Menu item model (enhanced)
+
+backend/routes/
+├── categoryRoutes.js      # Category management endpoints
+├── tagRoutes.js          # Tag management endpoints
+└── menuRoutes.js         # Enhanced menu item endpoints
 ```
 
-#### 🔌 API Integration
-- Full integration with existing menu endpoints
-- Real-time availability updates
-- Image upload with progress tracking
-- Optimistic UI updates
+#### � **Session Dependencies**
+- **Session 1** → Independent (categories foundation)
+- **Session 2** → Independent (tags foundation)  
+- **Session 3** → Depends on Sessions 1 & 2 (uses categories + tags)
+- **Session 4** → Depends on Sessions 1, 2 & 3 (bulk creates items)
+- **Session 5** → Depends on Session 3 (adds images to existing items)
+
+#### 🎯 **Success Metrics**
+- **Each session produces working, testable features**
+- **Visual progress after each session**
+- **Backend APIs fully tested and documented**
+- **Frontend components follow established UI patterns**
+- **Mobile-responsive design maintained throughout**
 
 ### 📅 Phase 5: QR Code & Public Menu System - FINAL
 **Estimated Timeline: 2-3 weeks**

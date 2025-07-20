@@ -187,21 +187,21 @@ const useForm = (initialValues = {}, validationRules = {}) => {
   };
 
   // Reset form
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setValues(initialValues);
     setErrors({});
     setTouched({});
     setIsSubmitting(false);
-  };
+  }, [initialValues]);
 
   // Set form errors (from API)
-  const setFormErrors = (apiErrors) => {
+  const setFormErrors = useCallback((apiErrors) => {
     if (typeof apiErrors === 'string') {
       setErrors({ general: apiErrors });
     } else if (typeof apiErrors === 'object') {
       setErrors(apiErrors);
     }
-  };
+  }, []);
 
   // Set entire form values (useful for initialization)
   const setFormValues = useCallback((newValues) => {

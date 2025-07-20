@@ -863,6 +863,51 @@ export const deleteMenuCategory = async (req, res) => {
   }
 };
 
+// @desc    Reorder categories
+// @route   PATCH /api/menu/categories/reorder
+// @access  Private
+export const reorderCategories = async (req, res) => {
+  try {
+    const { categoryOrders } = req.body;
+
+    if (!Array.isArray(categoryOrders) || categoryOrders.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category orders array is required'
+      });
+    }
+
+    // Update sort order for each category
+    const updatePromises = categoryOrders.map(({ id, sortOrder }) => {
+      return MenuCategory.findOneAndUpdate(
+        { _id: id, restaurantId: req.restaurant.id },
+        { sortOrder },
+        { new: true }
+      );
+    });
+
+    await Promise.all(updatePromises);
+
+    // Fetch updated categories
+    const categories = await MenuCategory.findByRestaurant(req.restaurant.id);
+
+    res.json({
+      success: true,
+      message: 'Categories reordered successfully',
+      data: {
+        categories
+      }
+    });
+
+  } catch (error) {
+    console.error('Reorder categories error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while reordering categories'
+    });
+  }
+};
+
 // @desc    Get all tags for authenticated restaurant
 // @route   GET /api/menu/tags
 // @access  Private
