@@ -54,8 +54,8 @@ const menuItemSchema = new mongoose.Schema({
   },
   spicyLevel: {
     type: Number,
-    min: [0, 'Spicy level must be between 0 and 5'],
-    max: [5, 'Spicy level must be between 0 and 5'],
+    min: [0, 'Spicy level must be between 0 and 3'],
+    max: [3, 'Spicy level must be between 0 and 3'],
     default: 0
   },
   preparationTime: {
@@ -115,7 +115,7 @@ menuItemSchema.virtual('imageUrl').get(function() {
 
 // Virtual for spicy level description
 menuItemSchema.virtual('spicyLevelText').get(function() {
-  const levels = ['Not Spicy', 'Mild', 'Medium', 'Hot', 'Very Hot', 'Extremely Hot'];
+  const levels = ['', 'Mild', 'Medium', 'Hot'];
   return levels[this.spicyLevel] || 'Not Spicy';
 });
 
