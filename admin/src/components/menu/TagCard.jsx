@@ -167,7 +167,7 @@ const TagCard = ({
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
+        onCancel={() => setShowDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
         title="Delete Tag"
         message={`Are you sure you want to delete the tag "${tag.name}"? This action cannot be undone.`}
@@ -180,7 +180,7 @@ const TagCard = ({
       {/* Status Change Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showStatusDialog}
-        onClose={() => setShowStatusDialog(false)}
+        onCancel={() => setShowStatusDialog(false)}
         onConfirm={handleStatusConfirm}
         title={tag.isActive ? 'Deactivate Tag' : 'Activate Tag'}
         message={
