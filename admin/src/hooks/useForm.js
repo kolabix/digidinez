@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const useForm = (initialValues = {}, validationRules = {}) => {
+const useForm = ({ initialValues = {}, validationRules = {}, onSubmit } = {}) => {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -203,10 +203,48 @@ const useForm = (initialValues = {}, validationRules = {}) => {
     }
   }, []);
 
+  // Set individual field error
+  const setFieldError = useCallback((fieldName, errorMessage) => {
+    setErrors(prev => ({
+      ...prev,
+      [fieldName]: errorMessage
+    }));
+  }, []);
+
   // Set entire form values (useful for initialization)
   const setFormValues = useCallback((newValues) => {
     setValues(newValues);
   }, []);
+
+  // Handle form submission
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Validate form first if we have validation rules
+      if (Object.keys(validationRules).length > 0) {
+        const isValid = validateForm();
+        if (!isValid) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Call the onSubmit callback if provided
+      if (onSubmit) {
+        await onSubmit(values);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Handle error as needed
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [values, validateForm, onSubmit, isSubmitting, validationRules]);
 
   return {
     values,
@@ -216,11 +254,13 @@ const useForm = (initialValues = {}, validationRules = {}) => {
     setIsSubmitting,
     handleChange,
     handleBlur,
+    handleSubmit,
     setValue,
     setFormValues,
     validateForm,
     resetForm,
     setFormErrors,
+    setFieldError,
     hasErrors: Object.values(errors).some(error => error !== ''),
     getNestedValue,
   };

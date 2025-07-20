@@ -145,12 +145,13 @@ const Tags = () => {
       />
 
       {/* Toast Notifications */}
-      <Toast
-        show={toast.show}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ show: false, message: '', type: 'success' })}
-      />
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ show: false, message: '', type: 'success' })}
+        />
+      )}
     </div>
   );
 };
