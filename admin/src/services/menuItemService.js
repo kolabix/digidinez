@@ -42,7 +42,7 @@ const menuItemService = {
 
   // Toggle item availability
   toggleAvailability: async (id) => {
-    const response = await api.patch(`/menu/items/${id}/availability`);
+    const response = await api.patch(`/menu/items/${id}/toggle`);
     return response.data;
   },
 

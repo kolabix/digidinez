@@ -59,7 +59,7 @@ const selectStyles = {
 
 export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(item?.image || null);
+  const [imagePreview, setImagePreview] = useState(item?.imageUrl || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -68,8 +68,8 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
       name: item?.name || '',
       description: item?.description || '',
       price: item?.price || '',
-      categoryIds: item?.categoryIds || [],
-      tagIds: item?.tagIds || [],
+      categoryIds: item?.categoryIds?.map(cat => cat._id) || [],
+      tagIds: item?.tagIds?.map(tag => tag._id) || [],
       isVeg: item?.isVeg ?? false,
       isSpicy: item?.isSpicy ?? false,
       spicyLevel: item?.spicyLevel || 0,
@@ -153,9 +153,9 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
   }, []);
 
   const confirmRemoveImage = async () => {
-    if (item?.id) {
+    if (item?._id) {
       try {
-        await menuItemService.deleteImage(item.id);
+        await menuItemService.deleteImage(item._id);
         toast.success('Image removed successfully');
       } catch (error) {
         toast.error('Failed to remove image');
@@ -271,7 +271,10 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                 <Select
                   isMulti
                   name="categoryIds"
-                  value={categories?.filter(cat => values.categoryIds?.includes(cat._id))?.map(cat => ({
+                  value={categories?.filter(cat => 
+                    values.categoryIds?.includes(cat._id.toString()) || 
+                    values.categoryIds?.includes(cat._id)
+                  )?.map(cat => ({
                     value: cat._id,
                     label: cat.name
                   })) || []}
@@ -300,7 +303,10 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                 <Select
                   isMulti
                   name="tagIds"
-                  value={tags?.filter(tag => values.tagIds?.includes(tag._id))?.map(tag => ({
+                  value={tags?.filter(tag => 
+                    values.tagIds?.includes(tag._id.toString()) || 
+                    values.tagIds?.includes(tag._id)
+                  )?.map(tag => ({
                     value: tag._id,
                     label: tag.name,
                     color: tag.color

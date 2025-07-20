@@ -58,7 +58,9 @@ export const getMenuItem = async (req, res) => {
     const menuItem = await MenuItem.findOne({
       _id: req.params.id,
       restaurantId: req.restaurant.id
-    }).populate('restaurant', 'name email phone');
+    })
+    .populate('categoryIds', 'name')
+    .populate('tagIds', 'name color');
 
     if (!menuItem) {
       return res.status(404).json({
@@ -220,13 +222,15 @@ export const updateMenuItem = async (req, res) => {
       name,
       description,
       price,
-      category,
-      tags,
+      categoryIds,
+      tagIds,
       nutritionInfo,
       allergens,
       spicyLevel,
       preparationTime,
-      isAvailable
+      isAvailable,
+      isVeg,
+      isSpicy
     } = req.body;
 
     // Find menu item
@@ -258,6 +262,36 @@ export const updateMenuItem = async (req, res) => {
       }
     }
 
+    // Validate category IDs if provided
+    if (categoryIds && categoryIds.length > 0) {
+      const validCategories = await MenuCategory.find({
+        _id: { $in: categoryIds },
+        restaurantId: req.restaurant.id
+      });
+      
+      if (validCategories.length !== categoryIds.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'One or more invalid category IDs'
+        });
+      }
+    }
+
+    // Validate tag IDs if provided
+    if (tagIds && tagIds.length > 0) {
+      const validTags = await Tag.find({
+        _id: { $in: tagIds },
+        restaurantId: req.restaurant.id
+      });
+      
+      if (validTags.length !== tagIds.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'One or more invalid tag IDs'
+        });
+      }
+    }
+
     // Update fields
     if (name) menuItem.name = name.trim();
     if (description !== undefined) menuItem.description = description?.trim();
@@ -270,16 +304,20 @@ export const updateMenuItem = async (req, res) => {
       }
       menuItem.price = parseFloat(price);
     }
-    if (category) menuItem.category = category.toLowerCase();
-    if (tags !== undefined) menuItem.tags = tags;
+    if (categoryIds !== undefined) menuItem.categoryIds = categoryIds;
+    if (tagIds !== undefined) menuItem.tagIds = tagIds;
     if (nutritionInfo !== undefined) menuItem.nutritionInfo = nutritionInfo;
     if (allergens !== undefined) menuItem.allergens = allergens;
     if (spicyLevel !== undefined) menuItem.spicyLevel = spicyLevel;
     if (preparationTime !== undefined) menuItem.preparationTime = preparationTime;
     if (isAvailable !== undefined) menuItem.isAvailable = isAvailable;
+    if (isVeg !== undefined) menuItem.isVeg = isVeg;
+    if (isSpicy !== undefined) menuItem.isSpicy = isSpicy;
 
     await menuItem.save();
-    await menuItem.populate('restaurant', 'name email');
+    
+    // Populate the updated menu item
+    await menuItem.populate(['categoryIds', 'tagIds']);
 
     res.json({
       success: true,

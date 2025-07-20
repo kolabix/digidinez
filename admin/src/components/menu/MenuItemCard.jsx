@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { PencilIcon, TrashIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import placeholderImage from '../../assets/placeholder-food-img.jpg';
 
 export const MenuItemCard = ({ item, onEdit, onDelete, onToggleAvailability }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -10,7 +12,7 @@ export const MenuItemCard = ({ item, onEdit, onDelete, onToggleAvailability }) =
   };
 
   const confirmDelete = () => {
-    onDelete(item.id);
+    onDelete(item._id);
     setShowDeleteConfirm(false);
   };
 
@@ -29,17 +31,11 @@ export const MenuItemCard = ({ item, onEdit, onDelete, onToggleAvailability }) =
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
       {/* Image Section */}
       <div className="relative h-48 bg-gray-100">
-        {item.image ? (
-          <img
-            src={item.image}
-            alt={item.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            No Image
-          </div>
-        )}
+        <img
+          src={item.imageUrl || placeholderImage}
+          alt={item.name}
+          className="w-full h-full object-cover"
+        />
         {/* Veg/Non-veg Indicator */}
         <div className="absolute top-2 left-2">
           <div className={`w-6 h-6 rounded-full ${
@@ -59,10 +55,48 @@ export const MenuItemCard = ({ item, onEdit, onDelete, onToggleAvailability }) =
       {/* Content Section */}
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
-          <span className="text-lg font-semibold text-primary-600">
-            ₹{item.price}
-          </span>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
+            <span className="text-lg font-semibold text-primary-600">
+              ₹{item.price}
+            </span>
+          </div>
+          {/* Actions */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(item._id)}
+              className="p-1.5 text-gray-600 hover:text-gray-900"
+              title="Edit item"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleAvailability(item._id)}
+              className={`p-1.5 ${item.isAvailable ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
+              title={item.isAvailable ? 'Mark unavailable' : 'Mark available'}
+            >
+              {item.isAvailable ? (
+                <EyeSlashIcon className="h-4 w-4" />
+              ) : (
+                <EyeIcon className="h-4 w-4" />
+              )}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="p-1.5 text-red-600 hover:text-red-700"
+              title="Delete item"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Description */}
@@ -108,31 +142,6 @@ export const MenuItemCard = ({ item, onEdit, onDelete, onToggleAvailability }) =
             ))}
           </div>
         )}
-
-        {/* Actions */}
-        <div className="flex gap-2 mt-4">
-          <Button
-            variant="secondary"
-            onClick={() => onToggleAvailability(item.id)}
-            className="flex-1"
-          >
-            {item.isAvailable ? 'Mark Unavailable' : 'Mark Available'}
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => onEdit(item.id)}
-            className="flex-1"
-          >
-            Edit
-          </Button>
-          <Button
-            variant="danger"
-            onClick={handleDelete}
-            className="flex-1"
-          >
-            Delete
-          </Button>
-        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
