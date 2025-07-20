@@ -19,7 +19,7 @@ export const useTags = () => {
       
       const response = await getTags();
       
-      if (response.success && response.data) {
+      if (response.data) {
         setTags(response.data.tags || []);
         setStats({
           totalTags: response.data.totalTags || 0,
@@ -51,7 +51,7 @@ export const useTags = () => {
     try {
       const response = await createTag(tagData);
       
-      if (response.success && response.data?.tag) {
+      if (response.data?.tag) {
         // Add menu items count (will be 0 for new tags)
         const newTag = { ...response.data.tag, menuItemsCount: 0 };
         setTags(prevTags => [...prevTags, newTag]);
@@ -74,7 +74,7 @@ export const useTags = () => {
     try {
       const response = await updateTag(tagId, tagData);
       
-      if (response.success && response.data?.tag) {
+      if (response.data?.tag) {
         const updatedTag = response.data.tag;
         
         setTags(prevTags => 

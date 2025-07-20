@@ -251,18 +251,15 @@ const useForm = ({ initialValues = {}, validationRules = {}, onSubmit } = {}) =>
     errors,
     touched,
     isSubmitting,
-    setIsSubmitting,
     handleChange,
     handleBlur,
     handleSubmit,
-    setValue,
-    setFormValues,
-    validateForm,
     resetForm,
     setFormErrors,
     setFieldError,
-    hasErrors: Object.values(errors).some(error => error !== ''),
-    getNestedValue,
+    setFormValues,
+    validateForm,
+    setFieldValue: setValue // Expose setValue as setFieldValue
   };
 };
 

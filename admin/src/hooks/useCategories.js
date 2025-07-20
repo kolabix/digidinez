@@ -19,10 +19,11 @@ export const useCategories = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await categoryService.getCategories();
-      setCategories(data);
+      const response = await categoryService.getCategories();
+      setCategories(response || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch categories');
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -30,7 +31,8 @@ export const useCategories = () => {
 
   const createCategory = async (categoryData) => {
     try {
-      const newCategory = await categoryService.createCategory(categoryData);
+      const response = await categoryService.createCategory(categoryData);
+      const newCategory = response;
       setCategories(prev => [...prev, newCategory]);
       return newCategory;
     } catch (err) {
@@ -40,7 +42,8 @@ export const useCategories = () => {
 
   const updateCategory = async (id, categoryData) => {
     try {
-      const updatedCategory = await categoryService.updateCategory(id, categoryData);
+      const response = await categoryService.updateCategory(id, categoryData);
+      const updatedCategory = response;
       setCategories(prev => 
         prev.map(cat => cat._id === id ? updatedCategory : cat)
       );
@@ -71,7 +74,8 @@ export const useCategories = () => {
       }));
 
       // Send to backend
-      const updatedCategories = await categoryService.reorderCategories(categoryOrders);
+      const response = await categoryService.reorderCategories(categoryOrders);
+      const updatedCategories = response;
       
       // Update with server response
       setCategories(updatedCategories);

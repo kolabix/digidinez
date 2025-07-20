@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import Select from 'react-select';
 import useForm from '../../hooks/useForm';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
@@ -6,6 +7,55 @@ import { toast } from '../common/Toast';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import menuItemService from '../../services/menuItemService';
+
+const selectStyles = {
+  control: (base) => ({
+    ...base,
+    minHeight: '42px',
+    borderColor: '#D1D5DB',
+    '&:hover': {
+      borderColor: '#9CA3AF'
+    }
+  }),
+  option: (base, { data, isSelected }) => {
+    // Special styling for tags
+    if (data.color) {
+      return {
+        ...base,
+        backgroundColor: isSelected ? `${data.color}33` : 'transparent',
+        color: data.color,
+        '&:hover': {
+          backgroundColor: `${data.color}22`
+        }
+      };
+    }
+    // Default styling for categories and other options
+    return {
+      ...base,
+      backgroundColor: isSelected ? '#4F46E5' : base.backgroundColor,
+      '&:hover': {
+        backgroundColor: isSelected ? '#4F46E5' : '#F3F4F6'
+      }
+    };
+  },
+  multiValue: (base, { data }) => ({
+    ...base,
+    backgroundColor: data.color ? `${data.color}33` : '#E5E7EB',
+  }),
+  multiValueLabel: (base, { data }) => ({
+    ...base,
+    color: data.color || '#374151',
+    fontSize: '0.875rem'
+  }),
+  multiValueRemove: (base, { data }) => ({
+    ...base,
+    color: data.color || '#374151',
+    '&:hover': {
+      backgroundColor: data.color ? `${data.color}44` : '#D1D5DB',
+      color: data.color || '#1F2937'
+    }
+  })
+};
 
 export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
   const [imageFile, setImageFile] = useState(null);
@@ -20,11 +70,11 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
       price: item?.price || '',
       categoryIds: item?.categoryIds || [],
       tagIds: item?.tagIds || [],
-      isVeg: item?.isVeg ?? true,
+      isVeg: item?.isVeg ?? false,
       isSpicy: item?.isSpicy ?? false,
       spicyLevel: item?.spicyLevel || 0,
       isAvailable: item?.isAvailable ?? true,
-      preparationTime: item?.preparationTime || '',
+      preparationTime: item?.preparationTime || 15,
       nutritionInfo: item?.nutritionInfo || {
         calories: '',
         protein: '',
@@ -50,12 +100,12 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
 
         // Create or update the menu item
         const response = item
-          ? await menuItemService.updateItem(item.id, formData)
+          ? await menuItemService.updateItem(item._id, formData)
           : await menuItemService.createItem(formData);
 
         // Handle image upload if there's a new image
-        if (imageFile && response.data.menuItem.id) {
-          await menuItemService.uploadImage(response.data.menuItem.id, imageFile);
+        if (imageFile && response.data.menuItem._id) {
+          await menuItemService.uploadImage(response.data.menuItem._id, imageFile);
         }
 
         toast.success(item ? 'Menu item updated successfully' : 'Menu item created successfully');
@@ -218,24 +268,26 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Categories
                 </label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-2">
-                  {categories.map(category => (
-                    <label key={category.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={values.categoryIds.includes(category.id)}
-                        onChange={() => {
-                          const newCategories = values.categoryIds.includes(category.id)
-                            ? values.categoryIds.filter(id => id !== category.id)
-                            : [...values.categoryIds, category.id];
-                          setFieldValue('categoryIds', newCategories);
-                        }}
-                        className="rounded text-primary-600"
-                      />
-                      <span>{category.name}</span>
-                    </label>
-                  ))}
-                </div>
+                <Select
+                  isMulti
+                  name="categoryIds"
+                  value={categories?.filter(cat => values.categoryIds?.includes(cat._id))?.map(cat => ({
+                    value: cat._id,
+                    label: cat.name
+                  })) || []}
+                  options={categories?.map(cat => ({
+                    value: cat._id,
+                    label: cat.name
+                  })) || []}
+                  onChange={(selectedOptions) => {
+                    const selectedIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
+                    setFieldValue('categoryIds', selectedIds);
+                  }}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  styles={selectStyles}
+                  placeholder="Select categories..."
+                />
                 {errors.categoryIds && (
                   <p className="mt-1 text-sm text-red-600">{errors.categoryIds}</p>
                 )}
@@ -245,32 +297,39 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tags
                 </label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border rounded p-2">
-                  {tags.map(tag => (
-                    <label key={tag.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={values.tagIds.includes(tag.id)}
-                        onChange={() => {
-                          const newTags = values.tagIds.includes(tag.id)
-                            ? values.tagIds.filter(id => id !== tag.id)
-                            : [...values.tagIds, tag.id];
-                          setFieldValue('tagIds', newTags);
-                        }}
-                        className="rounded text-primary-600"
-                      />
-                      <span
-                        className="px-2 py-0.5 rounded-full text-xs"
-                        style={{
-                          backgroundColor: tag.color + '33',
-                          color: tag.color
-                        }}
-                      >
-                        {tag.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+                <Select
+                  isMulti
+                  name="tagIds"
+                  value={tags?.filter(tag => values.tagIds?.includes(tag._id))?.map(tag => ({
+                    value: tag._id,
+                    label: tag.name,
+                    color: tag.color
+                  })) || []}
+                  options={tags?.map(tag => ({
+                    value: tag._id,
+                    label: tag.name,
+                    color: tag.color
+                  })) || []}
+                  onChange={(selectedOptions) => {
+                    const selectedIds = selectedOptions ? selectedOptions.map(option => option.value) : [];
+                    setFieldValue('tagIds', selectedIds);
+                  }}
+                  formatOptionLabel={({ label, color }) => (
+                    <span
+                      className="px-2 py-0.5 rounded-full text-xs"
+                      style={{
+                        backgroundColor: color + '33',
+                        color: color
+                      }}
+                    >
+                      {label}
+                    </span>
+                  )}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  styles={selectStyles}
+                  placeholder="Select tags..."
+                />
                 {errors.tagIds && (
                   <p className="mt-1 text-sm text-red-600">{errors.tagIds}</p>
                 )}
@@ -284,30 +343,28 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                   Properties
                 </label>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.isVeg}
-                      onChange={(e) => setFieldValue('isVeg', e.target.checked)}
-                      className="rounded text-green-600"
-                    />
-                    <span>Vegetarian</span>
-                  </label>
+                  <Input
+                    type="checkbox"
+                    label="Veg"
+                    name="isVeg"
+                    checked={values.isVeg}
+                    onChange={handleChange}
+                    className="rounded text-green-600"
+                  />
 
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.isSpicy}
-                      onChange={(e) => {
-                        setFieldValue('isSpicy', e.target.checked);
-                        if (!e.target.checked) {
-                          setFieldValue('spicyLevel', 0);
-                        }
-                      }}
-                      className="rounded text-red-600"
-                    />
-                    <span>Spicy</span>
-                  </label>
+                  <Input
+                    type="checkbox"
+                    label="Spicy"
+                    name="isSpicy"
+                    checked={values.isSpicy}
+                    onChange={(e) => {
+                      handleChange(e);
+                      if (!e.target.value) {
+                        setFieldValue('spicyLevel', 0);
+                      }
+                    }}
+                    className="rounded text-red-600"
+                  />
 
                   {values.isSpicy && (
                     <div>
@@ -315,7 +372,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                         Spicy Level
                       </label>
                       <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map(level => (
+                        {[1, 2, 3].map(level => (
                           <button
                             key={level}
                             type="button"
@@ -333,15 +390,14 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                     </div>
                   )}
 
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.isAvailable}
-                      onChange={(e) => setFieldValue('isAvailable', e.target.checked)}
-                      className="rounded text-primary-600"
-                    />
-                    <span>Available</span>
-                  </label>
+                  <Input
+                    type="checkbox"
+                    label="Available"
+                    name="isAvailable"
+                    checked={values.isAvailable}
+                    onChange={handleChange}
+                    className="rounded text-primary-600"
+                  />
                 </div>
               </div>
 
@@ -408,28 +464,30 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Allergens
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                {commonAllergens.map(allergen => (
-                  <label key={allergen} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={values.allergens.includes(allergen)}
-                      onChange={() => {
-                        const newAllergens = values.allergens.includes(allergen)
-                          ? values.allergens.filter(a => a !== allergen)
-                          : [...values.allergens, allergen];
-                        setFieldValue('allergens', newAllergens);
-                      }}
-                      className="rounded text-primary-600"
-                    />
-                    <span className="text-sm">{allergen}</span>
-                  </label>
-                ))}
-              </div>
+              <Select
+                isMulti
+                name="allergens"
+                value={values.allergens.map(allergen => ({
+                  value: allergen,
+                  label: allergen
+                }))}
+                options={commonAllergens.map(allergen => ({
+                  value: allergen,
+                  label: allergen
+                }))}
+                onChange={(selectedOptions) => {
+                  const selectedAllergens = selectedOptions ? selectedOptions.map(option => option.value) : [];
+                  setFieldValue('allergens', selectedAllergens);
+                }}
+                className="basic-multi-select"
+                classNamePrefix="select"
+                styles={selectStyles}
+                placeholder="Select allergens..."
+              />
             </div>
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4">
               <Button
                 type="button"
                 variant="secondary"
