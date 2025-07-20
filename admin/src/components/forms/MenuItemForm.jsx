@@ -169,8 +169,8 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
 
   // Common allergens in Indian cuisine
   const commonAllergens = [
-    'Milk', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts',
-    'Peanuts', 'Wheat', 'Soybeans', 'Sesame'
+    'dairy', 'eggs', 'fish', 'shellfish', 'tree-nuts',
+    'peanuts', 'wheat', 'soy', 'sesame'
   ];
 
   return (
