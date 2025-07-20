@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TagIcon } from '@heroicons/react/24/outline';
 import { useTags } from '../../hooks/useTags';
 import { TagList } from '../../components/menu/TagList';
-import { TagForm } from '../../components/menu/TagForm';
+import { TagForm } from '../../components/forms/TagForm';
 import { toast } from '../../components/common/Toast';
 
 export const Tags = () => {

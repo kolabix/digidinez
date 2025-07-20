@@ -4,7 +4,7 @@ import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { toast } from '../../components/common/Toast';
 import { CategoryList } from '../../components/menu/CategoryList';
-import { CategoryForm } from '../../components/menu/CategoryForm';
+import { CategoryForm } from '../../components/forms/CategoryForm';
 
 export const Categories = () => {
   const {
