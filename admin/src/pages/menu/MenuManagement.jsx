@@ -1,0 +1,161 @@
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  ClipboardDocumentListIcon, 
+  TagIcon,
+  ListBulletIcon,
+  ArrowUpTrayIcon 
+} from '@heroicons/react/24/outline';
+import Categories from './Categories';
+import Tags from './Tags';
+
+const MenuManagement = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Determine active tab from URL
+  const getActiveTab = () => {
+    const path = location.pathname;
+    if (path.includes('/categories')) return 'categories';
+    if (path.includes('/tags')) return 'tags';
+    if (path.includes('/items')) return 'items';
+    if (path.includes('/bulk-upload')) return 'bulk-upload';
+    return 'categories'; // default
+  };
+
+  const [activeTab, setActiveTab] = useState(getActiveTab());
+
+  const tabs = [
+    {
+      id: 'categories',
+      name: 'Categories',
+      icon: ClipboardDocumentListIcon,
+      path: '/menu/categories',
+      description: 'Organize your menu with categories',
+      available: true
+    },
+    {
+      id: 'tags',
+      name: 'Tags',
+      icon: TagIcon,
+      path: '/menu/tags',
+      description: 'Create flexible labels for menu items',
+      available: true
+    },
+    {
+      id: 'items',
+      name: 'Menu Items',
+      icon: ListBulletIcon,
+      path: '/menu/items',
+      description: 'Manage your complete menu inventory',
+      available: false // Session 3
+    },
+    {
+      id: 'bulk-upload',
+      name: 'Bulk Upload',
+      icon: ArrowUpTrayIcon,
+      path: '/menu/bulk-upload',
+      description: 'Import menu data from Excel/CSV files',
+      available: false // Session 4
+    }
+  ];
+
+  const handleTabChange = (tab) => {
+    if (!tab.available) return;
+    
+    setActiveTab(tab.id);
+    navigate(tab.path);
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'categories':
+        return <Categories />;
+      case 'tags':
+        return <Tags />;
+      case 'items':
+        return (
+          <div className="text-center py-12">
+            <ListBulletIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Menu Items</h3>
+            <p className="mt-2 text-gray-500">Coming in Session 3</p>
+          </div>
+        );
+      case 'bulk-upload':
+        return (
+          <div className="text-center py-12">
+            <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Bulk Upload</h3>
+            <p className="mt-2 text-gray-500">Coming in Session 4</p>
+          </div>
+        );
+      default:
+        return <Categories />;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Organize and manage your restaurant's digital menu
+        </p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const isDisabled = !tab.available;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab)}
+                disabled={isDisabled}
+                className={`
+                  group inline-flex items-center border-b-2 py-4 px-1 text-sm font-medium
+                  ${isActive
+                    ? 'border-primary-500 text-primary-600 cursor-pointer'
+                    : isDisabled
+                    ? 'border-transparent text-gray-400 cursor-not-allowed'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 cursor-pointer'
+                  }
+                `}
+              >
+                <Icon 
+                  className={`
+                    -ml-0.5 mr-2 h-5 w-5
+                    ${isActive
+                      ? 'text-primary-500'
+                      : isDisabled
+                      ? 'text-gray-400'
+                      : 'text-gray-400 group-hover:text-gray-500'
+                    }
+                  `}
+                />
+                {tab.name}
+                {isDisabled && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                    Soon
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-6">
+        {renderTabContent()}
+      </div>
+    </div>
+  );
+};
+
+export default MenuManagement;

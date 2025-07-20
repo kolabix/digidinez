@@ -4,7 +4,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import Categories from './pages/menu/Categories';
+import MenuManagement from './pages/menu/MenuManagement';
 import Layout from './components/layout/Layout';
 
 // Protected Route Component
@@ -77,7 +77,7 @@ function AppContent() {
       <Route path="/menu" element={
         <ProtectedRoute>
           <Layout>
-            <Categories />
+            <MenuManagement />
           </Layout>
         </ProtectedRoute>
       } />
@@ -85,7 +85,31 @@ function AppContent() {
       <Route path="/menu/categories" element={
         <ProtectedRoute>
           <Layout>
-            <Categories />
+            <MenuManagement />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/menu/tags" element={
+        <ProtectedRoute>
+          <Layout>
+            <MenuManagement />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/menu/items" element={
+        <ProtectedRoute>
+          <Layout>
+            <MenuManagement />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/menu/bulk-upload" element={
+        <ProtectedRoute>
+          <Layout>
+            <MenuManagement />
           </Layout>
         </ProtectedRoute>
       } />
