@@ -9,6 +9,7 @@ import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
 import restaurantRoutes from './routes/restaurantRoutes.js';
+import tagRoutes from './routes/tagRoutes.js';
 import { handleUploadErrors } from './middleware/uploadMiddleware.js';
 
 // Load environment variables
@@ -79,6 +80,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/menu/tags', tagRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 

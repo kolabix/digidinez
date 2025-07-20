@@ -17,12 +17,7 @@ import {
   createMenuCategory,
   updateMenuCategory,
   deleteMenuCategory,
-  reorderCategories,
-  // Tag methods
-  getTags,
-  createTag,
-  updateTag,
-  deleteTag
+  reorderCategories
 } from '../controllers/menuController.js';
 import { protect } from '../middleware/auth.js';
 import {
@@ -32,9 +27,7 @@ import {
   validateCategory,
   validateMenuQuery,
   validateCreateMenuCategory,
-  validateUpdateMenuCategory,
-  validateCreateTag,
-  validateUpdateTag
+  validateUpdateMenuCategory
 } from '../middleware/validation.js';
 import { uploadMenuImage } from '../utils/imageUpload.js';
 
@@ -82,14 +75,5 @@ router.route('/categories/reorder')
 router.route('/categories/:id')
   .put(validateObjectId, validateUpdateMenuCategory, updateMenuCategory)  // PUT /api/menu/categories/:id
   .delete(validateObjectId, deleteMenuCategory);                          // DELETE /api/menu/categories/:id
-
-// Tag routes
-router.route('/tags')
-  .get(getTags)                         // GET /api/menu/tags
-  .post(validateCreateTag, createTag);  // POST /api/menu/tags
-
-router.route('/tags/:id')
-  .put(validateObjectId, validateUpdateTag, updateTag)  // PUT /api/menu/tags/:id
-  .delete(validateObjectId, deleteTag);                 // DELETE /api/menu/tags/:id
 
 export default router;

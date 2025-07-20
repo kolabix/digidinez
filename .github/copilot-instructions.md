@@ -181,7 +181,7 @@ digidinez/
 
 1. **ALWAYS use the `useForm` hook** for form state management:
 ```jsx
-import { useForm } from '../hooks/useForm';
+import useForm from '../hooks/useForm'; // ⚠️ DEFAULT IMPORT - NOT NAMED IMPORT
 
 const MyFormComponent = () => {
   const { values, errors, handleChange, handleSubmit, setFieldError } = useForm({
@@ -205,6 +205,11 @@ const MyFormComponent = () => {
   );
 };
 ```
+
+**🚨 CRITICAL: `useForm` Import Convention:**
+- ✅ **CORRECT**: `import useForm from '../hooks/useForm';` (default import)
+- ❌ **WRONG**: `import { useForm } from '../hooks/useForm';` (named import)
+- **The useForm hook is exported as DEFAULT export, not named export**
 
 2. **ALWAYS use React components instead of HTML elements:**
    - ✅ `<Button variant="primary">` instead of `<button>`
@@ -436,7 +441,74 @@ const MyComponent = () => {
 
 **This pattern MUST be used for all future components with useEffect API calls.**
 
-### 🚨 **useForm Infinite Loop Prevention - MANDATORY**
+### 🚨 **Authentication Middleware Usage - MANDATORY**
+
+**Problem:** Controllers accessing `req.restaurant._id` when auth middleware sets `req.restaurant.id`
+
+**Root Cause:** The `protect` middleware in `middleware/auth.js` sets:
+```javascript
+req.restaurant = {
+  id: restaurant._id,        // ✅ Use req.restaurant.id
+  name: restaurant.name,
+  email: restaurant.email,
+  phone: restaurant.phone
+};
+```
+
+#### **Correct Usage in Controllers:**
+```javascript
+// ✅ CORRECT - Use req.restaurant.id
+const getTags = async (req, res) => {
+  try {
+    const restaurantId = req.restaurant.id; // ✅ .id not ._id
+    const tags = await Tag.findByRestaurant(restaurantId);
+    // ...
+  }
+};
+
+// ❌ WRONG - This will be undefined
+const getTags = async (req, res) => {
+  try {
+    const restaurantId = req.restaurant._id; // ❌ undefined
+    // ...
+  }
+};
+```
+
+#### **Controllers Already Fixed:**
+- ✅ `menuController.js` - Uses `req.restaurant.id`
+- ✅ `tagController.js` - Fixed to use `req.restaurant.id`
+- ✅ `restaurantController.js` - Uses `req.restaurant.id`
+
+**This pattern MUST be used in ALL controllers that access restaurant data.**
+
+### 🚨 **Route Order in Express - MANDATORY**
+
+**Problem:** More specific routes must be defined before general routes in Express.
+
+**Root Cause:** Express matches routes in order. `/api/menu` will match before `/api/menu/tags`.
+
+#### **Correct Route Order in server.js:**
+```javascript
+// ✅ CORRECT - Specific routes first
+app.use('/api/auth', authRoutes);
+app.use('/api/menu/tags', tagRoutes);      // ✅ Specific route first
+app.use('/api/menu', menuRoutes);          // ✅ General route after
+app.use('/api/restaurants', restaurantRoutes);
+
+// ❌ WRONG - General route catches all
+app.use('/api/menu', menuRoutes);          // ❌ This catches /api/menu/tags
+app.use('/api/menu/tags', tagRoutes);      // ❌ Never reached
+```
+
+#### **Route Conflicts to Avoid:**
+- `/api/menu/tags` must come before `/api/menu`
+- `/api/restaurants/profile` must come before `/api/restaurants/:id`
+- Any specific path must come before wildcard or parameterized paths
+
+**This pattern MUST be followed when adding new route modules.**
+
+### 🚨 **Route Order in Express - MANDATORY**
 
 **Problem:** When using the `useForm` hook in components with `useEffect`, functions like `resetForm` and `setFormErrors` can cause infinite loops if they're included in dependency arrays without being wrapped in `useCallback`.
 
@@ -509,7 +581,36 @@ useEffect(() => {
 #### **Components Already Fixed:**
 - ✅ `admin/src/hooks/useForm.js` - All returned functions wrapped
 - ✅ `admin/src/components/menu/CategoryForm.jsx` - Uses setFormValues instead of resetForm
+- ✅ `admin/src/components/menu/TagForm.jsx` - Uses setFormValues for both edit and create modes
 - ✅ `admin/src/components/forms/ProfileForm.jsx` - Previous fix applied
+
+#### **Specific Pattern for Edit/Create Forms:**
+```javascript
+// ✅ CORRECT - Use setFormValues for both cases, avoid resetForm in useEffect
+useEffect(() => {
+  if (editingItem) {
+    setFormValues({
+      name: editingItem.name,
+      description: editingItem.description
+    });
+  } else {
+    // Use setFormValues instead of resetForm()
+    setFormValues({
+      name: '',
+      description: ''
+    });
+  }
+}, [editingItem, setFormValues]); // Only setFormValues in dependencies
+
+// ❌ WRONG - Using resetForm in useEffect dependencies
+useEffect(() => {
+  if (editingItem) {
+    setFormValues(editingItem);
+  } else {
+    resetForm(); // Causes infinite loop
+  }
+}, [editingItem, setFormValues, resetForm]); // resetForm causes re-renders
+```
 
 **This pattern MUST be implemented in ALL form-related hooks and components.**
 
