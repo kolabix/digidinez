@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useCategories } from '../../hooks/useCategories';
-import { Button } from '../../components/common/Button';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { toast } from '../../components/common/Toast';
-import { CategoryList } from '../../components/menu/CategoryList';
-import { CategoryForm } from '../../components/forms/CategoryForm';
+import { Button } from '../common/Button';
+import { LoadingSpinner } from '../common/LoadingSpinner';
+import { toast } from '../common/Toast';
+import { CategoryList } from './CategoryList';
+import { CategoryForm } from '../forms/CategoryForm';
 
 export const Categories = () => {
   const {

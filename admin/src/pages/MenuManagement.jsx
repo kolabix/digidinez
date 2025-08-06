@@ -6,11 +6,11 @@ import {
   ListBulletIcon,
   ArrowUpTrayIcon 
 } from '@heroicons/react/24/outline';
-import Categories from './Categories';
-import Tags from './Tags';
+import { Categories } from '../components/menu/Categories';
+import { Tags } from '../components/menu/Tags';
+import { MenuItems } from '../components/menu/MenuItems';
 
-const MenuManagement = () => {
-  const navigate = useNavigate();
+export const MenuManagement = () => {
   const location = useLocation();
   
   // Determine active tab from URL
@@ -48,7 +48,7 @@ const MenuManagement = () => {
       icon: ListBulletIcon,
       path: '/menu/items',
       description: 'Manage your complete menu inventory',
-      available: false // Session 3
+      available: true // Session 3
     },
     {
       id: 'bulk-upload',
@@ -64,7 +64,7 @@ const MenuManagement = () => {
     if (!tab.available) return;
     
     setActiveTab(tab.id);
-    navigate(tab.path);
+    // navigate(tab.path);
   };
 
   const renderTabContent = () => {
@@ -74,13 +74,7 @@ const MenuManagement = () => {
       case 'tags':
         return <Tags />;
       case 'items':
-        return (
-          <div className="text-center py-12">
-            <ListBulletIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Menu Items</h3>
-            <p className="mt-2 text-gray-500">Coming in Session 3</p>
-          </div>
-        );
+        return <MenuItems />;
       case 'bulk-upload':
         return (
           <div className="text-center py-12">
@@ -157,5 +151,3 @@ const MenuManagement = () => {
     </div>
   );
 };
-
-export default MenuManagement;

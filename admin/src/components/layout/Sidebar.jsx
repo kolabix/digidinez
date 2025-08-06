@@ -2,7 +2,6 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar = ({ isOpen, onClose }) => {
-  const location = useLocation();
   const { restaurant } = useAuth();
 
   const navigation = [
@@ -17,24 +16,9 @@ export const Sidebar = ({ isOpen, onClose }) => {
       to: '/profile'
     },
     {
-      title: 'Menu Management',
-      items: [
-        {
-          label: 'Categories',
-          icon: '📑',
-          to: '/menu/categories'
-        },
-        {
-          label: 'Tags',
-          icon: '🏷️',
-          to: '/menu/tags'
-        },
-        {
-          label: 'Menu Items',
-          icon: '🍽️',
-          to: '/menu/items'
-        }
-      ]
+      label: 'Menu Management',
+      icon: '🍽️',
+      to: '/menu'
     },
     {
       label: 'QR Codes',
@@ -43,13 +27,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
       disabled: true // Coming in Phase 5
     }
   ];
-
-  const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
-    return location.pathname.startsWith(path);
-  };
 
   // Base classes for the sidebar
   const sidebarClasses = `
@@ -73,62 +50,28 @@ export const Sidebar = ({ isOpen, onClose }) => {
       {/* Navigation */}
       <nav className="p-4 space-y-1">
         {navigation.map((item, index) => (
-          item.items ? (
-            // Section with sub-items
-            <div key={index} className="space-y-1">
-              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                {item.title}
-              </h3>
-              {item.items.map((subItem, subIndex) => (
-                <NavLink
-                  key={subIndex}
-                  to={subItem.to}
-                  className={({ isActive }) => `
-                    flex items-center px-3 py-2 text-sm font-medium rounded-md
-                    ${isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-50'
-                    }
-                    ${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                  `}
-                  onClick={e => {
-                    if (subItem.disabled) {
-                      e.preventDefault();
-                    } else {
-                      onClose?.();
-                    }
-                  }}
-                >
-                  <span className="mr-3">{subItem.icon}</span>
-                  {subItem.label}
-                </NavLink>
-              ))}
-            </div>
-          ) : (
-            // Single item
-            <NavLink
-              key={index}
-              to={item.to}
-              className={({ isActive }) => `
-                flex items-center px-3 py-2 text-sm font-medium rounded-md
-                ${isActive
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-50'
-                }
-                ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-              onClick={e => {
-                if (item.disabled) {
-                  e.preventDefault();
-                } else {
-                  onClose?.();
-                }
-              }}
-            >
-              <span className="mr-3">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          )
+          <NavLink
+          key={index}
+          to={item.to}
+          className={({ isActive }) => `
+            flex items-center px-3 py-2 text-sm font-medium rounded-md
+            ${isActive
+              ? 'bg-primary-50 text-primary-700'
+              : 'text-gray-700 hover:bg-gray-50'
+            }
+            ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+          `}
+          onClick={e => {
+            if (item.disabled) {
+              e.preventDefault();
+            } else {
+              onClose?.();
+            }
+          }}
+        >
+          <span className="mr-3">{item.icon}</span>
+          {item.label}
+        </NavLink>
         ))}
       </nav>
     </div>

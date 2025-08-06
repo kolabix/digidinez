@@ -4,13 +4,11 @@ import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Profile } from './pages/Profile';
-import { Categories } from './pages/menu/Categories';
-import { Tags } from './pages/menu/Tags';
-import { MenuItems } from './pages/menu/MenuItems';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthRoute } from './components/auth/AuthRoute';
 import { ToastProvider } from './components/common/Toast';
+import { MenuManagement } from './pages/MenuManagement';
 
 function App() {
   return (
@@ -29,9 +27,7 @@ function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/menu/categories" element={<Categories />} />
-                <Route path="/menu/tags" element={<Tags />} />
-                <Route path="/menu/items" element={<MenuItems />} />
+                <Route path="/menu" element={<MenuManagement />} />
               </Route>
             </Route>
 
