@@ -1,31 +1,73 @@
-import { useState } from 'react';
-import { MagnifyingGlassIcon, PlusIcon, TagIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
+import { PlusIcon, TagIcon } from '@heroicons/react/24/outline';
 import { TagCard } from './TagCard';
 import { Button } from '../common/Button';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { Input } from '../common/Input';
 
-export const TagList = ({ 
-  tags, 
-  loading, 
-  onCreateTag, 
-  onEditTag, 
-  onDeleteTag, 
-  onToggleStatus 
+export const TagList = ({
+  tags,
+  loading,
+  onEditTag,
+  onDeleteTag,
+  onToggleStatus,
+  onCreateTag
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'inactive'
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Filter tags based on search and status
   const filteredTags = tags.filter(tag => {
     const matchesSearch = tag.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         tag.slug.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      tag.slug.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = filterStatus === 'all' ||
-                         (filterStatus === 'active' && tag.isActive) ||
-                         (filterStatus === 'inactive' && !tag.isActive);
-    
+      (filterStatus === 'active' && tag.isActive) ||
+      (filterStatus === 'inactive' && !tag.isActive);
+
     return matchesSearch && matchesStatus;
   });
+
+  // Get display text for the selected filter
+  const getFilterDisplayText = () => {
+    switch (filterStatus) {
+      case 'active':
+        return 'Active Only';
+      case 'inactive':
+        return 'Inactive Only';
+      default:
+        return 'All Tags';
+    }
+  };
+
+  // Handle filter selection
+  const handleFilterSelect = (status) => {
+    setFilterStatus(status);
+    setIsDropdownOpen(false);
+  };
+
+  // Toggle dropdown
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  const handleClickOutside = (e) => {
+    if (!e.target.closest('.dropdown-container')) {
+      setIsDropdownOpen(false);
+    }
+  };
+
+  // Add click outside listener
+  useEffect(() => {
+    if (isDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [isDropdownOpen]);
 
   if (loading) {
     return (
@@ -37,41 +79,59 @@ export const TagList = ({
 
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Button
-          variant="primary"
-          onClick={onCreateTag}
-          className="inline-flex items-center"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Create Tag
-        </Button>
-
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          {/* Search */}
-          <div className="relative">
-            <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search tags..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-full sm:w-64"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+      <div className="flex bg-white rounded-lg shadow p-4">
+        <div className="dropdown-container relative">
+          <button
+            onClick={toggleDropdown}
+            className="shrink-0 inline-flex w-36 items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 cursor-pointer rounded-s-lg hover:bg-gray-200 focus:outline-none"
+            type="button"
           >
-            <option value="all">All Tags</option>
-            <option value="active">Active Only</option>
-            <option value="inactive">Inactive Only</option>
-          </select>
+            {getFilterDisplayText()}
+            <svg className={`w-2.5 h-2.5 ms-2.5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
+            </svg>
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute z-10 mt-1 bg-white divide-y divide-gray-100 rounded-lg shadow-lg w-44 border border-gray-200">
+              <ul className="py-2 text-sm text-gray-700" aria-labelledby="dropdown-button">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleFilterSelect('all')}
+                    className={`inline-flex w-full px-4 py-2 hover:bg-gray-100 ${filterStatus === 'all' ? 'bg-primary-50 text-primary-700' : ''}`}
+                  >
+                    All Tags
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleFilterSelect('active')}
+                    className={`inline-flex w-full px-4 py-2 hover:bg-gray-100 ${filterStatus === 'active' ? 'bg-primary-50 text-primary-700' : ''}`}
+                  >
+                    Active Only
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleFilterSelect('inactive')}
+                    className={`inline-flex w-full px-4 py-2 hover:bg-gray-100 ${filterStatus === 'inactive' ? 'bg-primary-50 text-primary-700' : ''}`}
+                  >
+                    Inactive Only
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+        <div className="relative w-full">
+          <Input type="search"
+            className="block p-2.5 w-full border-l-0 rounded-none rounded-e-lg"
+            placeholder="Search tags..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
@@ -126,7 +186,7 @@ export const TagList = ({
           <TagIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">No tags found</h3>
           <p className="mt-2 text-gray-500">
-            {searchTerm 
+            {searchTerm
               ? `No tags match "${searchTerm}"`
               : `No ${filterStatus} tags found`
             }

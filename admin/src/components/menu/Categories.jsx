@@ -34,7 +34,7 @@ export const Categories = () => {
   const handleFormSubmit = async (formData) => {
     try {
       setFormLoading(true);
-      
+
       if (editingCategory) {
         await updateCategory(editingCategory._id, formData);
         toast.success('Category updated successfully');
@@ -42,7 +42,7 @@ export const Categories = () => {
         await createCategory(formData);
         toast.success('Category created successfully');
       }
-      
+
       setShowForm(false);
       setEditingCategory(null);
     } catch (error) {
@@ -88,12 +88,12 @@ export const Categories = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Menu Categories</h1>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-xl font-semibold text-gray-900">Menu Categories</h2>
+          <p className="mt-1 text-sm text-gray-500">
             Organize your menu items by creating and managing categories. Drag to reorder.
           </p>
         </div>
@@ -129,7 +129,7 @@ export const Categories = () => {
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-primary-100 rounded-md flex items-center justify-center">
                 <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14-7l2 2m0 0l2 2m-2-2v6m2-6h-6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-6m-4 0H6" />
                 </svg>
               </div>
             </div>

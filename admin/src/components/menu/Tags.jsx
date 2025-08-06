@@ -4,6 +4,7 @@ import { useTags } from '../../hooks/useTags';
 import { TagList } from '../../components/menu/TagList';
 import { TagForm } from '../../components/forms/TagForm';
 import { toast } from '../../components/common/Toast';
+import { Button } from '../common/Button';
 
 export const Tags = () => {
   const {
@@ -90,29 +91,34 @@ export const Tags = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header with Stats */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Tag Management</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Create and manage flexible labels for your menu items
-          </p>
-        </div>
-
-        {/* Stats */}
-        {!loading && (
-          <div className="mt-4 sm:mt-0 flex space-x-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary-600">{stats.totalTags}</div>
-              <div className="text-xs text-gray-500">Total Tags</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.activeTags}</div>
-              <div className="text-xs text-gray-500">Active</div>
-            </div>
+      {!loading && (
+        <div className="flex mb-8">
+          <div className="flex-1">
+            <h2 className="text-xl font-semibold text-gray-900">Tag Management</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Create and manage flexible labels for your menu items
+            </p>
           </div>
-        )}
-      </div>
+          <div className="flex space-x-10 items-center">
+            <div className="mt-4 sm:mt-0 flex space-x-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-600">{stats.totalTags}</div>
+                <div className="text-xs text-gray-500">Total Tags</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{stats.activeTags}</div>
+                <div className="text-xs text-gray-500">Active</div>
+              </div>
+            </div>
+            <Button
+              variant="primary"
+              onClick={handleCreateTag}
+            >
+              Create Tag
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Tag List */}
       <TagList
