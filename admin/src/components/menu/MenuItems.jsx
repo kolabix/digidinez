@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { useTags } from '../../hooks/useTags';
 import { Button } from '../../components/common/Button';
@@ -13,6 +13,7 @@ export const MenuItems = () => {
   // State for items, loading, and filters
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [filters, setFilters] = useState({
@@ -30,37 +31,76 @@ export const MenuItems = () => {
 
   // Prevent duplicate API calls
   const hasLoadedRef = useRef(false);
+  
+  // Debounce timer ref
+  const debounceTimerRef = useRef(null);
 
   useEffect(() => {
     if (!hasLoadedRef.current) {
       hasLoadedRef.current = true;
-      loadMenuItems();
+      loadMenuItems(false);
     }
   }, []);
 
-  // Load items when filters change
+  // Debounced search effect
   useEffect(() => {
     // Skip the first render
-    if (hasLoadedRef.current) {
-      loadMenuItems();
+    if (!hasLoadedRef.current) return;
+    
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
-  }, [filters]);
+    
+    // Set new timer for debounced search
+    debounceTimerRef.current = setTimeout(() => {
+      loadMenuItems(true); // true indicates this is a search request
+    }, 300); // 300ms delay
+    
+    // Cleanup timer on unmount
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [filters.search]); // Only trigger on search changes
 
-  const loadMenuItems = async () => {
+  // Load items when other filters change (non-search)
+  useEffect(() => {
+    // Skip the first render and search changes
+    if (!hasLoadedRef.current || filters.search) return;
+    
+    loadMenuItems(false);
+  }, [filters.categories, filters.tags, filters.isVeg, filters.spicyLevel, filters.isAvailable]);
+
+  const loadMenuItems = async (isSearch = false) => {
     try {
-      setLoading(true);
+      if (isSearch) {
+        setSearchLoading(true);
+      } else {
+        setLoading(true);
+      }
       const response = await menuItemService.getItems(filters);
       setItems(response.data.menuItems);
     } catch (error) {
       toast.error('Failed to load menu items');
       console.error('Error loading menu items:', error);
     } finally {
-      setLoading(false);
+      if (isSearch) {
+        setSearchLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const handleSearchChange = (e) => {
+    const searchValue = e.target.value;
+    setFilters(prev => ({ ...prev, search: searchValue }));
   };
 
   const handleAddItem = () => {
@@ -86,7 +126,7 @@ export const MenuItems = () => {
     try {
       await menuItemService.deleteItem(itemId);
       toast.success('Menu item deleted successfully');
-      loadMenuItems();
+      loadMenuItems(false);
     } catch (error) {
       toast.error('Failed to delete menu item');
       console.error('Error deleting menu item:', error);
@@ -97,7 +137,7 @@ export const MenuItems = () => {
     try {
       await menuItemService.toggleAvailability(itemId);
       toast.success('Item availability updated');
-      loadMenuItems();
+      loadMenuItems(false);
     } catch (error) {
       toast.error('Failed to update item availability');
       console.error('Error toggling availability:', error);
@@ -107,7 +147,7 @@ export const MenuItems = () => {
   const handleFormClose = () => {
     setShowForm(false);
     setEditingItem(null);
-    loadMenuItems(); // Refresh list after add/edit
+    loadMenuItems(false); // Refresh list after add/edit
   };
 
   if (loading && items.length === 0) {
@@ -141,7 +181,7 @@ export const MenuItems = () => {
         </Button>
       </div>
 
-      {/* Search Component */}
+            {/* Search Component */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="relative">
           <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -149,13 +189,18 @@ export const MenuItems = () => {
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
           </div>
-          <Input
-            type="search"
-            className="block w-full ps-10"
-            placeholder="Search Menu Items"
+          <Input 
+            type="search" 
+            className="block w-full ps-10" 
+            placeholder="Search Menu Items" 
             value={filters.search}
-            onChange={(e) => handleFilterChange({ search: e.target.value })}
+            onChange={handleSearchChange}
           />
+          {searchLoading && (
+            <div className="absolute inset-y-0 end-0 flex items-center pe-3">
+              <LoadingSpinner size="sm" />
+            </div>
+          )}
         </div>
       </div>
 

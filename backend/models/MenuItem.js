@@ -188,17 +188,20 @@ menuItemSchema.statics.getCategoriesByRestaurant = function(restaurantId) {
 menuItemSchema.statics.searchItems = function(restaurantId, searchTerm, options = {}) {
   const query = {
     restaurantId,
-    $text: { $search: searchTerm }
+    $or: [
+      { name: { $regex: searchTerm, $options: 'i' } },
+      { description: { $regex: searchTerm, $options: 'i' } }
+    ]
   };
   
   if (options.availableOnly) {
     query.isAvailable = true;
   }
   
-  return this.find(query, { score: { $meta: 'textScore' } })
+  return this.find(query)
     .populate('categoryIds', 'name')
     .populate('tagIds', 'name color')
-    .sort({ score: { $meta: 'textScore' } });
+    .sort({ name: 1 });
 };
 
 // Instance method to toggle availability
