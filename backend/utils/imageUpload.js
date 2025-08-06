@@ -77,6 +77,14 @@ export const getImagePath = (filename) => {
 // Helper function to get image URL for client
 export const getImageUrl = (filename) => {
   if (!filename) return null;
+  
+  // In development, return full backend URL
+  if (process.env.NODE_ENV === 'development') {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    return `${backendUrl}/uploads/menu-images/${filename}`;
+  }
+  
+  // In production, return relative path (will be served by same domain)
   return `/uploads/menu-images/${filename}`;
 };
 

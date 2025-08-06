@@ -105,10 +105,24 @@ menuItemSchema.virtual('formattedPrice').get(function() {
   return `₹${this.price.toFixed(2)}`;
 });
 
+// Helper function to get full image URL
+const getFullImageUrl = (filename) => {
+  if (!filename) return null;
+  
+  // In development, return full backend URL
+  if (process.env.NODE_ENV === 'development') {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    return `${backendUrl}/uploads/menu-images/${filename}`;
+  }
+  
+  // In production, return relative path (will be served by same domain)
+  return `/uploads/menu-images/${filename}`;
+};
+
 // Virtual for image URL
 menuItemSchema.virtual('imageUrl').get(function() {
   if (this.image && this.image.filename) {
-    return `/uploads/menu-images/${this.image.filename}`;
+    return getFullImageUrl(this.image.filename);
   }
   return null;
 });
