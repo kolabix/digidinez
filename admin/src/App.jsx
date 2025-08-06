@@ -27,7 +27,10 @@ function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/menu" element={<MenuManagement />} />
+                <Route path="/menu/categories" element={<MenuManagement />} />
+                <Route path="/menu/tags" element={<MenuManagement />} />
+                <Route path="/menu/items" element={<MenuManagement />} />
+                <Route path="/menu/bulk-upload" element={<MenuManagement />} />
               </Route>
             </Route>
 

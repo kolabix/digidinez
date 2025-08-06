@@ -7,37 +7,71 @@ import { deleteImageFile, getImagePath, getImageUrl, getImageInfo } from '../uti
 // @access  Private
 export const getMenuItems = async (req, res) => {
   try {
-    const { category, isAvailable, limit = 50, sort = 'category name' } = req.query;
+    const { 
+      category, 
+      isAvailable, 
+      limit = 50, 
+      sort = 'category name',
+      search,
+      categories,
+      tags,
+      isVeg,
+      spicyLevel
+    } = req.query;
     
-    // Build query options
-    const options = {
-      category: category && category !== 'all' ? category : undefined,
-      isAvailable: isAvailable !== undefined ? isAvailable === 'true' : undefined,
-      limit: parseInt(limit),
-      sort: {}
-    };
+    let menuItems;
+    
+    // If search term is provided, use text search
+    if (search && search.trim()) {
+      menuItems = await MenuItem.searchItems(req.restaurant.id, search.trim());
+    } else {
+      // Build query options for regular filtering
+      const options = {
+        category: category && category !== 'all' ? category : undefined,
+        isAvailable: isAvailable !== undefined ? isAvailable === 'true' : undefined,
+        limit: parseInt(limit),
+        sort: {}
+      };
 
-    // Parse sort parameter
-    const sortFields = sort.split(' ');
-    sortFields.forEach(field => {
-      if (field.startsWith('-')) {
-        options.sort[field.substring(1)] = -1;
-      } else {
-        options.sort[field] = 1;
+      // Handle additional filters
+      if (categories) {
+        options.categoryIds = categories.split(',').map(id => id.trim());
       }
-    });
+      
+      if (tags) {
+        options.tagIds = tags.split(',').map(id => id.trim());
+      }
+      
+      if (isVeg !== undefined) {
+        options.isVeg = isVeg === 'true';
+      }
+      
+      if (spicyLevel !== undefined) {
+        options.maxSpicyLevel = parseInt(spicyLevel);
+      }
 
-    const menuItems = await MenuItem.findByRestaurant(req.restaurant.id, options);
+      // Parse sort parameter
+      const sortFields = sort.split(' ');
+      sortFields.forEach(field => {
+        if (field.startsWith('-')) {
+          options.sort[field.substring(1)] = -1;
+        } else {
+          options.sort[field] = 1;
+        }
+      });
+
+      menuItems = await MenuItem.findByRestaurant(req.restaurant.id, options);
+    }
     
     // Get categories for this restaurant
-    const categories = await MenuItem.getCategoriesByRestaurant(req.restaurant.id);
+    const restaurantCategories = await MenuItem.getCategoriesByRestaurant(req.restaurant.id);
 
     res.json({
       success: true,
       count: menuItems.length,
       data: {
         menuItems,
-        categories
+        categories: restaurantCategories
       }
     });
 

@@ -18,7 +18,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     {
       label: 'Menu Management',
       icon: '🍽️',
-      to: '/menu'
+      to: '/menu/categories'
     },
     {
       label: 'QR Codes',

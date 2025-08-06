@@ -5,9 +5,9 @@ import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { toast } from '../../components/common/Toast';
 import { MenuItemCard } from '../../components/menu/MenuItemCard';
-import { MenuItemFilters } from '../../components/menu/MenuItemFilters';
 import { MenuItemForm } from '../../components/forms/MenuItemForm';
 import menuItemService from '../../services/menuItemService';
+import { Input } from '../common/Input';
 
 export const MenuItems = () => {
   // State for items, loading, and filters
@@ -119,29 +119,45 @@ export const MenuItems = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Menu Items</h1>
-        <Button variant="primary" onClick={handleAddItem}>
-          Add New Item
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <MenuItemFilters
-        filters={filters}
-        onChange={handleFilterChange}
-        categories={categories}
-        tags={tags}
-      />
-
+    <div className="mx-auto">
       {/* Loading Overlay */}
       {loading && items.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <LoadingSpinner size="lg" />
         </div>
       )}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Menu Items</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Easily manage and organize your restaurant's menu items.
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={handleAddItem}
+        >
+          Add New Item
+        </Button>
+      </div>
+
+      {/* Search Component */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="relative">
+          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+            </svg>
+          </div>
+          <Input
+            type="search"
+            className="block w-full ps-10"
+            placeholder="Search Menu Items"
+            value={filters.search}
+            onChange={(e) => handleFilterChange({ search: e.target.value })}
+          />
+        </div>
+      </div>
 
       {/* Grid Layout */}
       <div className="grid grid-cols-1 gap-6 mt-6">
@@ -162,7 +178,7 @@ export const MenuItems = () => {
           <h3 className="text-lg font-medium text-gray-900">No menu items found</h3>
           <p className="mt-2 text-gray-500">
             {Object.values(filters).some(v => v !== null && v !== '' && v.length !== 0)
-              ? 'Try adjusting your filters'
+              ? 'Try searching for a different menu item'
               : 'Get started by adding your first menu item'}
           </p>
           <Button variant="primary" onClick={handleAddItem} className="mt-4">

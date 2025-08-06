@@ -12,7 +12,7 @@ import { MenuItems } from '../components/menu/MenuItems';
 
 export const MenuManagement = () => {
   const location = useLocation();
-  
+  const navigate = useNavigate();
   // Determine active tab from URL
   const getActiveTab = () => {
     const path = location.pathname;
@@ -64,7 +64,7 @@ export const MenuManagement = () => {
     if (!tab.available) return;
     
     setActiveTab(tab.id);
-    // navigate(tab.path);
+    navigate(tab.path);
   };
 
   const renderTabContent = () => {

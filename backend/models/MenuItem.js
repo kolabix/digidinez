@@ -138,6 +138,10 @@ menuItemSchema.statics.findByRestaurant = function(restaurantId, options = {}) {
     query.isAvailable = true;
   }
   
+  if (options.isAvailable !== undefined) {
+    query.isAvailable = options.isAvailable;
+  }
+  
   if (options.categoryIds && options.categoryIds.length > 0) {
     query.categoryIds = { $in: options.categoryIds };
   }
@@ -154,7 +158,7 @@ menuItemSchema.statics.findByRestaurant = function(restaurantId, options = {}) {
     query.spicyLevel = { $lte: options.maxSpicyLevel };
   }
   
-  const sort = options.sortBy || { sortOrder: 1, name: 1 };
+  const sort = options.sort || { sortOrder: 1, name: 1 };
   
   return this.find(query)
     .populate('categoryIds', 'name')
