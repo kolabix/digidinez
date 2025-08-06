@@ -570,13 +570,19 @@ export const uploadMenuItemImage = async (req, res) => {
     }
 
     // Delete old image if exists
-    if (menuItem.image) {
-      const oldImagePath = getImagePath(menuItem.image);
+    if (menuItem.image && menuItem.image.filename) {
+      const oldImagePath = getImagePath(menuItem.image.filename);
       deleteImageFile(oldImagePath);
     }
 
     // Update menu item with new image
-    menuItem.image = req.file.filename;
+    menuItem.image = {
+      filename: req.file.filename,
+      path: req.file.path,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      uploadedAt: new Date()
+    };
     await menuItem.save();
 
     // Get image info
@@ -636,7 +642,7 @@ export const deleteMenuItemImage = async (req, res) => {
     }
 
     // Delete image file
-    const imagePath = getImagePath(menuItem.image);
+    const imagePath = getImagePath(menuItem.image.filename);
     const deleted = deleteImageFile(imagePath);
 
     // Update menu item (remove image reference)
@@ -693,7 +699,7 @@ export const getMenuItemImage = async (req, res) => {
     }
 
     // Get image info
-    const imageInfo = getImageInfo(menuItem.image);
+    const imageInfo = getImageInfo(menuItem.image.filename);
 
     if (!imageInfo) {
       return res.status(404).json({
