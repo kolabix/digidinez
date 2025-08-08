@@ -1,11 +1,12 @@
-import { ChevronDown, Circle, Square } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
+import { DietaryBadge } from './DietaryBadge.jsx';
 
 export default function VegToggle({ value, onChange }) {
   const options = [
     { key: 'all', label: 'All', icon: null },
-    { key: 'veg', label: 'Veg', icon: Circle, color: 'text-accent' },
-    { key: 'nonveg', label: 'Non-veg', icon: Square, color: 'text-amber-600' }
+    { key: 'veg', label: 'Veg', icon: 'veg' },
+    { key: 'nonveg', label: 'Non-veg', icon: 'nonveg' }
   ];
 
   const getCurrentValue = () => {
@@ -53,13 +54,9 @@ export default function VegToggle({ value, onChange }) {
             aria-label={`Show ${option.label} items`}
             aria-pressed={isActive}
           >
-            {Icon && (
-              <Icon 
-                size={14} 
-                className={clsx(option.color, {
-                  'opacity-100': isActive,
-                  'opacity-60': !isActive
-                })} 
+            {option.icon && (
+              <DietaryBadge 
+                isVeg={option.icon === 'veg'} 
               />
             )}
             {option.label}

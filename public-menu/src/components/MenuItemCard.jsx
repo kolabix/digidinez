@@ -1,5 +1,5 @@
 import ImageWithBlur from './ImageWithBlur.jsx';
-import clsx from 'clsx';
+import { DietaryBadge } from './DietaryBadge.jsx';
 
 export default function MenuItemCard({ item }) {
   const formatPrice = (price) => {
@@ -60,26 +60,8 @@ export default function MenuItemCard({ item }) {
         />
         
         {/* Veg/Non-veg indicator */}
-        <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full border-2 border-white bg-white shadow-sm">
-          <div
-            className={clsx(
-              'w-full h-full rounded-full flex items-center justify-center',
-              {
-                'bg-accent': item.isVeg,
-                'bg-amber-600': !item.isVeg
-              }
-            )}
-          >
-            <div
-              className={clsx(
-                'w-2 h-2 rounded-full',
-                {
-                  'bg-white': item.isVeg,
-                  'bg-white transform rotate-45': !item.isVeg
-                }
-              )}
-            />
-          </div>
+        <div className="absolute -top-1 -left-1">
+          <DietaryBadge isVeg={item.isVeg} />
         </div>
       </div>
 

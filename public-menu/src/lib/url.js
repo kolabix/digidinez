@@ -10,6 +10,13 @@ export function getRestaurantSlug() {
 }
 
 /**
+ * Get restaurant ID from URL path (alias for getRestaurantSlug)
+ */
+export function getRestaurantId() {
+  return getRestaurantSlug();
+}
+
+/**
  * Custom hook for managing URL query parameters without page reloads
  */
 export function useQueryState(initialParams = {}) {
