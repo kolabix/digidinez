@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
  */
 export function getRestaurantSlug() {
   const path = window.location.pathname;
-  const match = path.match(/\/public\/menu\/([^/]+)/);
+  const match = path.match(/\/menu\/([^/]+)/);
   return match?.[1] || import.meta.env.VITE_RESTAURANT_SLUG;
 }
 
