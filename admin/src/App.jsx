@@ -14,7 +14,7 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <Router>
+        <Router basename="/admin">
           <Routes>
             {/* Auth Routes - Redirect to dashboard if logged in */}
             <Route element={<AuthRoute />}>

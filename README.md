@@ -55,7 +55,8 @@ digidinez/
    
    # Copy environment files
    cp backend/.env.example backend/.env
-   cp frontend/.env.example frontend/.env
+   cp admin/env.example admin/.env
+   cp public-menu/env.example public-menu/.env
    ```
 
 2. **Backend Setup**
@@ -65,14 +66,21 @@ digidinez/
    npm run dev
    ```
 
-3. **Frontend Setup** (in a new terminal)
+3. **Admin Frontend Setup** (in a new terminal)
    ```bash
-   cd frontend
+   cd admin
    npm install
    npm run dev
    ```
 
-4. **Database Setup**
+4. **Public Menu Frontend Setup** (in a new terminal)
+   ```bash
+   cd public-menu
+   npm install
+   npm run dev
+   ```
+
+5. **Database Setup**
    - Install MongoDB locally or use MongoDB Atlas
    - Update `MONGODB_URI` in `backend/.env`
 
@@ -105,7 +113,12 @@ digidinez/
 - `npm run dev` - Start development server with nodemon
 - `npm start` - Start production server
 
-**Frontend:**
+**Admin Frontend:**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+**Public Menu Frontend:**
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
@@ -118,8 +131,11 @@ digidinez/
 - `JWT_SECRET` - JWT signing secret
 - `JWT_EXPIRES_IN` - JWT expiration time
 
-**Frontend (`frontend/.env`):**
-- `VITE_API_URL` - Backend API URL
+**Admin Frontend (`admin/.env`):**
+- `VITE_API_BASE_URL` - Backend API base URL (default: `http://localhost:3001/api`)
+
+**Public Menu Frontend (`public-menu/.env`):**
+- `VITE_API_BASE_URL` - Backend API base URL (default: `http://localhost:3001`)
 
 ## 📱 Usage
 

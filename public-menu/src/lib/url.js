@@ -6,14 +6,7 @@ import { useCallback, useState } from 'react';
 export function getRestaurantSlug() {
   const path = window.location.pathname;
   const match = path.match(/\/menu\/([^/]+)/);
-  return match?.[1] || import.meta.env.VITE_RESTAURANT_SLUG;
-}
-
-/**
- * Get restaurant ID from environment variable
- */
-export function getRestaurantId() {
-  return import.meta.env.VITE_RESTAURANT_ID;
+  return match?.[1];
 }
 
 /**

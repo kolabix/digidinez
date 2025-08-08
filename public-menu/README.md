@@ -31,13 +31,15 @@ A production-ready React 19 + Vite app for displaying restaurant menus with adva
    ```
 
 2. **Configure environment variables**:
-   Create a `.env` file in the root directory:
+   Copy the example environment file and update it:
+   ```bash
+   cp env.example .env
+   ```
+   
+   Update the `.env` file with your configuration:
    ```env
    # Backend API base URL
    VITE_API_BASE_URL=http://localhost:3001
-
-   # Restaurant ID (get this from the backend profile API)
-   VITE_RESTAURANT_ID=687c8d99d8e6993f3609d564
    ```
 
 3. **Start development server**:

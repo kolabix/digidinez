@@ -1,12 +1,69 @@
-# React + Vite
+# DigiDinez Admin
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Admin dashboard for DigiDinez - a restaurant menu digitization platform.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Restaurant profile management
+- Menu item management with categories and tags
+- Image upload and management
+- QR code generation for public menu access
+- Authentication and authorization
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **React 19** with JSX
+- **Vite** for fast development and building
+- **Tailwind CSS** for styling
+- **Axios** for API communication
+- **React Router** for navigation
+
+## Setup
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment variables**:
+   Copy the example environment file and update it:
+   ```bash
+   cp env.example .env
+   ```
+   
+   Update the `.env` file with your configuration:
+   ```env
+   # Backend API base URL
+   VITE_API_BASE_URL=http://localhost:3001/api
+   ```
+
+3. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the admin dashboard**:
+   - Development: `http://localhost:5173`
+   - Login with your restaurant credentials
+
+## API Integration
+
+The admin app communicates with the DigiDinez backend API:
+
+- **Base URL**: Configured via `VITE_API_BASE_URL` environment variable
+- **Authentication**: Cookie-based JWT authentication
+- **CORS**: Configured for localhost development
+
+## Building for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory, ready for deployment.
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:3001/api` |

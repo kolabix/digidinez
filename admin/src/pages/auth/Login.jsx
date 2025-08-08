@@ -12,7 +12,7 @@ export const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
 
@@ -36,7 +36,7 @@ export const Login = () => {
     clearError(); // Clear any previous auth errors
     const result = await login(credentials.identifier, credentials.password);
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/');
     }
     return result;
   };
