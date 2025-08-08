@@ -9,6 +9,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AuthRoute } from './components/auth/AuthRoute';
 import { ToastProvider } from './components/common/Toast';
 import { MenuManagement } from './pages/MenuManagement';
+import { QRCode } from './pages/QRCode';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
                 <Route path="/menu/tags" element={<MenuManagement />} />
                 <Route path="/menu/items" element={<MenuManagement />} />
                 <Route path="/menu/bulk-upload" element={<MenuManagement />} />
+                <Route path="/qr" element={<QRCode />} />
               </Route>
             </Route>
 

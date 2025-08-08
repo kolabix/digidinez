@@ -23,8 +23,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
     {
       label: 'QR Codes',
       icon: '📱',
-      to: '/qr',
-      disabled: true // Coming in Phase 5
+      to: '/qr'
     }
   ];
 
