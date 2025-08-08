@@ -1,0 +1,38 @@
+import { Building2 } from 'lucide-react';
+
+export default function Header({ restaurant }) {
+  if (!restaurant) return null;
+
+  return (
+    <header className="sticky top-0 z-40 bg-surface border-b border-border shadow-sm">
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          {/* Logo/Avatar */}
+          <div className="flex-shrink-0">
+            {restaurant.logoUrl ? (
+              <img
+                src={restaurant.logoUrl}
+                alt={`${restaurant.name} logo`}
+                className="w-10 h-10 rounded-lg object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                <Building2 size={20} className="text-white" />
+              </div>
+            )}
+          </div>
+
+          {/* Restaurant Info */}
+          <div className="flex-1 min-w-0">
+            <h1 className="font-semibold text-lg text-text-primary truncate">
+              {restaurant.name}
+            </h1>
+            <p className="text-sm text-text-secondary">
+              Digital Menu
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

@@ -1,78 +1,231 @@
-import { useState } from 'react'
-import { Search, Menu as MenuIcon } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react';
+import { loadInitialData, filterItems } from './lib/api.js';
+import { getRestaurantSlug, useQueryState, parseCommaList } from './lib/url.js';
+import Header from './components/Header.jsx';
+import FilterBar from './components/FilterBar.jsx';
+import CategorySection from './components/CategorySection.jsx';
+import BottomBar from './components/BottomBar.jsx';
+import CategorySheet from './components/CategorySheet.jsx';
+import EmptyState from './components/EmptyState.jsx';
 
 export default function App() {
-  const [open, setOpen] = useState(false)
-  const [q, setQ] = useState('')
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const loadingRef = useRef(false);
 
-  return (
-    <div className="min-h-screen pb-28">
-      <header className="sticky top-0 z-30 backdrop-blur bg-white/80 border-b">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-md bg-surface-muted grid place-items-center text-sm font-semibold">D</div>
-          <h1 className="text-lg font-semibold tracking-tight">DigiDinez</h1>
-        </div>
-      </header>
+  // URL state management
+  const { params, setParam } = useQueryState();
 
-      <div className="sticky top-[3.25rem] z-20 border-b bg-white/90 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="inline-flex rounded-xl bg-surface-muted p-1 border">
-            <button className="px-3 py-1.5 text-sm rounded-md transition border bg-white border-slate-200 shadow">All</button>
-            <button className="px-3 py-1.5 text-sm rounded-md transition border">Veg</button>
-            <button className="px-3 py-1.5 text-sm rounded-md transition border">Non-veg</button>
-          </div>
-          <button onClick={() => setOpen(v => !v)} className="px-3 py-1.5 text-sm rounded-md border inline-flex items-center gap-1">
-            Filters <MenuIcon size={16}/>
-          </button>
-        </div>
-      </div>
+  // Load initial data
+  useEffect(() => {
+    // Prevent multiple API calls
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const slug = getRestaurantSlug();
+        if (!slug) {
+          throw new Error('Restaurant ID not found in URL or environment');
+        }
 
-      <main className="max-w-5xl mx-auto px-4 py-4 space-y-6">
-        {/* Replace with real sections + items */}
-        <section className="section-anchor">
-          <button className="w-full text-left py-3 sticky top-[6.25rem] bg-white z-10 border-b flex items-center justify-between">
-            <h2 className="text-base font-semibold">Starters</h2>
-            <span className="text-sm text-slate-500">12</span>
-          </button>
-          <div className="divide-y">
-            {[...Array(3)].map((_, i) => (
-              <article key={i} className="grid grid-cols-[96px_1fr] gap-3 py-3">
-                <div className="h-24 w-24 rounded-lg border skeleton"/>
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block h-3 w-3 rounded-full border bg-[color:var(--color-accent)] border-[color:var(--color-accent)]" aria-label="Vegetarian"/>
-                    <h3 className="font-medium leading-tight">Dish name</h3>
-                    <span className="text-xs text-danger">🌶</span>
-                  </div>
-                  <p className="text-sm text-slate-600 line-clamp-2">Nice short description goes here.</p>
-                  <div className="mt-1 font-semibold">₹199.00</div>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    <span className="px-2 py-0.5 rounded-full text-xs border" style={{borderColor:'#0ea5e9', color:'#0ea5e9'}}>Jain</span>
-                  </div>
+        const result = await loadInitialData({ slug });
+        setData(result);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        setError(err.message || 'Failed to load menu data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Build items by category
+  const itemsByCategory = data?.categories?.reduce((acc, category) => {
+    const categoryItems = data.items.filter(item => 
+      item.categoryIds?.some(cat => cat.id === category.id)
+    );
+    acc[category.id] = categoryItems;
+    return acc;
+  }, {}) || {};
+
+
+
+  // Filter items based on URL params
+  const filteredItems = data?.items ? filterItems(data.items, {
+    veg: params.veg,
+    nonveg: params.nonveg,
+    tags: parseCommaList(params.tags),
+    q: params.q
+  }) : [];
+
+  // Build filtered items by category
+  const filteredItemsByCategory = data?.categories?.reduce((acc, category) => {
+    const categoryItems = filteredItems.filter(item => 
+      item.categoryIds?.some(cat => cat.id === category.id)
+    );
+    if (categoryItems.length > 0) {
+      acc[category.id] = categoryItems;
+    }
+    return acc;
+  }, {}) || {};
+
+  // Check if any filters are active
+  const hasFilters = params.veg || params.nonveg || params.tags || params.q;
+
+  // Handle search change
+  const handleSearchChange = (searchTerm) => {
+    setParam('q', searchTerm || undefined);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (newParams) => {
+    Object.entries(newParams).forEach(([key, value]) => {
+      setParam(key, value);
+    });
+  };
+
+  // Handle category sheet
+  const handleMenuClick = () => {
+    setCategorySheetOpen(true);
+  };
+
+  const handleCategorySheetClose = () => {
+    setCategorySheetOpen(false);
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <div className="animate-pulse">
+          {/* Header skeleton */}
+          <div className="sticky top-0 z-40 bg-surface border-b border-border">
+            <div className="px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-surface-muted rounded-lg" />
+                <div className="flex-1">
+                  <div className="h-6 bg-surface-muted rounded w-3/4 mb-1" />
+                  <div className="h-4 bg-surface-muted rounded w-1/2" />
                 </div>
-              </article>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter bar skeleton */}
+          <div className="sticky top-[73px] z-30 bg-surface border-b border-border">
+            <div className="px-4 py-3">
+              <div className="h-10 bg-surface-muted rounded-lg w-48" />
+            </div>
+          </div>
+
+          {/* Content skeleton */}
+          <div className="px-4 py-8 space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i}>
+                <div className="h-12 bg-surface-muted rounded mb-4" />
+                <div className="space-y-4">
+                  {[1, 2].map((j) => (
+                    <div key={j} className="flex gap-4 p-4 bg-surface rounded-lg border">
+                      <div className="w-20 h-20 bg-surface-muted rounded-lg" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-surface-muted rounded w-3/4" />
+                        <div className="h-3 bg-surface-muted rounded w-1/2" />
+                        <div className="h-4 bg-surface-muted rounded w-1/4" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-        </section>
-      </main>
-
-      <div className="fixed bottom-0 inset-x-0 z-40">
-        <div className="max-w-5xl mx-auto px-4 pb-3">
-          <div className="flex items-center gap-2 rounded-xl border bg-white shadow-soft p-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={18} />
-              <input
-                value={q} onChange={e => setQ(e.target.value)}
-                placeholder="Search in menu" className="w-full pl-9 pr-3 py-2 rounded-lg outline-none"
-              />
-              {/* typeahead dropdown goes here */}
-            </div>
-            <button onClick={() => setOpen(true)} className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-black text-white">
-              <MenuIcon size={18}/> Menu
-            </button>
-          </div>
         </div>
       </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-4">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold text-text-primary mb-2">
+            Something went wrong
+          </h1>
+          <p className="text-text-secondary mb-4">
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!data) {
+    return <EmptyState hasFilters={false} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-surface pb-20">
+      {/* Header */}
+      <Header restaurant={data.restaurant} />
+
+      {/* Filter Bar */}
+      <FilterBar
+        tags={data.tags}
+        value={params}
+        onChange={handleFilterChange}
+      />
+
+      {/* Content */}
+      <main>
+        {data.categories.length === 0 ? (
+          <EmptyState hasFilters={false} />
+        ) : Object.keys(filteredItemsByCategory).length === 0 ? (
+          <EmptyState hasFilters={hasFilters} />
+        ) : (
+          data.categories
+            .filter(category => filteredItemsByCategory[category.id])
+            .map(category => (
+              <CategorySection
+                key={category.id}
+                category={category}
+                items={filteredItemsByCategory[category.id]}
+              />
+            ))
+        )}
+      </main>
+
+      {/* Bottom Bar */}
+      <BottomBar
+        restaurantId={data.restaurant.id}
+        categories={data.categories}
+        itemsByCategory={itemsByCategory}
+        onSearchChange={handleSearchChange}
+        onMenuClick={handleMenuClick}
+        searchValue={params.q || ''}
+      />
+
+      {/* Category Sheet */}
+      <CategorySheet
+        isOpen={categorySheetOpen}
+        onClose={handleCategorySheetClose}
+        categories={data.categories}
+        itemsByCategory={filteredItemsByCategory}
+      />
     </div>
-  )
+  );
 }
