@@ -78,10 +78,10 @@ export const getImagePath = (filename) => {
 export const getImageUrl = (filename) => {
   if (!filename) return null;
   
-  // In development, return full backend URL
+  // In development, return full API URL
   if (process.env.NODE_ENV === 'development') {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-    return `${backendUrl}/uploads/menu-images/${filename}`;
+    const apiUrl = process.env.API_URL || 'http://localhost:3001';
+    return `${apiUrl}/uploads/menu-images/${filename}`;
   }
   
   // In production, return relative path (will be served by same domain)

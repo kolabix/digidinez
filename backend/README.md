@@ -1,8 +1,8 @@
-# DigiDinez Backend API Documentation
+# DigiDinez API Documentation
 
 ## Overview
 
-DigiDinez is a full-stack web application for Indian restaurants to digitize their menus via QR codes. This backend API provides authentication, menu management, restaurant profile management, and QR code generation functionality.
+DigiDinez is a full-stack web application for Indian restaurants to digitize their menus via QR codes. This API provides authentication, menu management, restaurant profile management, and QR code generation functionality.
 
 **Base URL:** `http://localhost:3001/api`  
 **Environment:** Node.js + Express + MongoDB  

@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 class QRGenerator {
   constructor() {
     this.qrCodeDir = path.join(__dirname, '..', 'qr-codes');
-    this.frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    this.publicMenuUrl = process.env.PUBLIC_MENU_URL || 'http://localhost:4000';
   }
 
   /**
@@ -25,7 +25,7 @@ class QRGenerator {
   async generateQRCode(restaurantId) {
     try {
       // Create the URL that customers will visit
-      const menuUrl = `${this.frontendBaseUrl}/menu/${restaurantId}`;
+      const menuUrl = `${this.publicMenuUrl}/menu/${restaurantId}`;
       
       // Define the file path for the QR code
       const fileName = `${restaurantId}.png`;
@@ -74,7 +74,7 @@ class QRGenerator {
       await fs.access(filePath);
       
       const stats = await fs.stat(filePath);
-      const menuUrl = `${this.frontendBaseUrl}/menu/${restaurantId}`;
+      const menuUrl = `${this.publicMenuUrl}/menu/${restaurantId}`;
       
       return {
         url: menuUrl,

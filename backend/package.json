@@ -1,5 +1,5 @@
 {
-  "name": "digidinez-backend",
+  "name": "digidinez-api",
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
@@ -15,7 +15,7 @@
   ],
   "author": "",
   "license": "ISC",
-  "description": "DigiDinez Backend API - Restaurant Digital Menu Management",
+  "description": "DigiDinez API - Restaurant Digital Menu Management",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
