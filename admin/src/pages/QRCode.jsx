@@ -6,8 +6,6 @@ import { toast } from '../components/common/Toast.jsx';
 import { useState } from 'react';
 
 export const QRCode = () => {
-  console.log('🔴 QRCode component rendering');
-  
   const { 
     qrData, 
     loading, 
@@ -44,17 +42,7 @@ export const QRCode = () => {
 
 
   
-  console.log('🔴 QR Code Page Render State:', { 
-    loading, 
-    generating, 
-    deleting, 
-    qrData: !!qrData,
-    qrDataKeys: qrData ? Object.keys(qrData) : null,
-    mountedRef: 'checking...'
-  });
-  
   if (loading) {
-    console.log('🔴 Showing loading state');
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="text-center">
