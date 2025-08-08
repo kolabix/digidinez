@@ -65,9 +65,7 @@ const restaurantSchema = new mongoose.Schema({
   }
 });
 
-// Index for performance
-restaurantSchema.index({ email: 1 });
-restaurantSchema.index({ phone: 1 });
+// Indexes are automatically created by unique: true properties
 
 // Hash password before saving
 restaurantSchema.pre('save', async function(next) {
