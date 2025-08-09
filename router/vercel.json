@@ -1,0 +1,34 @@
+{
+    "rewrites": [
+        {
+            "source": "/menu/:path*",
+            "destination": "https://public-menu.vercel.app/:path*"
+        },
+        {
+            "source": "/admin/:path*",
+            "destination": "https://admin-eta-wheat.vercel.app/:path*"
+        },
+        {
+            "source": "/api/:path*",
+            "destination": "https://digidinez-api.onrender.com/:path*"
+        }
+    ],
+    "redirects": [
+        {
+            "source": "/",
+            "destination": "/menu",
+            "permanent": false
+        }
+    ],
+    "headers": [
+        {
+            "source": "/api/:path*",
+            "headers": [
+                {
+                    "key": "X-Forwarded-Host",
+                    "value": "digidinez.com"
+                }
+            ]
+        }
+    ]
+}
