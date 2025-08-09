@@ -13,13 +13,12 @@ export const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
     errors,
     touched,
     isSubmitting,
-    setIsSubmitting,
     handleChange,
     handleBlur,
     validateForm,
     setFormErrors
-  } = useForm(
-    {
+  } = useForm({
+    initialValues: {
       name: '',
       email: '',
       phone: '',
@@ -31,7 +30,7 @@ export const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
       zipCode: '',
       country: 'India'
     },
-    {
+    validationRules: {
       name: {
         required: true,
         minLength: 2,
@@ -86,7 +85,7 @@ export const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
         }
       }
     }
-  );
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,8 +94,6 @@ export const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
       return;
     }
 
-    setIsSubmitting(true);
-    
     // Prepare restaurant data
     const restaurantData = {
       name: values.name,
@@ -127,7 +124,6 @@ export const RegisterForm = ({ onSubmit, loading, error, successMessage }) => {
       }
     }
     
-    setIsSubmitting(false);
   };
 
   const togglePasswordVisibility = () => {
