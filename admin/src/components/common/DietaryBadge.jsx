@@ -1,6 +1,6 @@
 export const DietaryBadge = ({ isVeg }) => {
   return (
-    <div className={`flex items-center justify-center w-5 h-5 border-2 ${
+    <div className={`flex bg-white items-center justify-center w-5 h-5 border-2 ${
       isVeg ? 'border-green-600' : 'border-red-500'
     }`}>
       {isVeg ? (

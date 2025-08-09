@@ -131,12 +131,6 @@ digidinez/
 - `JWT_SECRET` - JWT signing secret
 - `JWT_EXPIRES_IN` - JWT expiration time
 
-**Admin Frontend (`admin/.env`):**
-- `VITE_API_BASE_URL` - Backend API base URL (default: `http://localhost:3001/api`)
-
-**Public Menu Frontend (`public-menu/.env`):**
-- `VITE_API_BASE_URL` - Backend API base URL (default: `http://localhost:3001`)
-
 ## 📱 Usage
 
 1. Restaurant owners register/login

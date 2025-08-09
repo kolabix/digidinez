@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { blurUrlFromCloudinary } from '../lib/cloudinary.js';
+import { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 
 export default function ImageWithBlur({ 
@@ -11,15 +10,49 @@ export default function ImageWithBlur({
 }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [blurUrl, setBlurUrl] = useState(null);
+  const [isInView, setIsInView] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(true);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (src) {
       setImageLoaded(false);
       setImageError(false);
-      setBlurUrl(blurUrlFromCloudinary(src));
+      setIsBlurred(true);
     }
   }, [src]);
+
+  // When the image has loaded, drop the blur on the next animation frame so the
+  // transition runs smoothly from blurred to sharp.
+  useEffect(() => {
+    if (!imageLoaded) return;
+    const rafId = requestAnimationFrame(() => setIsBlurred(false));
+    return () => cancelAnimationFrame(rafId);
+  }, [imageLoaded]);
+
+  // Lazy-load with IntersectionObserver
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '100px' }
+      );
+      observer.observe(element);
+      return () => observer.disconnect();
+    }
+
+    // Fallback if IntersectionObserver not available
+    setIsInView(true);
+  }, []);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
@@ -36,49 +69,29 @@ export default function ImageWithBlur({
   );
 
   const imageClasses = clsx(
-    'w-full h-full object-cover transition-opacity duration-300',
-    {
-      'opacity-0': !imageLoaded,
-      'opacity-100': imageLoaded
-    }
+    'absolute inset-0 w-full h-full object-cover transition-[opacity,filter,transform] duration-300',
+    isBlurred ? 'opacity-100 blur-md scale-105' : 'opacity-100 blur-0 scale-100'
   );
 
   const skeletonClasses = clsx(
     'absolute inset-0 skeleton',
     {
-      'opacity-100': !imageLoaded && !blurUrl,
-      'opacity-0': imageLoaded || blurUrl
-    }
-  );
-
-  const blurClasses = clsx(
-    'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
-    {
-      'opacity-100': !imageLoaded && blurUrl,
-      'opacity-0': imageLoaded || !blurUrl
+      'opacity-100': !imageLoaded,
+      'opacity-0': imageLoaded
     }
   );
 
   return (
     <div 
       className={containerClasses}
+      ref={containerRef}
       style={{ aspectRatio }}
     >
-      {/* Skeleton placeholder for non-Cloudinary images */}
+      {/* Skeleton placeholder while loading */}
       <div className={skeletonClasses} />
       
-      {/* Blur placeholder for Cloudinary images */}
-      {blurUrl && (
-        <img
-          src={blurUrl}
-          alt=""
-          className={blurClasses}
-          aria-hidden="true"
-        />
-      )}
-      
       {/* Main image */}
-      {src && !imageError && (
+      {isInView && src && !imageError && (
         <img
           src={src}
           alt={alt || ''}
@@ -86,6 +99,7 @@ export default function ImageWithBlur({
           onLoad={handleImageLoad}
           onError={handleImageError}
           loading="lazy"
+          decoding="async"
         />
       )}
       
@@ -94,7 +108,7 @@ export default function ImageWithBlur({
         <img
           src={fallbackSrc}
           alt={alt || ''}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover z-20"
         />
       )}
     </div>

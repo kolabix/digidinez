@@ -9,7 +9,7 @@ A production-ready React 19 + Vite app for displaying restaurant menus with adva
 - **Category Navigation**: Collapsible sections with smooth scrolling
 - **Debounced Search**: Type-ahead search with dropdown results
 - **Bottom Sheet**: Category navigation with framer-motion animations
-- **Image Optimization**: Cloudinary blur placeholders and skeleton loading
+- **Image Loading**: Skeleton loading; images served from Vercel Blob
 - **URL State Sync**: All filters and search persist in URL parameters
 - **Mobile-First**: Responsive design optimized for mobile devices
 - **Accessibility**: Basic a11y support with proper ARIA labels
@@ -34,12 +34,6 @@ A production-ready React 19 + Vite app for displaying restaurant menus with adva
    Copy the example environment file and update it:
    ```bash
    cp env.example .env
-   ```
-   
-   Update the `.env` file with your configuration:
-   ```env
-   # Backend API base URL
-   VITE_API_BASE_URL=http://localhost:3001
    ```
 
 3. **Start development server**:
@@ -72,9 +66,9 @@ The app syncs state to URL query parameters:
 
 ## Image Handling
 
-- **Cloudinary**: Automatically generates blur placeholders
-- **Other URLs**: Shows skeleton loading until image loads
-- **Missing images**: Maintains fixed aspect ratio with skeleton
+- Images are served from Vercel Blob
+- Shows skeleton loading until image loads
+- Missing images: Maintains fixed aspect ratio with skeleton
 
 ## Building for Production
 
