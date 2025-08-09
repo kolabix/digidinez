@@ -133,7 +133,7 @@ export default function App() {
                 <div className="h-12 bg-surface-muted rounded mb-4" />
                 <div className="space-y-4">
                   {[1, 2].map((j) => (
-                    <div key={j} className="flex gap-4 p-4 bg-surface rounded-lg border">
+                    <div key={j} className="flex gap-4 p-4 bg-surface rounded-lg border border-border">
                       <div className="w-20 h-20 bg-surface-muted rounded-lg" />
                       <div className="flex-1 space-y-2">
                         <div className="h-4 bg-surface-muted rounded w-3/4" />
