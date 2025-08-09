@@ -16,7 +16,7 @@
     "redirects": [
         {
             "source": "/",
-            "destination": "/menu",
+            "destination": "/admin",
             "permanent": false
         }
     ],
