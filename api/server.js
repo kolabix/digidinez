@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 });
 
 // Health check route - Make sure this is defined
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState;
   const dbStatusText = {
     0: 'disconnected',
@@ -79,10 +79,10 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/menu/tags', tagRoutes);
-app.use('/api/menu', menuRoutes);
-app.use('/api/restaurants', restaurantRoutes);
+app.use('/auth', authRoutes);
+app.use('/menu/tags', tagRoutes);
+app.use('/menu', menuRoutes);
+app.use('/restaurants', restaurantRoutes);
 
 // Handle upload errors
 app.use(handleUploadErrors);
