@@ -41,7 +41,7 @@ export async function loadInitialData({ slug }) {
 
   try {
     // Use the unified public menu endpoint
-    const data = await apiRequest(`/api/menu/public/${restaurantId}`);
+    const data = await apiRequest(`/menu/public/${restaurantId}`);
     
     // Validate unified response structure
     if (data.success && data.data && data.data.restaurant) {
