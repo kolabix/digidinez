@@ -39,16 +39,16 @@ if (!BLOB_PUBLIC_BASE) {
   // Actual operations will throw if this is missing
 }
 
-const buildRestaurantAssetKey = (restaurantId, originalName, category = 'images') => {
+const buildRestaurantAssetKey = (restaurantId, originalName, category = 'food-images') => {
   const safeExt = path.extname(originalName || '').toLowerCase() || '.bin';
   const unique = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
   // Public Menu uploads structure:
-  // restaurants/{id}/images/* or restaurants/{id}/logos/*
+  // restaurants/{id}/food-images/* or restaurants/{id}/logos/*
   return `restaurants/${restaurantId}/${category}/${unique}${safeExt}`;
 };
 
 // Upload a buffer from multer memory storage to Vercel Blob (public)
-export const uploadBufferToBlob = async (restaurantId, file, category = 'images') => {
+export const uploadBufferToBlob = async (restaurantId, file, category = 'food-images') => {
   if (!file || !file.buffer) {
     throw new Error('No file buffer provided');
   }

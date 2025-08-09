@@ -34,7 +34,7 @@ const menuItemSchema = new mongoose.Schema({
     ref: 'Tag'
   }],
   image: {
-    key: String,         // e.g., restaurants/{id}/images/<file>
+    key: String,         // e.g., restaurants/{id}/food-images/<file>
     publicUrl: String,   // https URL from Blob
     size: Number,
     mimetype: String,

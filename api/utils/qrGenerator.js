@@ -24,9 +24,9 @@ class QRGenerator {
     };
     const pngBuffer = await QRCode.toBuffer(menuUrl, options);
 
-    // 2) Choose a key for Blob store
+    // 2) Choose a key for Blob store (restaurants/{id}/qr-images/*)
     const fileName = `${restaurantId}.png`;
-    const key = `qr/${restaurantId}/${Date.now()}-${crypto
+    const key = `restaurants/${restaurantId}/qr-images/${Date.now()}-${crypto
       .randomUUID()
       .slice(0, 8)}-${fileName}`;
 

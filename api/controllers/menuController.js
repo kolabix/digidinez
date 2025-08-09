@@ -570,8 +570,8 @@ export const uploadMenuItemImage = async (req, res) => {
       try { await deleteBlobObject(menuItem.image.key || menuItem.image.publicUrl); } catch (_) {}
     }
 
-    // Upload to Blob in restaurants/{id}/images/*
-    const blobInfo = await uploadBufferToBlob(req.restaurant.id, req.file, 'images');
+    // Upload to Blob in restaurants/{id}/food-images/*
+    const blobInfo = await uploadBufferToBlob(req.restaurant.id, req.file, 'food-images');
 
     // Update menu item with new image (Blob metadata)
     menuItem.image = {
