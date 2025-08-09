@@ -1,34 +1,10 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import { put, del } from '@vercel/blob';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Ensure upload directories exist
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-const menuImagesDir = path.join(uploadsDir, 'menu-images');
-
-// Create directories if they don't exist
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(menuImagesDir)) {
-  fs.mkdirSync(menuImagesDir, { recursive: true });
-}
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, menuImagesDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename: restaurantId_menuItemId_timestamp.extension
-    const uniqueName = `${req.restaurant.id}_${Date.now()}_${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
-});
+// Multer memory storage (we upload buffers directly to Blob)
+const storage = multer.memoryStorage();
 
 // File filter function
 const fileFilter = (req, file, cb) => {
@@ -54,64 +30,55 @@ export const uploadMenuImage = multer({
   fileFilter: fileFilter
 });
 
-// Helper function to delete image file
-export const deleteImageFile = (imagePath) => {
-  try {
-    if (imagePath && fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('Error deleting image file:', error);
-    return false;
+// ---------- Vercel Blob helpers (public uploads) ----------
+
+const BLOB_PUBLIC_BASE = process.env.BLOB_PUBLIC_BASE;
+
+if (!BLOB_PUBLIC_BASE) {
+  // Keep lazy validation to avoid crashing import-time in certain contexts
+  // Actual operations will throw if this is missing
+}
+
+const buildRestaurantAssetKey = (restaurantId, originalName, category = 'images') => {
+  const safeExt = path.extname(originalName || '').toLowerCase() || '.bin';
+  const unique = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  // Public Menu uploads structure:
+  // restaurants/{id}/images/* or restaurants/{id}/logos/*
+  return `restaurants/${restaurantId}/${category}/${unique}${safeExt}`;
+};
+
+// Upload a buffer from multer memory storage to Vercel Blob (public)
+export const uploadBufferToBlob = async (restaurantId, file, category = 'images') => {
+  if (!file || !file.buffer) {
+    throw new Error('No file buffer provided');
   }
+  const key = buildRestaurantAssetKey(restaurantId, file.originalname, category);
+  const { url } = await put(key, file.buffer, {
+    access: 'public',
+    contentType: file.mimetype,
+    cacheControl: 'public, max-age=31536000, immutable'
+  });
+
+  return {
+    key,
+    publicUrl: url,
+    size: file.size,
+    mimetype: file.mimetype,
+    uploadedAt: new Date()
+  };
 };
 
-// Helper function to get full image path
-export const getImagePath = (filename) => {
-  if (!filename) return null;
-  return path.join(menuImagesDir, filename);
+// Delete a previously uploaded Blob object using either key or public URL
+export const deleteBlobObject = async (keyOrUrl) => {
+  if (!keyOrUrl) return false;
+  const base = process.env.BLOB_PUBLIC_BASE;
+  if (!base) throw new Error('BLOB_PUBLIC_BASE is not set');
+
+  const target = keyOrUrl.startsWith('http') && keyOrUrl.includes(base)
+    ? keyOrUrl
+    : `${base}/${keyOrUrl}`;
+
+  await del(target);
+  return true;
 };
 
-// Helper function to get image URL for client
-export const getImageUrl = (filename) => {
-  if (!filename) return null;
-  
-  // In development, return full API URL
-  if (process.env.NODE_ENV === 'development') {
-    const apiUrl = process.env.API_URL || 'http://localhost:3001';
-    return `${apiUrl}/uploads/menu-images/${filename}`;
-  }
-  
-  // In production, return relative path (will be served by same domain)
-  return `/uploads/menu-images/${filename}`;
-};
-
-// Validate image file exists
-export const validateImageExists = (filename) => {
-  if (!filename) return false;
-  const fullPath = getImagePath(filename);
-  return fs.existsSync(fullPath);
-};
-
-// Get image file info
-export const getImageInfo = (filename) => {
-  if (!filename) return null;
-  
-  const fullPath = getImagePath(filename);
-  if (!fs.existsSync(fullPath)) return null;
-  
-  try {
-    const stats = fs.statSync(fullPath);
-    return {
-      filename,
-      size: stats.size,
-      uploadedAt: stats.birthtime,
-      url: getImageUrl(filename)
-    };
-  } catch (error) {
-    console.error('Error getting image info:', error);
-    return null;
-  }
-};

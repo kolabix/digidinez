@@ -31,9 +31,7 @@ export const useDashboardStats = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching dashboard stats...');
       const response = await restaurantService.getStats();
-      console.log('Dashboard stats response:', response);
       
       if (response.success && response.data) {
         setStats(response.data);

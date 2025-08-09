@@ -1,6 +1,6 @@
 import { MenuItem, Restaurant, MenuCategory, Tag } from '../models/index.js';
 import { validationResult } from 'express-validator';
-import { deleteImageFile, getImagePath, getImageUrl, getImageInfo } from '../utils/imageUpload.js';
+import { uploadBufferToBlob, deleteBlobObject } from '../utils/imageUpload.js';
 
 // @desc    Get all menu items for authenticated restaurant
 // @route   GET /api/menu/items
@@ -551,10 +551,6 @@ export const uploadMenuItemImage = async (req, res) => {
     });
 
     if (!menuItem) {
-      // If menu item not found, delete the uploaded file
-      if (req.file) {
-        deleteImageFile(req.file.path);
-      }
       return res.status(404).json({
         success: false,
         message: 'Menu item not found'
@@ -569,24 +565,23 @@ export const uploadMenuItemImage = async (req, res) => {
       });
     }
 
-    // Delete old image if exists
-    if (menuItem.image && menuItem.image.filename) {
-      const oldImagePath = getImagePath(menuItem.image.filename);
-      deleteImageFile(oldImagePath);
+    // Delete old image from Blob if exists
+    if (menuItem.image?.publicUrl || menuItem.image?.key) {
+      try { await deleteBlobObject(menuItem.image.key || menuItem.image.publicUrl); } catch (_) {}
     }
 
-    // Update menu item with new image
+    // Upload to Blob in restaurants/{id}/images/*
+    const blobInfo = await uploadBufferToBlob(req.restaurant.id, req.file, 'images');
+
+    // Update menu item with new image (Blob metadata)
     menuItem.image = {
-      filename: req.file.filename,
-      path: req.file.path,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-      uploadedAt: new Date()
+      key: blobInfo.key,
+      publicUrl: blobInfo.publicUrl,
+      size: blobInfo.size,
+      mimetype: blobInfo.mimetype,
+      uploadedAt: blobInfo.uploadedAt
     };
     await menuItem.save();
-
-    // Get image info
-    const imageInfo = getImageInfo(req.file.filename);
 
     res.json({
       success: true,
@@ -595,17 +590,13 @@ export const uploadMenuItemImage = async (req, res) => {
         menuItem: {
           id: menuItem._id,
           name: menuItem.name,
-          image: imageInfo
+          image: menuItem.image,
+          imageUrl: menuItem.image.publicUrl
         }
       }
     });
 
   } catch (error) {
-    // Delete uploaded file on error
-    if (req.file) {
-      deleteImageFile(req.file.path);
-    }
-    
     console.error('Upload image error:', error);
     res.status(500).json({
       success: false,
@@ -641,9 +632,14 @@ export const deleteMenuItemImage = async (req, res) => {
       });
     }
 
-    // Delete image file
-    const imagePath = getImagePath(menuItem.image.filename);
-    const deleted = deleteImageFile(imagePath);
+    // Delete from Blob using key or public URL
+    let fileDeleted = false;
+    try {
+      await deleteBlobObject(menuItem.image.key || menuItem.image.publicUrl);
+      fileDeleted = true;
+    } catch (_) {
+      fileDeleted = false;
+    }
 
     // Update menu item (remove image reference)
     menuItem.image = null;
@@ -653,7 +649,7 @@ export const deleteMenuItemImage = async (req, res) => {
       success: true,
       message: 'Image deleted successfully',
       data: {
-        fileDeleted: deleted,
+        fileDeleted,
         menuItem: {
           id: menuItem._id,
           name: menuItem.name,
@@ -698,20 +694,11 @@ export const getMenuItemImage = async (req, res) => {
       });
     }
 
-    // Get image info
-    const imageInfo = getImageInfo(menuItem.image.filename);
-
-    if (!imageInfo) {
-      return res.status(404).json({
-        success: false,
-        message: 'Image file not found'
-      });
-    }
-
     res.json({
       success: true,
       data: {
-        image: imageInfo
+        image: menuItem.image,
+        imageUrl: menuItem.image.publicUrl
       }
     });
 

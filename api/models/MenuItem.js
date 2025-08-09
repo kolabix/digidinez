@@ -34,8 +34,8 @@ const menuItemSchema = new mongoose.Schema({
     ref: 'Tag'
   }],
   image: {
-    filename: String,
-    path: String,
+    key: String,         // e.g., restaurants/{id}/images/<file>
+    publicUrl: String,   // https URL from Blob
     size: Number,
     mimetype: String,
     uploadedAt: { type: Date, default: Date.now }
@@ -105,26 +105,9 @@ menuItemSchema.virtual('formattedPrice').get(function() {
   return `₹${this.price.toFixed(2)}`;
 });
 
-// Helper function to get full image URL
-const getFullImageUrl = (filename) => {
-  if (!filename) return null;
-  
-  // In development, return full API URL
-  if (process.env.NODE_ENV === 'development') {
-    const apiUrl = process.env.API_URL || 'http://localhost:3001';
-    return `${apiUrl}/uploads/menu-images/${filename}`;
-  }
-  
-  // In production, return relative path (will be served by same domain)
-  return `/uploads/menu-images/${filename}`;
-};
-
 // Virtual for image URL
 menuItemSchema.virtual('imageUrl').get(function() {
-  if (this.image && this.image.filename) {
-    return getFullImageUrl(this.image.filename);
-  }
-  return null;
+  return this.image?.publicUrl || null;
 });
 
 // Virtual for spicy level description
