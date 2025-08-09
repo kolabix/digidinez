@@ -102,7 +102,7 @@ export const QRCode = () => {
               <div className="flex-shrink-0">
                 <div className="bg-white p-4 rounded-lg border border-gray-200">
                   <img
-                    src={`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3001'}${qrData.qrCode.publicUrl}`}
+                    src={`${qrData.qrCode.publicUrl}`}
                     alt="Restaurant QR Code"
                     className="w-48 h-48 object-contain"
                   />
@@ -153,12 +153,12 @@ export const QRCode = () => {
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        value={`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3001'}${qrData.qrCode.publicUrl}`}
+                        value={`${qrData.qrCode.publicUrl}`}
                         readOnly
                         className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
                       />
                       <Button
-                        onClick={() => copyToClipboard(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3001'}${qrData.qrCode.publicUrl}`)}
+                        onClick={() => copyToClipboard(`${qrData.qrCode.publicUrl}`)}
                         variant="outline"
                         size="sm"
                       >

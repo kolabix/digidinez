@@ -1092,7 +1092,7 @@ Get QR code image for a restaurant (no authentication required).
 ## Health Check
 
 ### Health Check
-**GET** `/api/health`
+**GET** `/health`
 
 Check API health and database connection status.
 

@@ -1,11 +1,5 @@
 import qrGenerator from '../utils/qrGenerator.js';
 import { Restaurant } from '../models/index.js';
-import { validationResult } from 'express-validator';
-
-/**
- * QR Code Controller
- * Handles QR code generation and management for restaurants
- */
 
 /**
  * Generate or regenerate QR code for restaurant
@@ -15,48 +9,46 @@ export const generateQRCode = async (req, res) => {
   try {
     const restaurantId = req.restaurant.id;
 
-    // Ensure QR codes directory exists
-    await qrGenerator.ensureQRCodeDirectory();
-
-    // Generate QR code
-    const qrDetails = await qrGenerator.generateQRCode(restaurantId);
-
-    // Update restaurant with QR code URL
-    const restaurant = await Restaurant.findByIdAndUpdate(
-      restaurantId,
-      { qrCodeUrl: qrDetails.publicUrl },
-      { new: true, select: '-password' }
-    );
-
-    if (!restaurant) {
-      return res.status(404).json({
-        success: false,
-        message: 'Restaurant not found'
-      });
+    // Load current restaurant to check for existing QR
+    const current = await Restaurant.findById(restaurantId).select('name qrCodeUrl');
+    if (!current) {
+      return res.status(404).json({ success: false, message: 'Restaurant not found' });
     }
 
-    res.status(200).json({
+    // If an older QR exists, delete it from Blob (best-effort; don’t fail the whole request)
+    if (current.qrCodeUrl) {
+      try { await qrGenerator.deleteQRCode(current.qrCodeUrl); } catch (_) {}
+    }
+
+    // Generate a fresh QR (uploaded to Blob)
+    const qrDetails = await qrGenerator.generateQRCode(restaurantId);
+
+    // Save the new public URL
+    current.qrCodeUrl = qrDetails.publicUrl;
+    await current.save();
+
+    return res.status(200).json({
       success: true,
       message: 'QR code generated successfully',
       data: {
         qrCode: {
-          url: qrDetails.url,
-          publicUrl: qrDetails.publicUrl,
+          url: qrDetails.url,            // destination the QR points to
+          publicUrl: qrDetails.publicUrl, // Blob URL
           fileName: qrDetails.fileName,
           size: qrDetails.size,
           generatedAt: qrDetails.generatedAt
         },
         restaurant: {
-          id: restaurant._id,
-          name: restaurant.name,
-          qrCodeUrl: restaurant.qrCodeUrl
+          id: current._id,
+          name: current.name,
+          qrCodeUrl: current.qrCodeUrl
         }
       }
     });
 
   } catch (error) {
     console.error('Generate QR code error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to generate QR code',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -72,31 +64,31 @@ export const getQRCode = async (req, res) => {
   try {
     const restaurantId = req.restaurant.id;
 
-    // Get QR code details from file system
-    const qrDetails = await qrGenerator.getQRCode(restaurantId);
-
-    if (!qrDetails) {
+    // With Blob, the source of truth is the DB (qrCodeUrl), not the filesystem
+    const restaurant = await Restaurant.findById(restaurantId).select('name qrCodeUrl');
+    if (!restaurant || !restaurant.qrCodeUrl) {
       return res.status(404).json({
         success: false,
         message: 'QR code not found. Generate one first.'
       });
     }
 
-    // Get restaurant info
-    const restaurant = await Restaurant.findById(restaurantId).select('-password');
+    // We can reconstruct the menu URL deterministically
+    const menuUrlBase = process.env.PUBLIC_MENU_URL || 'http://localhost:4000';
+    const menuUrl = `${menuUrlBase}/menu/${restaurantId}`;
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         qrCode: {
-          url: qrDetails.url,
-          publicUrl: qrDetails.publicUrl,
-          fileName: qrDetails.fileName,
-          size: qrDetails.size,
-          generatedAt: qrDetails.generatedAt
+          url: menuUrl,
+          publicUrl: restaurant.qrCodeUrl,
+          // size & generatedAt are unknown unless you stored them at creation time
+          size: null,
+          generatedAt: null
         },
         restaurant: {
-          id: restaurant._id,
+          id: restaurantId,
           name: restaurant.name,
           qrCodeUrl: restaurant.qrCodeUrl
         }
@@ -105,7 +97,7 @@ export const getQRCode = async (req, res) => {
 
   } catch (error) {
     console.error('Get QR code error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to retrieve QR code',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -121,26 +113,33 @@ export const deleteQRCode = async (req, res) => {
   try {
     const restaurantId = req.restaurant.id;
 
-    // Delete QR code file
-    const deleted = await qrGenerator.deleteQRCode(restaurantId);
+    const restaurant = await Restaurant.findById(restaurantId).select('qrCodeUrl');
+    if (!restaurant || !restaurant.qrCodeUrl) {
+      return res.status(404).json({ success: false, message: 'No QR code to delete' });
+    }
 
-    // Update restaurant to remove QR code URL
-    await Restaurant.findByIdAndUpdate(
-      restaurantId,
-      { qrCodeUrl: null }
-    );
+    // Delete from Blob using the public URL
+    let fileDeleted = false;
+    try {
+      await qrGenerator.deleteQRCode(restaurant.qrCodeUrl);
+      fileDeleted = true;
+    } catch (_) {
+      fileDeleted = false;
+    }
 
-    res.status(200).json({
+    // Remove reference from DB regardless (idempotent)
+    restaurant.qrCodeUrl = null;
+    await restaurant.save();
+
+    return res.status(200).json({
       success: true,
       message: 'QR code deleted successfully',
-      data: {
-        fileDeleted: deleted
-      }
+      data: { fileDeleted }
     });
 
   } catch (error) {
     console.error('Delete QR code error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to delete QR code',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -149,59 +148,46 @@ export const deleteQRCode = async (req, res) => {
 };
 
 /**
- * Get QR code image file (public endpoint)
+ * Get QR code image info (public endpoint)
  * GET /api/restaurants/:id/qr
  */
 export const getQRCodeImage = async (req, res) => {
   try {
     const { id: restaurantId } = req.params;
 
-    // Validate restaurant ID format
     if (!restaurantId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid restaurant ID format'
-      });
+      return res.status(400).json({ success: false, message: 'Invalid restaurant ID format' });
     }
 
-    // Check if restaurant exists
-    const restaurant = await Restaurant.findById(restaurantId);
+    const restaurant = await Restaurant.findById(restaurantId).select('name qrCodeUrl');
     if (!restaurant) {
-      return res.status(404).json({
-        success: false,
-        message: 'Restaurant not found'
-      });
+      return res.status(404).json({ success: false, message: 'Restaurant not found' });
+    }
+    if (!restaurant.qrCodeUrl) {
+      return res.status(404).json({ success: false, message: 'QR code not found for this restaurant' });
     }
 
-    // Get QR code details
-    const qrDetails = await qrGenerator.getQRCode(restaurantId);
-    if (!qrDetails) {
-      return res.status(404).json({
-        success: false,
-        message: 'QR code not found for this restaurant'
-      });
-    }
+    // Option A (JSON info):
+    const menuUrlBase = process.env.PUBLIC_MENU_URL || 'http://localhost:4000';
+    const menuUrl = `${menuUrlBase}/menu/${restaurantId}`;
 
-    // Return QR code info (the actual image will be served by static middleware)
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
-        restaurant: {
-          id: restaurant._id,
-          name: restaurant.name
-        },
+        restaurant: { id: restaurant._id, name: restaurant.name },
         qrCode: {
-          url: qrDetails.url,
-          publicUrl: qrDetails.publicUrl,
-          size: qrDetails.size,
-          generatedAt: qrDetails.generatedAt
+          url: menuUrl,
+          publicUrl: restaurant.qrCodeUrl
         }
       }
     });
 
+    // Option B (redirect straight to the image):
+    // return res.redirect(302, restaurant.qrCodeUrl);
+
   } catch (error) {
     console.error('Get QR code image error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to retrieve QR code',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
