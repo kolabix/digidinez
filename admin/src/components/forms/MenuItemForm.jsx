@@ -70,7 +70,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
       price: item?.price || '',
       categoryIds: item?.categoryIds?.map(cat => cat._id) || [],
       tagIds: item?.tagIds?.map(tag => tag._id) || [],
-      isVeg: item?.isVeg ?? false,
+      foodType: item?.foodType || 'veg',
       isSpicy: item?.isSpicy ?? false,
       spicyLevel: item?.spicyLevel || 0,
       isAvailable: item?.isAvailable ?? true,
@@ -97,6 +97,11 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
           carbs: parseFloat(formData.nutritionInfo.carbs) || 0,
           fat: parseFloat(formData.nutritionInfo.fat) || 0
         };
+
+        // Ensure foodType is set
+        if (!formData.foodType) {
+          formData.foodType = 'veg';
+        }
 
         // Create or update the menu item
         const response = item
@@ -342,22 +347,39 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
               </div>
             </div>
 
-            {/* Item Properties */}
+            {/* Food Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Properties
+                  Food Type
                 </label>
-                <div className="space-y-3">
-                  <Input
-                    type="checkbox"
-                    label="Veg"
-                    name="isVeg"
-                    checked={values.isVeg}
-                    onChange={handleChange}
-                    className="rounded text-green-600"
-                  />
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant={values.foodType === 'veg' ? 'primary' : 'secondary'}
+                    onClick={() => setFieldValue('foodType', 'veg')}
+                  >
+                    Veg
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={values.foodType === 'non-veg' ? 'primary' : 'secondary'}
+                    onClick={() => setFieldValue('foodType', 'non-veg')}
+                  >
+                    Non-veg
+                  </Button>
+                </div>
+                {errors.foodType && (
+                  <p className="mt-1 text-sm text-red-600">{errors.foodType}</p>
+                )}
+              </div>
+            </div>
 
+            {/* Item Properties */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Properties</label>
+                <div className="space-y-3">
                   <Input
                     type="checkbox"
                     label="Spicy"
@@ -375,7 +397,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                   {values.isSpicy && (
                     <div>
                       <label className="block text-sm text-gray-600 mb-1">
-                        Spicy Level
+                        Spice Level
                       </label>
                       <div className="flex gap-2">
                         {[1, 2, 3].map(level => (
@@ -383,13 +405,13 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                             key={level}
                             type="button"
                             onClick={() => setFieldValue('spicyLevel', level)}
-                            className={`w-8 h-8 rounded-full text-sm ${
+                            className={`w-20 h-8 text-sm cursor-pointer ${
                               values.spicyLevel === level
                                 ? 'bg-red-100 text-red-800'
                                 : 'bg-gray-100 text-gray-800'
                             } hover:bg-red-50`}
                           >
-                            {level}
+                            {level === 1 ? 'Mild' : level === 2 ? 'Medium' : 'Hot'}
                           </button>
                         ))}
                       </div>
@@ -398,10 +420,10 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
 
                   <Input
                     type="checkbox"
-                    label="Available"
+                    label="Out of Stock"
                     name="isAvailable"
-                    checked={values.isAvailable}
-                    onChange={handleChange}
+                    checked={!values.isAvailable}
+                    onChange={(e) => setFieldValue('isAvailable', !e.target.value)}
                     className="rounded text-primary-600"
                   />
                 </div>

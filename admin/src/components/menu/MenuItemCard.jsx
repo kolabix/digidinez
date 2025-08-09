@@ -46,7 +46,7 @@ export const MenuItemCard = ({ item, onEdit, onDelete, onToggleAvailability }) =
           />
           {/* Veg/Non-veg Indicator */}
           <div className="absolute top-2 left-2">
-            <DietaryBadge isVeg={item.isVeg} />
+            <DietaryBadge isVeg={item.foodType === 'veg'} />
           </div>
           {/* Availability Badge */}
           {!item.isAvailable && (

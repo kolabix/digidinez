@@ -15,7 +15,7 @@ export const getMenuItems = async (req, res) => {
       search,
       categories,
       tags,
-      isVeg,
+      foodType,
       spicyLevel
     } = req.query;
     
@@ -42,8 +42,8 @@ export const getMenuItems = async (req, res) => {
         options.tagIds = tags.split(',').map(id => id.trim());
       }
       
-      if (isVeg !== undefined) {
-        options.isVeg = isVeg === 'true';
+      if (foodType !== undefined && ['veg', 'non-veg'].includes(foodType)) {
+        options.foodType = foodType;
       }
       
       if (spicyLevel !== undefined) {
@@ -135,7 +135,7 @@ export const createMenuItem = async (req, res) => {
       spicyLevel,
       preparationTime,
       isAvailable = true,
-      isVeg = true,
+      foodType = 'veg',
       isSpicy = false
     } = req.body;
 
@@ -209,7 +209,7 @@ export const createMenuItem = async (req, res) => {
       spicyLevel: spicyLevel || 0,
       preparationTime: preparationTime || null,
       isAvailable,
-      isVeg,
+      foodType,
       isSpicy,
       restaurantId: req.restaurant.id
     });
@@ -263,7 +263,7 @@ export const updateMenuItem = async (req, res) => {
       spicyLevel,
       preparationTime,
       isAvailable,
-      isVeg,
+      foodType,
       isSpicy
     } = req.body;
 
@@ -345,7 +345,7 @@ export const updateMenuItem = async (req, res) => {
     if (spicyLevel !== undefined) menuItem.spicyLevel = spicyLevel;
     if (preparationTime !== undefined) menuItem.preparationTime = preparationTime;
     if (isAvailable !== undefined) menuItem.isAvailable = isAvailable;
-    if (isVeg !== undefined) menuItem.isVeg = isVeg;
+    if (foodType !== undefined) menuItem.foodType = foodType;
     if (isSpicy !== undefined) menuItem.isSpicy = isSpicy;
 
     await menuItem.save();

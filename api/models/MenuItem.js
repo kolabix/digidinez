@@ -44,9 +44,10 @@ const menuItemSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  isVeg: {
-    type: Boolean,
-    default: true // Default to vegetarian for Indian market
+  foodType: {
+    type: String,
+    enum: ['veg', 'non-veg'],
+    default: 'veg'
   },
   isSpicy: {
     type: Boolean,
@@ -85,6 +86,7 @@ const menuItemSchema = new mongoose.Schema({
 
 // Indexes for performance and search
 menuItemSchema.index({ restaurantId: 1, isAvailable: 1 });
+menuItemSchema.index({ restaurantId: 1, foodType: 1 });
 menuItemSchema.index({ restaurantId: 1, categoryIds: 1 });
 menuItemSchema.index({ restaurantId: 1, tagIds: 1 });
 menuItemSchema.index({ restaurantId: 1, sortOrder: 1 });
@@ -147,8 +149,8 @@ menuItemSchema.statics.findByRestaurant = function(restaurantId, options = {}) {
     query.tagIds = { $in: options.tagIds };
   }
   
-  if (options.isVeg !== undefined) {
-    query.isVeg = options.isVeg;
+  if (options.foodType !== undefined) {
+    query.foodType = options.foodType;
   }
   
   if (options.maxSpicyLevel !== undefined) {

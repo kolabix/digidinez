@@ -8,7 +8,7 @@ const menuItemService = {
     if (filters.search) params.append('search', filters.search);
     if (filters.categories?.length) params.append('categories', filters.categories.join(','));
     if (filters.tags?.length) params.append('tags', filters.tags.join(','));
-    if (filters.isVeg !== null) params.append('isVeg', filters.isVeg);
+    if (filters.foodType) params.append('foodType', filters.foodType);
     if (filters.spicyLevel !== null) params.append('spicyLevel', filters.spicyLevel);
     if (filters.isAvailable !== null) params.append('isAvailable', filters.isAvailable);
 

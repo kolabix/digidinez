@@ -20,7 +20,7 @@ export const MenuItems = () => {
     search: '',
     categories: [],
     tags: [],
-    isVeg: null,
+    foodType: '',
     spicyLevel: null,
     isAvailable: null
   });
@@ -71,7 +71,7 @@ export const MenuItems = () => {
     if (!hasLoadedRef.current || filters.search) return;
     
     loadMenuItems(false);
-  }, [filters.categories, filters.tags, filters.isVeg, filters.spicyLevel, filters.isAvailable]);
+  }, [filters.categories, filters.tags, filters.foodType, filters.spicyLevel, filters.isAvailable]);
 
   const loadMenuItems = async (isSearch = false) => {
     try {

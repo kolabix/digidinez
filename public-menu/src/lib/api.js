@@ -81,7 +81,7 @@ function normalizeMenuItems(items) {
     price: item.price,
     imageUrl: item.imageUrl || (item.image ? item.image.url : null),
     isAvailable: item.isAvailable,
-    isVeg: item.isVeg,
+    foodType: item.foodType || 'veg',
     spicyLevel: item.spicyLevel || 0,
     categoryIds: (item.categoryIds || []).map(cat => ({
       id: cat.id || cat._id,
@@ -148,8 +148,9 @@ export async function searchItems({ restaurantId, query }) {
 export function filterItems(items, { veg, nonveg, tags, q }) {
   return items.filter(item => {
     // Veg/Non-veg filter
-    if (veg === 'true' && !item.isVeg) return false;
-    if (nonveg === 'true' && item.isVeg) return false;
+    const isVeg = item.foodType === 'veg';
+    if (veg === 'true' && !isVeg) return false;
+    if (nonveg === 'true' && isVeg) return false;
     
     // Tags filter
     if (tags && tags.length > 0) {

@@ -60,10 +60,10 @@ export const validateCreateMenuItem = [
       return true;
     }),
 
-  body('isVeg')
+  body('foodType')
     .optional()
-    .isBoolean()
-    .withMessage('isVeg must be a boolean'),
+    .isIn(['veg', 'non-veg'])
+    .withMessage('foodType must be either "veg" or "non-veg"'),
 
   body('isSpicy')
     .optional()
@@ -128,6 +128,11 @@ export const validateUpdateMenuItem = [
     .optional()
     .isArray()
     .withMessage('Tags must be an array'),
+  
+  body('foodType')
+    .optional()
+    .isIn(['veg', 'non-veg'])
+    .withMessage('foodType must be either "veg" or "non-veg"'),
   
   body('spicyLevel')
     .optional()
@@ -196,6 +201,11 @@ export const validateMenuQuery = [
       'other'
     ])
     .withMessage('Invalid category filter'),
+  
+  query('foodType')
+    .optional()
+    .isIn(['veg', 'non-veg'])
+    .withMessage('Invalid foodType filter'),
   
   query('isAvailable')
     .optional()

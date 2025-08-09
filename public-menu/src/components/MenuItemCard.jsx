@@ -61,7 +61,7 @@ export default function MenuItemCard({ item }) {
         
         {/* Veg/Non-veg indicator */}
         <div className="absolute -top-1 -left-1">
-          <DietaryBadge isVeg={item.isVeg} />
+          <DietaryBadge isVeg={item.foodType === 'veg'} />
         </div>
       </div>
 
