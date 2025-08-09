@@ -76,7 +76,8 @@ export const validateCreateMenuItem = [
     .withMessage('Spicy level must be between 0 and 5'),
   
   body('preparationTime')
-    .optional()
+    .optional({ nullable: true })
+    .customSanitizer((value) => (value === '' || value === null ? undefined : value))
     .isInt({ min: 1, max: 180 })
     .withMessage('Preparation time must be between 1 and 180 minutes'),
   
@@ -140,9 +141,10 @@ export const validateUpdateMenuItem = [
     .withMessage('Spicy level must be between 0 and 5'),
   
   body('preparationTime')
-    .optional()
-    .isInt({ min: 1, max: 120 })
-    .withMessage('Preparation time must be between 1 and 120 minutes'),
+    .optional({ nullable: true })
+    .customSanitizer((value) => (value === '' || value === null ? undefined : value))
+    .isInt({ min: 1, max: 180 })
+    .withMessage('Preparation time must be between 1 and 180 minutes'),
   
   body('isAvailable')
     .optional()

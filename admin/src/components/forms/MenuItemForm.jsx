@@ -74,7 +74,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
       isSpicy: item?.isSpicy ?? false,
       spicyLevel: item?.spicyLevel || 0,
       isAvailable: item?.isAvailable ?? true,
-      preparationTime: item?.preparationTime || 15,
+      preparationTime: item?.preparationTime,
       nutritionInfo: item?.nutritionInfo || {
         calories: '',
         protein: '',
@@ -97,6 +97,14 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
           carbs: parseFloat(formData.nutritionInfo.carbs) || 0,
           fat: parseFloat(formData.nutritionInfo.fat) || 0
         };
+
+        // preparationTime is optional; only send if a valid number
+        const preparationTimeValue = parseInt(formData.preparationTime, 10);
+        if (Number.isNaN(preparationTimeValue)) {
+          delete formData.preparationTime;
+        } else {
+          formData.preparationTime = preparationTimeValue;
+        }
 
         // Ensure foodType is set
         if (!formData.foodType) {
@@ -434,7 +442,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                   label="Preparation Time (minutes)"
                   name="preparationTime"
                   type="number"
-                  min="0"
+                  min="1"
                   value={values.preparationTime}
                   onChange={handleChange}
                   error={errors.preparationTime}
