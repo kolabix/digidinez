@@ -521,15 +521,14 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
       </div>
 
       {/* Confirm Image Remove Dialog */}
-      {showConfirm && (
-        <ConfirmDialog
-          title="Remove Image"
-          message="Are you sure you want to remove this image?"
-          confirmLabel="Remove"
-          onConfirm={confirmRemoveImage}
-          onCancel={() => setShowConfirm(false)}
-        />
-      )}
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="Remove Image"
+        message="Are you sure you want to remove this image?"
+        confirmText="Remove"
+        onConfirm={confirmRemoveImage}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }; 
