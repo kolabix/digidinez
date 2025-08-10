@@ -1,8 +1,15 @@
-import { useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import useForm from '../../hooks/useForm';
 import { Input } from '../common/Input';
+import { LogoUpload } from './LogoUpload';
+import restaurantService from '../../services/restaurantService';
+import { toast } from '../common/Toast';
 
 export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoLoading, setLogoLoading] = useState(false);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState(profile?.logoUrl || null);
+
   const initialValues = {
     name: '',
     email: '',
@@ -96,11 +103,49 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
     }
   }, [profile, setFormValues]);
 
+  // Handle logo upload
+  const handleLogoUpload = (file) => {
+    setLogoFile(file);
+  };
+
+  // Handle logo removal
+  const handleLogoRemove = () => {
+    setLogoFile(null);
+    setCurrentLogoUrl(null);
+  };
+
+  // Upload logo before saving profile
+  const uploadLogoIfNeeded = async () => {
+    if (logoFile) {
+      setLogoLoading(true);
+      try {
+        const response = await restaurantService.uploadLogo(logoFile);
+        if (response.success) {
+          setCurrentLogoUrl(response.data.restaurant.logoUrl);
+          setLogoFile(null);
+          toast.success('Logo uploaded successfully!');
+        }
+      } catch (error) {
+        toast.error(error.message || 'Failed to upload logo');
+        throw error;
+      } finally {
+        setLogoLoading(false);
+      }
+    }
+  };
+
   // Expose submit function to parent component
   useImperativeHandle(ref, () => ({
-    submitForm: () => {
+    submitForm: async () => {
       if (validateForm()) {
-        onSave(values);
+        try {
+          // Upload logo first if needed
+          await uploadLogoIfNeeded();
+          // Then save profile
+          await onSave(values);
+        } catch (error) {
+          // Error handling is done in parent component
+        }
       }
     }
   }));
@@ -123,6 +168,18 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Logo Upload Section */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <LogoUpload
+            currentLogoUrl={currentLogoUrl}
+            onLogoUpload={handleLogoUpload}
+            onLogoRemove={handleLogoRemove}
+            loading={logoLoading}
+          />
+        </div>
+      </div>
+
       {/* Basic Information */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">

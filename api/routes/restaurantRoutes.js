@@ -4,7 +4,8 @@ import {
   getProfile, 
   updateProfile, 
   toggleStatus, 
-  getStats 
+  getStats,
+  uploadLogo
 } from '../controllers/restaurantController.js';
 import { 
   generateQRCode, 
@@ -16,6 +17,8 @@ import {
   validateUpdateProfile, 
   validateStatusToggle 
 } from '../middleware/validation.js';
+import { handleUploadErrors, validateImageUpload } from '../middleware/uploadMiddleware.js';
+import { uploadMenuImage } from '../utils/imageUpload.js';
 
 const router = express.Router();
 
@@ -35,6 +38,9 @@ router.get('/profile', getProfile);
 router.put('/profile', validateUpdateProfile, updateProfile);
 router.patch('/status', validateStatusToggle, toggleStatus);
 router.get('/stats', getStats);
+
+// Logo upload route
+router.post('/logo', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadLogo);
 
 // QR code management routes
 router.post('/generate-qr', generateQRCode);

@@ -13,10 +13,10 @@ export default function Header({ restaurant }) {
               <img
                 src={restaurant.logoUrl}
                 alt={`${restaurant.name} logo`}
-                className="w-10 h-10 rounded-lg object-cover"
+                className="w-16 h-16 rounded-lg object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <div className="w-16 h-16 rounded-lg bg-primary flex items-center justify-center">
                 <Building2 size={20} className="text-white" />
               </div>
             )}

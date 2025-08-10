@@ -54,6 +54,10 @@ const restaurantSchema = new mongoose.Schema({
   qrCodeUrl: {
     type: String,
     default: null
+  },
+  logoUrl: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true,

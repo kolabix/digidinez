@@ -1,5 +1,6 @@
 import { Restaurant } from '../models/index.js';
 import { validationResult } from 'express-validator';
+import { uploadBufferToBlob, deleteBlobObject } from '../utils/imageUpload.js';
 
 /**
  * Restaurant Profile Controller
@@ -31,6 +32,7 @@ export const getProfile = async (req, res) => {
           address: restaurant.address,
           isActive: restaurant.isActive,
           qrCodeUrl: restaurant.qrCodeUrl,
+          logoUrl: restaurant.logoUrl,
           fullAddress: restaurant.fullAddress,
           createdAt: restaurant.createdAt,
           updatedAt: restaurant.updatedAt
@@ -142,6 +144,7 @@ export const updateProfile = async (req, res) => {
           address: updatedRestaurant.address,
           isActive: updatedRestaurant.isActive,
           qrCodeUrl: updatedRestaurant.qrCodeUrl,
+          logoUrl: updatedRestaurant.logoUrl,
           fullAddress: updatedRestaurant.fullAddress,
           updatedAt: updatedRestaurant.updatedAt
         }
@@ -226,6 +229,7 @@ export const toggleStatus = async (req, res) => {
           address: updatedRestaurant.address,
           isActive: updatedRestaurant.isActive,
           qrCodeUrl: updatedRestaurant.qrCodeUrl,
+          logoUrl: updatedRestaurant.logoUrl,
           fullAddress: updatedRestaurant.fullAddress,
           updatedAt: updatedRestaurant.updatedAt
         }
@@ -238,6 +242,67 @@ export const toggleStatus = async (req, res) => {
       success: false,
       message: 'Server error while updating status',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// @desc    Upload restaurant logo
+// @route   POST /api/restaurants/logo
+// @access  Private
+export const uploadLogo = async (req, res) => {
+  try {
+    const restaurantId = req.restaurant.id;
+    
+    // Get current restaurant to check if logo exists
+    const currentRestaurant = await Restaurant.findById(restaurantId);
+    if (!currentRestaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+
+    // Delete old logo if it exists
+    if (currentRestaurant.logoUrl) {
+      try {
+        await deleteBlobObject(currentRestaurant.logoUrl);
+      } catch (deleteError) {
+        console.warn('Failed to delete old logo:', deleteError);
+        // Continue with upload even if deletion fails
+      }
+    }
+
+    // Upload new logo to Vercel Blob
+    const uploadResult = await uploadBufferToBlob(restaurantId, req.file, 'logos');
+    
+    // Update restaurant with new logo URL
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      restaurantId,
+      { logoUrl: uploadResult.publicUrl },
+      { 
+        new: true,
+        select: '-password'
+      }
+    );
+
+    res.json({
+      success: true,
+      message: 'Logo uploaded successfully',
+      data: {
+        restaurant: {
+          id: updatedRestaurant._id,
+          name: updatedRestaurant.name,
+          logoUrl: updatedRestaurant.logoUrl,
+          updatedAt: updatedRestaurant.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Logo upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while uploading logo'
     });
   }
 };

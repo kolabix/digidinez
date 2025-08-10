@@ -173,62 +173,89 @@ export const Profile = () => {
           loading={loading}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Basic Information */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                Basic Information
-              </h3>
-              <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Restaurant Name</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{profile?.name || 'Not provided'}</dd>
+        <div className="space-y-6">
+          {/* Logo Display */}
+          {profile?.logoUrl && (
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Restaurant Logo
+                </h3>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={profile.logoUrl}
+                      alt="Restaurant logo"
+                      className="w-24 h-24 rounded-lg object-cover border border-gray-200"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      Your restaurant logo is displayed to customers on the public menu.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Email</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{profile?.email || 'Not provided'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{profile?.phone || 'Not provided'}</dd>
-                </div>
-              </dl>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Address Information */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                Address
-              </h3>
-              <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Street Address</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{profile?.address?.street || 'Not provided'}</dd>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Basic Information */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Basic Information
+                </h3>
+                <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">City</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile?.address?.city || 'Not provided'}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Restaurant Name</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{profile?.name || 'Not provided'}</dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">State</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile?.address?.state || 'Not provided'}</dd>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <dt className="text-sm font-medium text-gray-500">ZIP Code</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile?.address?.zipCode || 'Not provided'}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Email</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{profile?.email || 'Not provided'}</dd>
                   </div>
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Country</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{profile?.address?.country || 'Not provided'}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{profile?.phone || 'Not provided'}</dd>
                   </div>
-                </div>
-              </dl>
+                </dl>
+              </div>
+            </div>
+
+            {/* Address Information */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Address
+                </h3>
+                <dl className="grid grid-cols-1 gap-x-4 gap-y-4">
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Street Address</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{profile?.address?.street || 'Not provided'}</dd>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">City</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{profile?.address?.city || 'Not provided'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">State</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{profile?.address?.state || 'Not provided'}</dd>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">ZIP Code</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{profile?.address?.zipCode || 'Not provided'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-gray-500">Country</dt>
+                      <dd className="mt-1 text-sm text-gray-900">{profile?.address?.country || 'Not provided'}</dd>
+                    </div>
+                  </div>
+                </dl>
+              </div>
             </div>
           </div>
         </div>
