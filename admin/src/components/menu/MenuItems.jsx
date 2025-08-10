@@ -608,9 +608,6 @@ export const MenuItems = () => {
                   <h3 className="text-lg font-semibold text-gray-900">{categoryName}</h3>
                   <p className="text-sm text-gray-600">{categoryItems.length} item{categoryItems.length !== 1 ? 's' : ''}</p>
                 </div>
-                <div className="text-sm text-gray-500">
-                  Total: ₹{categoryItems.reduce((sum, item) => sum + item.price, 0)}
-                </div>
               </div>
             </div>
 

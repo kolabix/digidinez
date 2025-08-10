@@ -1,9 +1,11 @@
 import { useQRCode } from '../hooks/useQRCode.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import { Button } from '../components/common/Button.jsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.jsx';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.jsx';
 import { toast } from '../components/common/Toast.jsx';
 import { useState } from 'react';
+import { PUBLIC_MENU_BASE_URL } from '../utils/constants.js';
 
 export const QRCode = () => {
   const { 
@@ -15,6 +17,7 @@ export const QRCode = () => {
     deleteQRCodeData 
   } = useQRCode();
   
+  const { restaurant } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleGenerateQR = () => {
@@ -124,31 +127,7 @@ export const QRCode = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Generated On
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {new Date(qrData.qrCode.generatedAt).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      File Size
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {(qrData.qrCode.size / 1024).toFixed(1)} KB
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Public URL
+                      QR Code URL
                     </label>
                     <div className="flex items-center gap-2">
                       <input
@@ -161,6 +140,27 @@ export const QRCode = () => {
                         onClick={() => copyToClipboard(`${qrData.qrCode.publicUrl}`)}
                         variant="outline"
                         size="sm"
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Public Menu URL
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={restaurant ? `${PUBLIC_MENU_BASE_URL}/${restaurant._id}` : 'Loading...'}
+                        readOnly
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
+                      />
+                      <Button
+                        onClick={() => copyToClipboard(`${PUBLIC_MENU_BASE_URL}/${restaurant._id}`)}
+                        variant="outline"
+                        size="sm"
+                        disabled={!restaurant}
                       >
                         Copy
                       </Button>

@@ -1,5 +1,17 @@
-// API Endpoints
-export const API_BASE_URL = 'http://localhost:3001/api';
+// Get the base URL for public menu
+export const getPublicMenuBaseUrl = () => {
+  // Check if VITE_PUBLIC_MENU_BASE_URL is set in environment
+  if (import.meta.env.VITE_PUBLIC_MENU_BASE_URL) {
+    return import.meta.env.VITE_PUBLIC_MENU_BASE_URL;
+  }
+  
+  // Fallback: use current host with /menu path
+  const currentHost = window.location.origin;
+  return `${currentHost}/menu`;
+};
+
+// For backward compatibility, export the function result
+export const PUBLIC_MENU_BASE_URL = getPublicMenuBaseUrl();
 
 // Route paths
 export const ROUTES = {
