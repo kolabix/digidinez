@@ -806,11 +806,20 @@ export const getMenuCategories = async (req, res) => {
 // @access  Private
 export const createMenuCategory = async (req, res) => {
   try {
-    const { name, sortOrder } = req.body;
+    const { name } = req.body;
+
+    // Get the highest sort order for this restaurant
+    const highestSortOrder = await MenuCategory.findOne(
+      { restaurantId: req.restaurant.id },
+      { sortOrder: 1 }
+    ).sort({ sortOrder: -1 }).limit(1);
+
+    // Calculate next sort order (start from 1 if no categories exist)
+    const nextSortOrder = (highestSortOrder?.sortOrder || 0) + 1;
 
     const category = await MenuCategory.create({
       name,
-      sortOrder,
+      sortOrder: nextSortOrder,
       restaurantId: req.restaurant.id
     });
 
@@ -942,8 +951,14 @@ export const reorderCategories = async (req, res) => {
       });
     }
 
+    // Ensure sort orders are sequential starting from 1
+    const normalizedCategoryOrders = categoryOrders.map(({ id }, index) => ({
+      id,
+      sortOrder: index + 1
+    }));
+
     // Update sort order for each category
-    const updatePromises = categoryOrders.map(({ id, sortOrder }) => {
+    const updatePromises = normalizedCategoryOrders.map(({ id, sortOrder }) => {
       return MenuCategory.findOneAndUpdate(
         { _id: id, restaurantId: req.restaurant.id },
         { sortOrder },
