@@ -100,6 +100,7 @@ export default function BottomBar({
                 size={18} 
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" 
               />
+              {/* iOS Safari zoom prevention: text-base (16px) on mobile, text-sm (14px) on desktop */}
               <input
                 ref={searchInputRef}
                 type="text"
@@ -108,7 +109,7 @@ export default function BottomBar({
                 onFocus={handleSearchFocus}
                 onBlur={handleSearchBlur}
                 placeholder={`Search in ${restaurantId ? 'menu' : 'restaurant'}...`}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface-muted border border-border rounded-lg text-sm focus:outline-none focus:border-border-focus focus:ring-1 focus:ring-border-focus"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-muted border border-border rounded-lg text-base sm:text-sm focus:outline-none focus:border-border-focus focus:ring-1 focus:ring-border-focus"
               />
             </div>
 
