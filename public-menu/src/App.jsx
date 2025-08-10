@@ -47,6 +47,15 @@ export default function App() {
     loadData();
   }, []);
 
+  // Update document title when restaurant data is loaded
+  useEffect(() => {
+    if (data?.restaurant?.name) {
+      document.title = `${data.restaurant.name} | Digital Menu`;
+    } else {
+      document.title = 'Digital Menu';
+    }
+  }, [data?.restaurant?.name]);
+
   // Build items by category
   const itemsByCategory = data?.categories?.reduce((acc, category) => {
     const categoryItems = data.items.filter(item => 
