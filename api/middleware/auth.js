@@ -1,14 +1,19 @@
 import jwt from 'jsonwebtoken';
 import { Restaurant } from '../models/index.js';
 
-// @desc    Protect routes - Verify JWT token from HTTP-only cookie
+// @desc    Protect routes - Verify JWT token from HTTP-only cookie or Authorization header
 export const protect = async (req, res, next) => {
   try {
     let token;
 
-    // Get token from HTTP-only cookie
+    // Get token from HTTP-only cookie (primary method)
     if (req.cookies && req.cookies.authToken) {
       token = req.cookies.authToken;
+    }
+    
+    // Fallback: Get token from Authorization header (for testing)
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
     }
 
     // Check if token exists
@@ -49,13 +54,15 @@ export const protect = async (req, res, next) => {
     } catch (jwtError) {
       console.error('JWT verification error:', jwtError);
       
-      // Clear invalid cookie
-      res.cookie('authToken', '', {
-        expires: new Date(0),
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-      });
+      // Clear invalid cookie if it exists
+      if (req.cookies && req.cookies.authToken) {
+        res.cookie('authToken', '', {
+          expires: new Date(0),
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict'
+        });
+      }
 
       return res.status(401).json({
         success: false,

@@ -18,6 +18,7 @@
   "description": "DigiDinez API - Restaurant Digital Menu Management",
   "dependencies": {
     "@vercel/blob": "^1.1.1",
+    "@vercel/sdk": "^1.10.2",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

@@ -3,7 +3,8 @@ import { protect } from '../middleware/auth.js';
 import { 
   triggerDeployment, 
   getDeploymentStatus, 
-  getRecentDeployments 
+  getRecentDeployments,
+  testVercelConfig
 } from '../controllers/deploymentController.js';
 
 const router = express.Router();
@@ -15,6 +16,9 @@ const router = express.Router();
 
 // Apply authentication to all routes
 router.use(protect);
+
+// Test Vercel configuration
+router.get('/test-config', testVercelConfig);
 
 // Trigger new deployment
 router.post('/trigger', triggerDeployment);
