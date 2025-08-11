@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/menu/:path*",
-            "destination": "https://public-menu.vercel.app/:path*"
+            "destination": "https://public-menu.vercel.app/menu/:path*"
         },
         {
             "source": "/admin/:path*",
