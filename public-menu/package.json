@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:ssg": "node pre-render.config.js",
-    "build:prod": "npm run build && npm run build:ssg"
+    "build:prod": "npm run build && npm run build:ssg",
+    "build:selective": "npm run build && RESTAURANT_ID=${RESTAURANT_ID} SELECTIVE_BUILD=true npm run build:ssg"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",

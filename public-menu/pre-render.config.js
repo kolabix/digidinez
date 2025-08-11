@@ -45,73 +45,130 @@ async function preRender() {
   console.log('Starting pre-rendering...')
   
   try {
-    // Fetch all restaurants
-    const restaurants = await fetchAllRestaurants()
-    console.log(`Found ${restaurants.length} restaurants`)
-
-    // Ensure dist directory exists
-    const distDir = path.resolve(__dirname, './dist')
-    if (!fs.existsSync(distDir)) {
-      fs.mkdirSync(distDir, { recursive: true })
-    }
-
-    // Read the built client template (contains hashed assets)
-    const templatePath = path.join(distDir, 'index.html')
-    if (!fs.existsSync(templatePath)) {
-      throw new Error('Built template dist/index.html not found. Run "npm run build" first.')
-    }
-    const baseTemplate = fs.readFileSync(templatePath, 'utf-8')
-
-    // Pre-render each restaurant's menu
-    for (const restaurant of restaurants) {
-      const restaurantId = restaurant.id
-      console.log(`Pre-rendering menu for ${restaurant.name} (${restaurantId})`)
-
-      // Fetch restaurant-specific data
-      const menuData = await fetchRestaurantData(restaurantId)
-      if (!menuData) {
-        console.warn(`Skipping ${restaurant.name} - no data available`)
-        continue
-      }
-
-      // Create restaurant-specific directory
-      const restaurantDir = path.join(distDir, 'menu', restaurantId)
-      fs.mkdirSync(restaurantDir, { recursive: true })
-
-      // Generate app HTML to inject into #root and a preload script
-      const appHtml = generateAppHtml(restaurant, menuData)
-      const preloadScript = `\n<script>window.__PRELOADED_MENU__ = ${JSON.stringify({
-        restaurant: menuData.restaurant,
-        categories: menuData.categories,
-        menuItems: menuData.menuItems,
-        tags: menuData.tags || []
-      })};<\/script>`
-
-      // Inject into template: title, root content, and preloaded data
-      let finalHtml = baseTemplate
-        .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(
-          `${restaurant.name} | Digital Menu`
-        )}</title>`) 
-        .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>${preloadScript}`)
-
-      // Add PWA favicon and manifest links
-      const pwaLinks = generatePWALinks(restaurant.id, restaurant.logoUrl)
-      finalHtml = finalHtml.replace('</head>', `    ${pwaLinks}\n  </head>`)
-
-      // Generate manifest file
-      generateManifest(restaurant, restaurant.logoUrl)
-
-      // Write HTML file
-      const htmlPath = path.join(restaurantDir, 'index.html')
-      fs.writeFileSync(htmlPath, finalHtml)
-
-      console.log(`✓ Generated ${htmlPath}`)
+    // Check if we're doing selective building
+    const selectiveRestaurantId = process.env.RESTAURANT_ID;
+    const isSelectiveBuild = process.env.SELECTIVE_BUILD === 'true';
+    
+    if (isSelectiveBuild && selectiveRestaurantId) {
+      console.log(`🔄 Selective build for restaurant: ${selectiveRestaurantId}`);
+      await preRenderSingleRestaurant(selectiveRestaurantId);
+    } else {
+      console.log('🔄 Building all restaurants');
+      await preRenderAllRestaurants();
     }
 
     console.log('Pre-rendering completed successfully!')
   } catch (error) {
     console.error('Pre-rendering failed:', error)
     process.exit(1)
+  }
+}
+
+// Function to pre-render a single restaurant
+async function preRenderSingleRestaurant(restaurantId) {
+  try {
+    // Fetch single restaurant data
+    const restaurant = await fetchRestaurantById(restaurantId);
+    if (!restaurant) {
+      throw new Error(`Restaurant ${restaurantId} not found`);
+    }
+    
+    console.log(`Pre-rendering menu for ${restaurant.name} (${restaurantId})`);
+    await preRenderRestaurant(restaurant);
+    
+  } catch (error) {
+    console.error(`Failed to pre-render restaurant ${restaurantId}:`, error);
+    throw error;
+  }
+}
+
+// Function to pre-render all restaurants
+async function preRenderAllRestaurants() {
+  // Fetch all restaurants
+  const restaurants = await fetchAllRestaurants()
+  console.log(`Found ${restaurants.length} restaurants`)
+
+  // Pre-render each restaurant's menu
+  for (const restaurant of restaurants) {
+    await preRenderRestaurant(restaurant);
+  }
+}
+
+// Function to pre-render a single restaurant (extracted from main logic)
+async function preRenderRestaurant(restaurant) {
+  const restaurantId = restaurant.id
+  console.log(`Pre-rendering menu for ${restaurant.name} (${restaurantId})`)
+
+  // Ensure dist directory exists
+  const distDir = path.resolve(__dirname, './dist')
+  if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir, { recursive: true })
+  }
+
+  // Read the built client template (contains hashed assets)
+  const templatePath = path.join(distDir, 'index.html')
+  if (!fs.existsSync(templatePath)) {
+    throw new Error('Built template dist/index.html not found. Run "npm run build" first.')
+  }
+  const baseTemplate = fs.readFileSync(templatePath, 'utf-8')
+
+  // Fetch restaurant-specific data
+  const menuData = await fetchRestaurantData(restaurantId)
+  if (!menuData) {
+    console.warn(`Skipping ${restaurant.name} - no data available`)
+    return
+  }
+
+  // Create restaurant-specific directory
+  const restaurantDir = path.join(distDir, 'menu', restaurantId)
+  fs.mkdirSync(restaurantDir, { recursive: true })
+
+  // Generate app HTML to inject into #root and a preload script
+  const appHtml = generateAppHtml(restaurant, menuData)
+  const preloadScript = `\n<script>window.__PRELOADED_MENU__ = ${JSON.stringify({
+    restaurant: menuData.restaurant,
+    categories: menuData.categories,
+    menuItems: menuData.menuItems,
+    tags: menuData.tags || []
+  })};<\/script>`
+
+  // Inject into template: title, root content, and preloaded data
+  let finalHtml = baseTemplate
+    .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(
+      `${restaurant.name} | Digital Menu`
+    )}</title>`) 
+    .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>${preloadScript}`)
+
+  // Add PWA favicon and manifest links
+  const pwaLinks = generatePWALinks(restaurant.id, restaurant.logoUrl)
+  finalHtml = finalHtml.replace('</head>', `    ${pwaLinks}\n  </head>`)
+
+  // Generate manifest file
+  generateManifest(restaurant, restaurant.logoUrl)
+
+  // Write HTML file
+  const htmlPath = path.join(restaurantDir, 'index.html')
+  fs.writeFileSync(htmlPath, finalHtml)
+
+  console.log(`✓ Generated ${htmlPath}`)
+}
+
+// Function to fetch a single restaurant by ID
+async function fetchRestaurantById(restaurantId) {
+  try {
+    const apiBase = process.env.API_BASE_URL
+    const secret = process.env.SSG_BUILD_SECRET
+    const response = await fetch(`${apiBase}/restaurants/ssg/list`, {
+      headers: {
+        'x-ssg-secret': secret || ''
+      }
+    })
+    const data = await response.json()
+    const restaurants = data?.data?.restaurants || []
+    return restaurants.find(r => r.id === restaurantId) || null
+  } catch (error) {
+    console.error('Failed to fetch restaurant:', error)
+    return null
   }
 }
 
