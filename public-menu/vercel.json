@@ -5,8 +5,8 @@
     "framework": "vite",
     "rewrites": [
         {
-            "source": "/menu/:restaurantId",
-            "destination": "/menu/:restaurantId/index.html"
+            "source": "/:restaurantId",
+            "destination": "/:restaurantId/index.html"
         },
         {
             "source": "/(.*)",
@@ -15,7 +15,7 @@
     ],
     "headers": [
         {
-            "source": "/menu/:restaurantId/index.html",
+            "source": "/:restaurantId/index.html",
             "headers": [
                 {
                     "key": "Cache-Control",
