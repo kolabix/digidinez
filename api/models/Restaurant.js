@@ -58,6 +58,11 @@ const restaurantSchema = new mongoose.Schema({
   logoUrl: {
     type: String,
     default: null
+  },
+  brandColor: {
+    type: String,
+    default: '#ffffff',
+    match: [/^#[0-9A-Fa-f]{6}$/, 'Brand color must be a valid hex color']
   }
 }, {
   timestamps: true,

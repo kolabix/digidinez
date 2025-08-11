@@ -1,108 +1,198 @@
-# DigiDinez Public Menu
+# Public Menu - PWA Icon Generation
 
-A production-ready React 19 + Vite app for displaying restaurant menus with advanced filtering, search, and category navigation.
+This project automatically generates PWA icons and manifests for each restaurant at build time, creating a personalized experience for each restaurant's digital menu.
 
 ## Features
 
-- **Sticky Header**: Restaurant name and logo display
-- **Advanced Filtering**: Tri-state veg/non-veg toggle and multi-select tag filters
-- **Category Navigation**: Collapsible sections with smooth scrolling
-- **Debounced Search**: Type-ahead search with dropdown results
-- **Bottom Sheet**: Category navigation with framer-motion animations
-- **Image Loading**: Skeleton loading; images served from Vercel Blob
-- **URL State Sync**: All filters and search persist in URL parameters
-- **Mobile-First**: Responsive design optimized for mobile devices
-- **Accessibility**: Basic a11y support with proper ARIA labels
+- **Automatic Icon Generation**: Creates PWA icons from restaurant logos using `pwa-asset-generator`
+- **Vercel Blob Storage**: Uploads generated icons to Vercel Blob for global CDN distribution
+- **Per-Restaurant Manifests**: Generates custom web app manifests for each restaurant
+- **HTML Patching**: Automatically inserts favicon and manifest links into pre-rendered HTML
+- **Brand Color Support**: Uses restaurant brand colors for theme and background colors
 
-## Tech Stack
+## Build Process
 
-- **React 19** with JSX
-- **Vite** for fast development and building
-- **Tailwind CSS v4** with custom theme tokens
-- **Framer Motion** for animations
-- **Lucide React** for icons
-- **CLSX** for conditional class names
+The build process follows this sequence:
 
-## Setup
+1. **Vite Build** (`npm run build`): Builds the React application
+2. **SSG Pre-rendering** (`npm run build:ssg`): Generates static HTML for each restaurant
+3. **Icon Generation** (`npm run build:icons`): Creates icons, uploads to Blob, and patches HTML
 
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+## Environment Variables
 
-2. **Configure environment variables**:
-   Copy the example environment file and update it:
-   ```bash
-   cp env.example .env
-   ```
-
-3. **Start development server**:
-   ```bash
-   npm run dev
-   ```
-
-4. **Access the app**:
-   - With restaurant ID in URL: `http://localhost:5173/public/menu/687c8d99d8e6993f3609d564`
-   - With environment restaurant ID: `http://localhost:5173/public/menu/any-restaurant-id`
-
-## API Integration
-
-The app uses the unified backend API:
-
-### Public Menu Endpoint
-- Endpoint: `GET /api/menu/public/:restaurantId`
-- Returns: `{ success: true, data: { restaurant, categories, items, tags } }`
-- No authentication required
-- Restaurant ID can be obtained from the backend profile API
-
-## URL Parameters
-
-The app syncs state to URL query parameters:
-- `veg=true` - Show only vegetarian items
-- `nonveg=true` - Show only non-vegetarian items
-- `tags=tag1,tag2` - Filter by tag IDs
-- `q=search` - Search term
-- `category=id` - Scroll target category
-
-## Image Handling
-
-- Images are served from Vercel Blob
-- Shows skeleton loading until image loads
-- Missing images: Maintains fixed aspect ratio with skeleton
-
-## Building for Production
+Create a `.env` file in the project root with:
 
 ```bash
-npm run build
+VITE_BASE=/menu/
+API_BASE_URL=http://localhost:3001
+SSG_BUILD_SECRET=your_secret_here
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
 ```
 
-The built files will be in the `dist` directory, ready for deployment.
+### Required Variables
 
-## Customization
+- `API_BASE_URL`: Base URL of the DigiDinez API
+- `SSG_BUILD_SECRET`: Secret key for authenticating with the API during build
+- `BLOB_READ_WRITE_TOKEN`: Vercel Blob storage token for uploading icons
+- `VITE_BASE`: Base path for the application (defaults to `/menu/`)
 
-### Theme Colors
-Edit `src/index.css` to modify the `@theme` block:
-```css
-@theme {
-  --color-primary: #0ea5e9;
-  --color-accent: #22c55e;
-  --color-danger: #ef4444;
-  /* ... */
+## Generated Assets
+
+### Icons
+
+For each restaurant, the following icons are generated and uploaded to Vercel Blob:
+
+- `icon-16x16.png` - 16x16 favicon
+- `icon-32x32.png` - 32x32 favicon  
+- `icon-180x180.png` - Apple touch icon
+- `icon-192x192.png` - PWA icon (192x192)
+- `icon-512x512.png` - PWA icon (512x512)
+- `favicon.ico` - Traditional favicon
+
+**Storage Location**: `restaurants/{restaurant_id}/icons/{filename}`
+
+### Manifests
+
+Each restaurant gets a custom web app manifest:
+
+**File**: `dist/assets/manifest-{restaurant_id}.webmanifest`
+**URL**: `/menu/assets/manifest-{restaurant_id}.webmanifest`
+
+**Features**:
+- Restaurant name and description
+- Custom start URL and scope
+- Brand color theming
+- Icon references pointing to Blob URLs
+
+### HTML Patching
+
+The script automatically patches each restaurant's HTML file to include:
+
+```html
+<!--__FAVICONS_START__-->
+<link rel="icon" type="image/png" sizes="16x16" href="https://blob.vercel-storage.com/...">
+<link rel="icon" type="image/png" sizes="32x32" href="https://blob.vercel-storage.com/...">
+<link rel="apple-touch-icon" sizes="180x180" href="https://blob.vercel-storage.com/...">
+<link rel="icon" href="https://blob.vercel-storage.com/...">
+<link rel="manifest" href="/menu/assets/manifest-{restaurant_id}.webmanifest">
+<!--__FAVICONS_END__-->
+```
+
+## API Requirements
+
+The system requires these API endpoints:
+
+### 1. Restaurant List (SSG)
+```
+GET /api/restaurants/ssg/list
+Headers: x-ssg-secret: {secret}
+Response: { success: true, data: { restaurants: [{ id, name, logoUrl, brandColor }] } }
+```
+
+### 2. Restaurant Profile (Public)
+```
+GET /api/menu/public/{restaurantId}
+Response: { success: true, data: { restaurant: { id, name, logoUrl, brandColor, ... } } }
+```
+
+## Error Handling
+
+The script is designed to be resilient:
+
+- **Missing Logos**: Skips icon generation but still creates manifest
+- **API Failures**: Continues processing other restaurants
+- **Upload Failures**: Logs errors and continues
+- **HTML Missing**: Skips HTML patching with warning
+
+## Performance Considerations
+
+- **Sequential Processing**: Restaurants are processed one at a time to avoid rate limiting
+- **Retry Logic**: Exponential backoff for API calls and Blob uploads
+- **Memory Management**: Temporary files are cleaned up after processing
+- **Idempotent**: Safe to run multiple times
+
+## Deployment
+
+### Vercel
+
+The project is configured for Vercel deployment:
+
+- **Build Command**: `npm run build:prod`
+- **Output Directory**: `dist`
+- **Headers**: Caching rules for manifests and HTML files
+
+### Manual Deployment
+
+```bash
+# Install dependencies
+npm install
+
+# Build and generate icons
+npm run build:prod
+
+# Deploy dist/ directory
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Missing Environment Variables**
+   - Ensure all required `.env` variables are set
+   - Check API_BASE_URL is accessible from build environment
+
+2. **Blob Upload Failures**
+   - Verify BLOB_READ_WRITE_TOKEN is valid
+   - Check Vercel Blob storage limits
+
+3. **Icon Generation Failures**
+   - Ensure restaurant logos are accessible URLs
+   - Check logo file formats (PNG, JPG, SVG supported)
+
+4. **HTML Patching Issues**
+   - Verify dist/menu/{restaurant_id}/index.html exists
+   - Check file permissions
+
+### Debug Mode
+
+Run the icon generation separately to debug:
+
+```bash
+npm run build:icons
+```
+
+This will show detailed logs for each step of the process.
+
+## Development
+
+### Adding New Icon Sizes
+
+To add new icon sizes, modify the `generateManifest` function in `generate-icons-and-manifests.js`:
+
+```javascript
+if (iconUrls['icon-{size}x{size}.png']) {
+  manifest.icons.push({
+    src: iconUrls['icon-{size}x{size}.png'],
+    sizes: '{size}x{size}',
+    type: 'image/png'
+  });
 }
 ```
 
-### Component Styling
-All components use Tailwind classes and can be customized by modifying the component files.
+### Customizing Manifest
 
-## Browser Support
+Edit the `generateManifest` function to add custom PWA features:
 
-- Modern browsers with ES2020+ support
-- Mobile browsers (iOS Safari, Chrome Mobile)
-- No IE11 support required
+```javascript
+const manifest = {
+  // ... existing properties
+  categories: ['food', 'restaurant'],
+  lang: 'en',
+  dir: 'ltr',
+  // ... custom properties
+};
+```
 
-## Performance
+## License
 
-- Lazy image loading
-- Debounced search (250ms)
-- Efficient filtering and rendering
-- Minimal bundle size with tree-shaking
+This project is part of DigiDinez and follows the same licensing terms.

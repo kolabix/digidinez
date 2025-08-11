@@ -182,7 +182,7 @@ function generateMenuContent(menuData) {
                 <div class="flex items-center justify-between">
                   <span class="font-semibold text-primary">₹${item.price}</span>
                   <span class="text-xs px-2 py-1 rounded-full ${item.foodType === 'veg' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                    ${item.foodType === 'veg' ? '�� Veg' : '🔴 Non-Veg'}
+                    ${item.foodType === 'veg' ? '🟢 Veg' : '🔴 Non-Veg'}
                   </span>
                 </div>
               </div>

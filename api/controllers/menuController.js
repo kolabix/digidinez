@@ -731,7 +731,7 @@ export const getPublicMenu = async (req, res) => {
     const restaurant = await Restaurant.findOne({ 
       _id: restaurantId, 
       isActive: true 
-    }).select('name address phone qrCodeUrl logoUrl');
+    }).select('name address phone qrCodeUrl logoUrl brandColor');
 
     if (!restaurant) {
       return res.status(404).json({
@@ -762,7 +762,8 @@ export const getPublicMenu = async (req, res) => {
           name: restaurant.name,
           address: restaurant.address,
           phone: restaurant.phone,
-          logoUrl: restaurant.logoUrl
+          logoUrl: restaurant.logoUrl,
+          brandColor: restaurant.brandColor || '#ffffff'
         },
         menuItems,
         categories

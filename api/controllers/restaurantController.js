@@ -372,12 +372,13 @@ export const getStats = async (req, res) => {
 export const listActiveRestaurantsForSsg = async (req, res) => {
   try {
     const restaurants = await Restaurant.find({ isActive: true })
-      .select('_id name logoUrl');
+      .select('_id name logoUrl brandColor');
 
     const entities = restaurants.map(r => ({
       id: r._id,
       name: r.name,
-      logoUrl: r.logoUrl || null
+      logoUrl: r.logoUrl || null,
+      brandColor: r.brandColor || '#ffffff'
     }));
 
     res.json({
