@@ -56,12 +56,36 @@ async function triggerVercelDeployment(restaurantId, restaurantName) {
     console.log(`🚀 Triggering Vercel deployment for restaurant ${restaurantId} (${restaurantName})`);
     console.log(`📋 Using project: ${projectName}${teamId ? `, team ID: ${teamId}` : ''}`);
 
+    // First, clear any existing environment variables to prevent caching issues
+    console.log('🧹 Clearing old environment variables...');
+    try {
+      // Clear the RESTAURANT_ID variable if it exists
+      const clearResponse = await fetch(`https://api.vercel.com/v6/projects/${projectName}/env/RESTAURANT_ID${teamId ? `?teamId=${teamId}` : ''}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${vercelToken}`
+        }
+      });
+      
+      if (clearResponse.ok) {
+        console.log('✅ Cleared old RESTAURANT_ID environment variable');
+      } else if (clearResponse.status === 404) {
+        console.log('ℹ️ No existing RESTAURANT_ID variable to clear');
+      } else {
+        console.warn('⚠️ Could not clear old environment variable:', clearResponse.status);
+      }
+    } catch (clearError) {
+      console.warn('⚠️ Error clearing environment variables:', clearError.message);
+    }
+
     // For git-based deployments, we need to trigger a new deployment from the repository
     // The simplest way is to use the Vercel dashboard API to trigger a deployment
     console.log('🚀 Triggering git-based deployment...');
     
     // Create a deployment payload that triggers a git build
     // According to Vercel API docs, we need to use 'name' and 'gitSource'
+    // Note: We don't set environment variables anymore because Vercel caches them
+    // Instead, we pass the restaurant ID through metadata, which gets read during build
     const deploymentPayload = {
       name: projectName,
       target: 'production',
@@ -71,7 +95,8 @@ async function triggerVercelDeployment(restaurantId, restaurantName) {
         ref: 'main', // or your default branch
         repoId: process.env.VERCEL_GITHUB_REPO_ID // optional: specific repo ID
       },
-      // Add metadata
+      // Add metadata - this is how we pass restaurant-specific data
+      // The build process can read this metadata to determine which restaurant to build
       meta: {
         restaurantId,
         restaurantName,
