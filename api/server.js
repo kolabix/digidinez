@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
 import restaurantRoutes from './routes/restaurantRoutes.js';
 import tagRoutes from './routes/tagRoutes.js';
+import deploymentRoutes from './routes/deploymentRoutes.js';
 import { handleUploadErrors } from './middleware/uploadMiddleware.js';
 
 // Load environment variables
@@ -83,6 +84,7 @@ app.use('/auth', authRoutes);
 app.use('/menu/tags', tagRoutes);
 app.use('/menu', menuRoutes);
 app.use('/restaurants', restaurantRoutes);
+app.use('/deployment', deploymentRoutes);
 
 // Handle upload errors
 app.use(handleUploadErrors);

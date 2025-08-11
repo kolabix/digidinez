@@ -285,9 +285,15 @@ export const uploadLogo = async (req, res) => {
       }
     );
 
+    // Trigger icon generation in the background (don't wait for it)
+    generateIconsForRestaurant(restaurantId, uploadResult.publicUrl).catch(error => {
+      console.error('Background icon generation failed:', error);
+      // Don't fail the logo upload if icon generation fails
+    });
+
     res.json({
       success: true,
-      message: 'Logo uploaded successfully',
+      message: 'Logo uploaded successfully. Icons will be generated automatically.',
       data: {
         restaurant: {
           id: updatedRestaurant._id,
@@ -306,6 +312,77 @@ export const uploadLogo = async (req, res) => {
     });
   }
 };
+
+// Helper function to generate icons for a restaurant
+async function generateIconsForRestaurant(restaurantId, logoUrl) {
+  try {
+    console.log(`Starting icon generation for restaurant ${restaurantId}`);
+    
+    // Import the icon generation utilities
+    const sharp = await import('sharp');
+    const { put } = await import('@vercel/blob');
+    
+    // Download logo
+    const response = await fetch(logoUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download logo: ${response.status}`);
+    }
+    
+    const logoBuffer = await response.arrayBuffer();
+    
+    // Generate icons
+    const iconSizes = [
+      { size: 16, name: 'favicon-16x16.png' },
+      { size: 32, name: 'favicon-32x32.png' },
+      { size: 180, name: 'apple-touch-icon.png' },
+      { size: 192, name: 'android-chrome-192x192.png' },
+      { size: 512, name: 'android-chrome-512x512.png' }
+    ];
+    
+    // Upload each icon to Vercel Blob
+    for (const icon of iconSizes) {
+      const iconBuffer = await sharp.default(Buffer.from(logoBuffer))
+        .resize(icon.size, icon.size, { 
+          fit: 'contain', 
+          background: { r: 255, g: 255, b: 255, alpha: 1 } 
+        })
+        .png()
+        .toBuffer();
+      
+      const blobKey = `restaurants/${restaurantId}/icons/${icon.name}`;
+      
+      await put(blobKey, iconBuffer, {
+        access: 'public',
+        addRandomSuffix: false,
+        contentType: 'image/png'
+      });
+      
+      console.log(`Uploaded ${icon.name} for restaurant ${restaurantId}`);
+    }
+    
+    // Generate favicon.ico
+    const faviconBuffer = await sharp.default(Buffer.from(logoBuffer))
+      .resize(16, 16, { 
+        fit: 'contain', 
+        background: { r: 255, g: 255, b: 255, alpha: 1 } 
+      })
+      .png()
+      .toBuffer();
+    
+    const faviconKey = `restaurants/${restaurantId}/icons/favicon.ico`;
+    await put(faviconKey, faviconBuffer, {
+      access: 'public',
+      addRandomSuffix: false,
+      contentType: 'image/x-icon'
+    });
+    
+    console.log(`Icon generation completed for restaurant ${restaurantId}`);
+    
+  } catch (error) {
+    console.error(`Icon generation failed for restaurant ${restaurantId}:`, error);
+    throw error;
+  }
+}
 
 // @desc    Get restaurant statistics
 // @route   GET /api/restaurants/stats

@@ -1,21 +1,39 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../../context/AuthContext';
+import deploymentService from '../../services/deploymentService';
 import { 
   Bars3Icon,
   UserCircleIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 
 export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
   const { restaurant, logout } = useAuth();
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deploymentStatus, setDeploymentStatus] = useState('Idle');
 
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
       console.error('Logout failed:', error);
+    }
+  };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    setDeploymentStatus('Deploying...');
+    try {
+      await deploymentService.triggerDeployment();
+      setDeploymentStatus('Deployment successful!');
+    } catch (error) {
+      setDeploymentStatus('Deployment failed.');
+      console.error('Deployment failed:', error);
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -47,6 +65,32 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
                 DigiDinez
               </div>
             </div>
+          </div>
+
+          {/* Center - Deploy Button */}
+          <div className="flex items-center">
+            <button
+              onClick={handleDeploy}
+              className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              disabled={isDeploying}
+            >
+              {isDeploying ? (
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <>
+                  <RocketLaunchIcon className="mr-2 h-4 w-4" />
+                  Deploy
+                </>
+              )}
+            </button>
+            {deploymentStatus && (
+              <span className="ml-2 text-sm text-gray-700">
+                ({deploymentStatus})
+              </span>
+            )}
           </div>
 
           {/* Right side - User menu */}

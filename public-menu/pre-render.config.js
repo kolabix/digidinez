@@ -35,7 +35,7 @@ async function fetchAllRestaurants() {
     const list = data?.data?.restaurants || []
     return list
   } catch (error) {
-    console.warn('Failed to fetch restaurants:', error)
+    console.error('Failed to fetch restaurants:', error)
     return []
   }
 }
@@ -93,6 +93,13 @@ async function preRender() {
           `${restaurant.name} | Digital Menu`
         )}</title>`) 
         .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>${preloadScript}`)
+
+      // Add PWA favicon and manifest links
+      const pwaLinks = generatePWALinks(restaurant.id, restaurant.logoUrl)
+      finalHtml = finalHtml.replace('</head>', `    ${pwaLinks}\n  </head>`)
+
+      // Generate manifest file
+      generateManifest(restaurant, restaurant.logoUrl)
 
       // Write HTML file
       const htmlPath = path.join(restaurantDir, 'index.html')
@@ -194,6 +201,129 @@ function generateMenuContent(menuData) {
   }
   
   return content
+}
+
+// Function to generate PWA favicon and manifest links
+function generatePWALinks(restaurantId, logoUrl) {
+  // Generate links for PWA icons and manifest
+  let links = ''
+  
+  // Add manifest link
+  links += `<link rel="manifest" href="/menu/assets/manifest-${restaurantId}.webmanifest">\n    `
+  
+  // Add favicon links - use Vercel Blob if logo exists, otherwise fallback to local assets
+  if (logoUrl) {
+    // Extract the base URL from the logo URL (assuming it's from Vercel Blob)
+    const logoUrlObj = new URL(logoUrl)
+    const baseBlobUrl = `${logoUrlObj.protocol}//${logoUrlObj.host}`
+    
+    // Add favicon links pointing to Vercel Blob
+    links += `<link rel="icon" type="image/png" sizes="16x16" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/favicon-16x16.png">\n    `
+    links += `<link rel="icon" type="image/png" sizes="32x32" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/favicon-32x32.png">\n    `
+    links += `<link rel="apple-touch-icon" sizes="180x180" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/apple-touch-icon.png">\n    `
+    links += `<link rel="icon" type="image/png" sizes="192x192" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/android-chrome-192x192.png">\n    `
+    links += `<link rel="icon" type="image/png" sizes="512x512" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/android-chrome-512x512.png">\n    `
+    links += `<link rel="icon" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/favicon.ico">`
+  } else {
+    // Fallback to local assets
+    links += `<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">\n    `
+    links += `<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">\n    `
+    links += `<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">\n    `
+    links += `<link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/android-chrome-192x192.png">\n    `
+    links += `<link rel="icon" type="image/png" sizes="512x512" href="/assets/icons/android-chrome-512x512.png">\n    `
+    links += `<link rel="icon" href="/assets/icons/favicon.ico">`
+  }
+  
+  return links
+}
+
+// Function to generate manifest file
+function generateManifest(restaurant, logoUrl) {
+  const manifest = {
+    name: restaurant.name,
+    short_name: restaurant.name.length > 12 ? restaurant.name.substring(0, 12) : restaurant.name,
+    description: `Digital menu for ${restaurant.name}`,
+    start_url: `/menu/${restaurant.id}/`,
+    scope: '/menu/',
+    display: 'standalone',
+    orientation: 'portrait',
+    theme_color: '#ffffff',
+    background_color: '#ffffff',
+    icons: []
+  };
+
+  if (logoUrl) {
+    const logoUrlObj = new URL(logoUrl);
+    const baseBlobUrl = `${logoUrlObj.protocol}//${logoUrlObj.host}`;
+    
+    // Add icons pointing to Vercel Blob
+    manifest.icons = [
+      {
+        src: `${baseBlobUrl}/restaurants/${restaurant.id}/icons/favicon-16x16.png`,
+        sizes: '16x16',
+        type: 'image/png'
+      },
+      {
+        src: `${baseBlobUrl}/restaurants/${restaurant.id}/icons/favicon-32x32.png`,
+        sizes: '32x32',
+        type: 'image/png'
+      },
+      {
+        src: `${baseBlobUrl}/restaurants/${restaurant.id}/icons/apple-touch-icon.png`,
+        sizes: '180x180',
+        type: 'image/png'
+      },
+      {
+        src: `${baseBlobUrl}/restaurants/${restaurant.id}/icons/android-chrome-192x192.png`,
+        sizes: '192x192',
+        type: 'image/png'
+      },
+      {
+        src: `${baseBlobUrl}/restaurants/${restaurant.id}/icons/android-chrome-512x512.png`,
+        sizes: '512x512',
+        type: 'image/png'
+      }
+    ];
+  } else {
+    // Fallback to local assets
+    manifest.icons = [
+      {
+        src: '/assets/icons/favicon-16x16.png',
+        sizes: '16x16',
+        type: 'image/png'
+      },
+      {
+        src: '/assets/icons/favicon-32x32.png',
+        sizes: '32x32',
+        type: 'image/png'
+      },
+      {
+        src: '/assets/icons/apple-touch-icon.png',
+        sizes: '180x180',
+        type: 'image/png'
+      },
+      {
+        src: '/assets/icons/android-chrome-192x192.png',
+        sizes: '192x192',
+        type: 'image/png'
+      },
+      {
+        src: '/assets/icons/android-chrome-512x512.png',
+        sizes: '512x512',
+        type: 'image/png'
+      }
+    ];
+  }
+
+  // Ensure dist/assets directory exists
+  const assetsDir = path.join(__dirname, 'dist', 'assets');
+  if (!fs.existsSync(assetsDir)) {
+    fs.mkdirSync(assetsDir, { recursive: true });
+  }
+
+  const manifestPath = path.join(assetsDir, `manifest-${restaurant.id}.webmanifest`);
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  console.log(`✓ Generated manifest for ${restaurant.name}`);
 }
 
 // Run pre-rendering
