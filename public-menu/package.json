@@ -7,11 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:ssg": "node pre-render.config.js",
+    "build:prod": "npm run build && npm run build:ssg"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.1",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
     "react": "^19.1.1",

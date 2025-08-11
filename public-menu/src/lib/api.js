@@ -71,7 +71,7 @@ export async function loadInitialData({ slug }) {
 /**
  * Normalize menu items to match expected structure
  */
-function normalizeMenuItems(items) {
+export function normalizeMenuItems(items) {
   return items.map(item => ({
     id: item.id || item._id,
     name: item.name,
@@ -96,7 +96,7 @@ function normalizeMenuItems(items) {
 /**
  * Normalize categories to match expected structure
  */
-function normalizeCategories(categories) {
+export function normalizeCategories(categories) {
   return categories.map(category => ({
     id: category.id || category._id,
     name: category.name,
@@ -107,7 +107,7 @@ function normalizeCategories(categories) {
 /**
  * Extract unique tags from menu items
  */
-function extractTagsFromItems(items) {
+export function extractTagsFromItems(items) {
   const tagMap = new Map();
   
   items.forEach(item => {

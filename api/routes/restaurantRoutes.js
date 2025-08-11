@@ -1,11 +1,13 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
+import { verifySsgSecret } from '../middleware/ssgAuth.js';
 import { 
   getProfile, 
   updateProfile, 
   toggleStatus, 
   getStats,
-  uploadLogo
+  uploadLogo,
+  listActiveRestaurantsForSsg
 } from '../controllers/restaurantController.js';
 import { 
   generateQRCode, 
@@ -29,6 +31,9 @@ const router = express.Router();
 
 // Public routes (no authentication required)
 router.get('/:id/qr', getQRCodeImage);
+
+// Internal SSG route protected by secret header
+router.get('/ssg/list', verifySsgSecret, listActiveRestaurantsForSsg);
 
 // Apply authentication to all other routes
 router.use(protect);

@@ -365,3 +365,32 @@ export const getStats = async (req, res) => {
     });
   }
 };
+
+// @desc    List all active restaurants (minimal public fields) for SSG build
+// @route   GET /api/restaurants/ssg/list
+// @access  Internal (protected by secret header)
+export const listActiveRestaurantsForSsg = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find({ isActive: true })
+      .select('_id name logoUrl');
+
+    const entities = restaurants.map(r => ({
+      id: r._id,
+      name: r.name,
+      logoUrl: r.logoUrl || null
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        restaurants: entities
+      }
+    });
+  } catch (error) {
+    console.error('List restaurants for SSG error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while listing restaurants'
+    });
+  }
+};

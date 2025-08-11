@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { loadInitialData, filterItems } from './lib/api.js';
+import { loadInitialData, filterItems, normalizeMenuItems, normalizeCategories, extractTagsFromItems } from './lib/api.js';
 import { getRestaurantSlug, useQueryState, parseCommaList } from './lib/url.js';
 import Header from './components/Header.jsx';
 import FilterBar from './components/FilterBar.jsx';
@@ -18,22 +18,39 @@ export default function App() {
   // URL state management
   const { params, setParam } = useQueryState();
 
-  // Load initial data
+  // Load initial data (prefer pre-rendered data injected into window.__PRELOADED_MENU__)
   useEffect(() => {
-    // Prevent multiple API calls
     if (loadingRef.current) return;
     loadingRef.current = true;
-    
-    const loadData = async () => {
+
+    const bootstrap = async () => {
       try {
         setLoading(true);
         setError(null);
-        
+
+        // If SSG injected data exists, use it and avoid API calls
+        const preloaded = window.__PRELOADED_MENU__;
+        if (preloaded && preloaded.restaurant && Array.isArray(preloaded.menuItems)) {
+          const normalizedItems = normalizeMenuItems(preloaded.menuItems);
+          const normalizedCategories = normalizeCategories(preloaded.categories || []);
+          const normalizedTags = preloaded.tags || extractTagsFromItems(normalizedItems);
+
+          setData({
+            restaurant: preloaded.restaurant,
+            categories: normalizedCategories,
+            items: normalizedItems,
+            tags: normalizedTags,
+            mode: 'ssg'
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Fallback to runtime API fetch
         const slug = getRestaurantSlug();
         if (!slug) {
           throw new Error('Restaurant ID not found in URL or environment');
         }
-
         const result = await loadInitialData({ slug });
         setData(result);
       } catch (err) {
@@ -44,7 +61,7 @@ export default function App() {
       }
     };
 
-    loadData();
+    bootstrap();
   }, []);
 
   // Update document title when restaurant data is loaded
