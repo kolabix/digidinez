@@ -5,6 +5,10 @@
     "framework": "vite",
     "rewrites": [
         {
+            "source": "/menu/:restaurantId",
+            "destination": "/menu/:restaurantId/index.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
