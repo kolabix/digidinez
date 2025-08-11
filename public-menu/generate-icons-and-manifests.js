@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fetch from 'node-fetch';
 import { put } from '@vercel/blob';
-import favicons from 'favicons';
 import dotenv from 'dotenv';
 import os from 'os';
 
@@ -154,39 +153,36 @@ async function generateIcons(logoPath, restaurantId) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
     
-    const options = {
-      path: outputDir,
-      appName: restaurantId,
-      appDescription: `Digital menu for ${restaurantId}`,
-      developerName: 'Digidinez',
-      developerURL: 'https://digidinez.com',
-      background: '#ffffff',
-      theme_color: '#ffffff',
-      display: 'standalone',
-      orientation: 'portrait',
-      scope: VITE_BASE,
-      start_url: `${VITE_BASE}${restaurantId}/`,
-      icons: {
-        android: true,
-        appleIcon: true,
-        favicons: true,
-        windows: true,
-        yandex: true,
-      },
-      logging: false,
-      online: false,
-      html: false,
-      pipeHTML: false,
-      replace: true,
-    };
-
-    const faviconsResult = await favicons(logoPath, options);
+    const sharp = await import('sharp');
+    const logoBuffer = fs.readFileSync(logoPath);
     
-    // Copy generated files to our output directory
-    for (const image of faviconsResult.images) {
-      const destPath = path.join(outputDir, image.name);
-      fs.writeFileSync(destPath, image.contents);
+    // Generate specific icon sizes
+    const iconSizes = [
+      { size: 16, name: 'favicon-16x16.png' },
+      { size: 32, name: 'favicon-32x32.png' },
+      { size: 180, name: 'apple-touch-icon.png' },
+      { size: 192, name: 'android-chrome-192x192.png' },
+      { size: 512, name: 'android-chrome-512x512.png' }
+    ];
+    
+    for (const icon of iconSizes) {
+      const iconBuffer = await sharp.default(logoBuffer)
+        .resize(icon.size, icon.size, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+        .png()
+        .toBuffer();
+      
+      const iconPath = path.join(outputDir, icon.name);
+      fs.writeFileSync(iconPath, iconBuffer);
     }
+    
+    // Generate favicon.ico (16x16)
+    const faviconBuffer = await sharp.default(logoBuffer)
+      .resize(16, 16, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+      .png()
+      .toBuffer();
+    
+    const faviconPath = path.join(outputDir, 'favicon.ico');
+    fs.writeFileSync(faviconPath, faviconBuffer);
     
     logSuccess(`Icons generated for restaurant ${restaurantId}`);
     return outputDir;
