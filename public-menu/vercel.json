@@ -5,21 +5,11 @@
     "framework": "vite",
     "rewrites": [
         {
-            "source": "/:restaurantId",
-            "destination": "/:restaurantId/index.html"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/index.html"
-        }
-    ],
-    "headers": [
-        {
-            "source": "/:restaurantId/index.html",
+            "source": "/menu/:restaurantId",
             "headers": [
                 {
                     "key": "Cache-Control",
-                    "value": "public, max-age=3600, s-maxage=86400"
+                    "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=59"
                 }
             ]
         }
