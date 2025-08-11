@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Load environment variables from .env file
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
+dotenv.config()
 
 // Function to fetch restaurant data
 async function fetchRestaurantData(restaurantId) {
@@ -50,7 +50,7 @@ async function preRender() {
     console.log(`Found ${restaurants.length} restaurants`)
 
     // Ensure dist directory exists
-    const distDir = path.resolve(__dirname, '../dist')
+    const distDir = path.resolve(__dirname, './dist')
     if (!fs.existsSync(distDir)) {
       fs.mkdirSync(distDir, { recursive: true })
     }
