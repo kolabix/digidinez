@@ -3,10 +3,12 @@
     "outputDirectory": "dist",
     "installCommand": "npm install",
     "framework": "vite",
-    "rewrites": [
+    "headers": [
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "source": "/menu/:restaurantId",
+            "headers": [
+                { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=59" }
+            ]
         }
     ]
 }

@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/menu/assets/:path*",
+            "destination": "https://public-menu.vercel.app/assets/:path*"
+        },
+        {
             "source": "/menu/:path*",
             "destination": "https://public-menu.vercel.app/menu/:path*"
         },
