@@ -10,7 +10,7 @@ import { Input } from '../common/Input';
 import { PencilSquareIcon, TrashIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { DietaryBadge } from '../common/DietaryBadge';
-import placeholderImage from '../../assets/placeholder-food-img.jpg';
+import { InlineImageEditor } from './InlineImageEditor';
 
 export const MenuItems = () => {
   // State for items, loading, and filters
@@ -620,13 +620,11 @@ export const MenuItems = () => {
                     <div className="flex items-start gap-3">
                       {/* Image */}
                       <div className="flex-shrink-0">
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                          <img
-                            src={item.imageUrl || placeholderImage}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        <InlineImageEditor 
+                          item={item} 
+                          onImageUpdate={() => loadMenuItems(false)}
+                          size="md"
+                        />
                       </div>
 
                       {/* Content */}
@@ -692,13 +690,11 @@ export const MenuItems = () => {
                   <div className="hidden sm:grid sm:grid-cols-12 gap-4 items-center">
                     {/* Image */}
                     <div className="col-span-1">
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                        <img
-                          src={item.imageUrl || placeholderImage}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <InlineImageEditor 
+                        item={item} 
+                        onImageUpdate={() => loadMenuItems(false)}
+                        size="sm"
+                      />
                     </div>
 
                     {/* Name & Details */}
@@ -719,7 +715,7 @@ export const MenuItems = () => {
                     <div className="col-span-2">
                       {item.categoryIds && item.categoryIds.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {item.categoryIds.map((category, index) => (
+                          {item.categoryIds.map((category) => (
                             <span key={category._id} className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                               {category.name}
                             </span>
