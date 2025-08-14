@@ -40,9 +40,9 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
   return (
     <div className="bg-white shadow-sm border-b border-gray-200">
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex h-16">
           {/* Left side - Mobile menu button + Desktop brand */}
-          <div className="flex items-center">
+          <div className="flex flex-1 items-center">
             {/* Mobile menu button */}
             <button
               type="button"
@@ -68,7 +68,7 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
           </div>
 
           {/* Center - Deploy Button */}
-          <div className="flex items-center">
+          <div className="flex items-center mr-4">
             <button
               onClick={handleDeploy}
               className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
@@ -87,7 +87,7 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
               )}
             </button>
             {deploymentStatus && (
-              <span className="ml-2 text-sm text-gray-700">
+              <span className="ml-2 text-sm text-gray-700 hidden md:inline">
                 ({deploymentStatus})
               </span>
             )}
@@ -100,12 +100,12 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
               <div>
                 <Menu.Button className="flex items-center bg-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:bg-gray-50 p-2 transition-colors border border-gray-200">
                   <span className="sr-only">Open user menu</span>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center md:space-x-3">
                     <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="hidden md:block text-sm font-medium text-gray-900">
                         {restaurant?.name || 'Loading...'}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="hidden md:block text-xs text-gray-500">
                         Restaurant Admin
                       </div>
                     </div>
