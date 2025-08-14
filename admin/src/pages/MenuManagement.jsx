@@ -9,6 +9,7 @@ import {
 import { Categories } from '../components/menu/Categories';
 import { Tags } from '../components/menu/Tags';
 import { MenuItems } from '../components/menu/MenuItems';
+import { BulkUpload } from '../components/menu/BulkUpload';
 
 export const MenuManagement = () => {
   const location = useLocation();
@@ -48,7 +49,7 @@ export const MenuManagement = () => {
       icon: ListBulletIcon,
       path: '/menu/items',
       description: 'Manage your complete menu inventory',
-      available: true // Session 3
+      available: true
     },
     {
       id: 'bulk-upload',
@@ -56,7 +57,7 @@ export const MenuManagement = () => {
       icon: ArrowUpTrayIcon,
       path: '/menu/bulk-upload',
       description: 'Import menu data from Excel/CSV files',
-      available: false // Session 4
+      available: true
     }
   ];
 
@@ -76,13 +77,7 @@ export const MenuManagement = () => {
       case 'items':
         return <MenuItems />;
       case 'bulk-upload':
-        return (
-          <div className="text-center py-12">
-            <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Bulk Upload</h3>
-            <p className="mt-2 text-gray-500">Coming in Session 4</p>
-          </div>
-        );
+        return <BulkUpload />;
       default:
         return <Categories />;
     }

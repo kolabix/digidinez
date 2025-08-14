@@ -19,6 +19,7 @@ import {
   deleteMenuCategory,
   reorderCategories
 } from '../controllers/menuController.js';
+import { bulkUpload, downloadTemplate } from '../controllers/bulkUploadController.js';
 import { protect } from '../middleware/auth.js';
 import {
   validateCreateMenuItem,
@@ -30,6 +31,7 @@ import {
   validateUpdateMenuCategory
 } from '../middleware/validation.js';
 import { uploadMenuImage } from '../utils/imageUpload.js';
+import { uploadBulkFile, handleBulkUploadErrors } from '../middleware/bulkUploadMiddleware.js';
 
 const router = express.Router();
 
@@ -75,5 +77,12 @@ router.route('/categories/reorder')
 router.route('/categories/:id')
   .put(validateObjectId, validateUpdateMenuCategory, updateMenuCategory)  // PUT /api/menu/categories/:id
   .delete(validateObjectId, deleteMenuCategory);                          // DELETE /api/menu/categories/:id
+
+// Bulk upload routes
+router.route('/bulk-upload')
+  .post(uploadBulkFile.single('file'), handleBulkUploadErrors, bulkUpload);  // POST /api/menu/bulk-upload
+
+router.route('/bulk-upload/template')
+  .get(downloadTemplate);  // GET /api/menu/bulk-upload/template
 
 export default router;
