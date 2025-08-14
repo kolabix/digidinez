@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { useAuth } from '../../context/AuthContext';
 import deploymentService from '../../services/deploymentService';
+import { toast } from '../common/Toast';
 import { 
   Bars3Icon,
   UserCircleIcon,
@@ -13,7 +14,6 @@ import {
 export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
   const { restaurant, logout } = useAuth();
   const [isDeploying, setIsDeploying] = useState(false);
-  const [deploymentStatus, setDeploymentStatus] = useState('Idle');
 
   const handleLogout = async () => {
     try {
@@ -25,12 +25,11 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
 
   const handleDeploy = async () => {
     setIsDeploying(true);
-    setDeploymentStatus('Deploying...');
     try {
       await deploymentService.triggerDeployment();
-      setDeploymentStatus('Deployment successful!');
+      toast.success('Deployment is successful, please check after 5 mins');
     } catch (error) {
-      setDeploymentStatus('Deployment failed.');
+      toast.error('Something went wrong during deployment, please try again later or contact DigiDinez support team.');
       console.error('Deployment failed:', error);
     } finally {
       setIsDeploying(false);
@@ -86,11 +85,6 @@ export const Header = ({ onMobileMenuToggle, isMobileMenuOpen }) => {
                 </>
               )}
             </button>
-            {deploymentStatus && (
-              <span className="ml-2 text-sm text-gray-700 hidden md:inline">
-                ({deploymentStatus})
-              </span>
-            )}
           </div>
 
           {/* Right side - User menu */}
