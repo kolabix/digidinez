@@ -50,13 +50,17 @@ export default function BottomBar({
     setSearchInput('');
     onSearchChange('');
     
-    // Scroll to category
+    // Scroll to category with proper offset for sticky header
     setTimeout(() => {
       const element = document.getElementById(`category-${categoryId}`);
       if (element) {
-        element.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
+        const headerHeight = 140; // Height of sticky header + filter bar
+        const elementTop = element.offsetTop;
+        const scrollTop = elementTop - headerHeight;
+        
+        window.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
         });
       }
     }, 100);
