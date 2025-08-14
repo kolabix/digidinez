@@ -6,44 +6,48 @@ import menuItemService from '../../services/menuItemService';
 import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 export const InlineImageEditor = ({ item, onImageUpdate, size = 'md' }) => {
-  const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageClick = () => {
-    // Only trigger file input if no image exists or if we're not in editing state
-    if (!item.imageUrl && !isEditing) {
-      setIsEditing(true);
+    // Only trigger file input if no image exists
+    if (!item.imageUrl) {
       fileInputRef.current?.click();
     }
   };
 
   const handleEditClick = (e) => {
     e.stopPropagation();
-    if (!isEditing) {
-      setIsEditing(true);
-      fileInputRef.current?.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) {
-      setIsEditing(false);
+      // Reset file input when no file is selected
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
     // Validate file
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       toast.error('Image size should be less than 5MB');
-      setIsEditing(false);
+      // Reset file input on validation error
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
       toast.error('Only JPEG, PNG and WebP images are allowed');
-      setIsEditing(false);
+      // Reset file input on validation error
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
@@ -57,7 +61,6 @@ export const InlineImageEditor = ({ item, onImageUpdate, size = 'md' }) => {
       toast.error('Failed to update image');
     } finally {
       setIsUploading(false);
-      setIsEditing(false);
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -106,8 +109,7 @@ export const InlineImageEditor = ({ item, onImageUpdate, size = 'md' }) => {
       <div className="relative group">
         {/* Image Container */}
         <div
-          className={`relative overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-all duration-200 ${sizeClasses[size]} ${isEditing ? 'ring-2 ring-primary-500 ring-offset-2' : 'group-hover:ring-2 group-hover:ring-gray-300'
-            }`}
+          className={`relative overflow-hidden rounded-lg bg-gray-100 cursor-pointer transition-all duration-200 ${sizeClasses[size]} group-hover:ring-2 group-hover:ring-gray-300`}
           onClick={handleImageClick}
         >
           {/* Loading Overlay */}
