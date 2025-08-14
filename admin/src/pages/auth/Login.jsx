@@ -69,7 +69,7 @@ export const Login = () => {
             error={error}
           />
 
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Don't have an account?{' '}
@@ -81,7 +81,7 @@ export const Login = () => {
                 </Link>
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
