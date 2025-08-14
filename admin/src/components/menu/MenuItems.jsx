@@ -11,6 +11,7 @@ import { PencilSquareIcon, TrashIcon, FunnelIcon, XMarkIcon } from '@heroicons/r
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { DietaryBadge } from '../common/DietaryBadge';
 import { InlineImageEditor } from './InlineImageEditor';
+import { InlinePriceEditor } from './InlinePriceEditor';
 
 export const MenuItems = () => {
   // State for items, loading, and filters
@@ -657,7 +658,10 @@ export const MenuItems = () => {
 
                         {/* Price & Status */}
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-lg text-gray-900">₹{item.price}</span>
+                          <InlinePriceEditor 
+                            item={item} 
+                            onPriceUpdate={() => loadMenuItems(false)}
+                          />
                           {renderStatusIndicator(item)}
                         </div>
 
@@ -733,7 +737,10 @@ export const MenuItems = () => {
 
                     {/* Price */}
                     <div className="col-span-1">
-                      <span className="font-semibold text-gray-900">₹{item.price}</span>
+                      <InlinePriceEditor 
+                        item={item} 
+                        onPriceUpdate={() => loadMenuItems(false)}
+                      />
                     </div>
 
                     {/* Status */}
