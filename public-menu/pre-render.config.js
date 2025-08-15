@@ -120,7 +120,7 @@ async function preRenderRestaurant(restaurant) {
   }
 
   // Create restaurant-specific directory
-  const restaurantDir = path.join(distDir, 'menu', restaurantId)
+  const restaurantDir = path.join(distDir, restaurantId)
   fs.mkdirSync(restaurantDir, { recursive: true })
 
   // Generate app HTML to inject into #root and a preload script
