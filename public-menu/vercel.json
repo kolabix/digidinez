@@ -5,16 +5,25 @@
     "framework": "vite",
     "headers": [
         {
-            "source": "/menu/:restaurantId",
+            "source": "/:restaurantId",
             "headers": [
-                { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=59" }
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, s-maxage=86400, stale-while-revalidate=59"
+                }
             ]
         },
         {
-            "source": "/menu/assets/manifest-:restaurantId.webmanifest",
+            "source": "/assets/manifest-:restaurantId.webmanifest",
             "headers": [
-                { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" },
-                { "key": "Content-Type", "value": "application/manifest+json" }
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, s-maxage=86400"
+                },
+                {
+                    "key": "Content-Type",
+                    "value": "application/manifest+json"
+                }
             ]
         }
     ]

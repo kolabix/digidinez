@@ -5,7 +5,7 @@ import { getRestaurantId } from './url.js';
  */
 async function apiRequest(endpoint, options = {}) {
   try {
-    const url = `/api${endpoint}`;
+    const url = `${import.meta.env.VITE_API_URL}${endpoint}`;
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',

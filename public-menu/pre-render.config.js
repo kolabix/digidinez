@@ -11,7 +11,7 @@ dotenv.config()
 // Function to fetch restaurant data
 async function fetchRestaurantData(restaurantId) {
   try {
-    const apiBase = process.env.API_BASE_URL
+    const apiBase = process.env.VITE_API_URL
     const response = await fetch(`${apiBase}/menu/public/${restaurantId}`)
     const data = await response.json()
     return data.success ? data.data : null
@@ -24,7 +24,7 @@ async function fetchRestaurantData(restaurantId) {
 // Function to fetch all restaurants (internal, secret-protected)
 async function fetchAllRestaurants() {
   try {
-    const apiBase = process.env.API_BASE_URL
+    const apiBase = process.env.VITE_API_URL
     const secret = process.env.SSG_BUILD_SECRET
     const response = await fetch(`${apiBase}/restaurants/ssg/list`, {
       headers: {
@@ -156,7 +156,7 @@ async function preRenderRestaurant(restaurant) {
 // Function to fetch a single restaurant by ID
 async function fetchRestaurantById(restaurantId) {
   try {
-    const apiBase = process.env.API_BASE_URL
+    const apiBase = process.env.VITE_API_URL
     const secret = process.env.SSG_BUILD_SECRET
     const response = await fetch(`${apiBase}/restaurants/ssg/list`, {
       headers: {
@@ -266,7 +266,7 @@ function generatePWALinks(restaurantId, logoUrl) {
   let links = ''
   
   // Add manifest link
-  links += `<link rel="manifest" href="/menu/assets/manifest-${restaurantId}.webmanifest">\n    `
+  links += `<link rel="manifest" href="/assets/manifest-${restaurantId}.webmanifest">\n    `
   
   // Add favicon links - use Vercel Blob if logo exists, otherwise fallback to local assets
   if (logoUrl) {
@@ -300,8 +300,8 @@ function generateManifest(restaurant, logoUrl) {
     name: restaurant.name,
     short_name: restaurant.name.length > 12 ? restaurant.name.substring(0, 12) : restaurant.name,
     description: `Digital menu for ${restaurant.name}`,
-    start_url: `/menu/${restaurant.id}/`,
-    scope: '/menu/',
+    start_url: `/${restaurant.id}/`,
+    scope: '/',
     display: 'standalone',
     orientation: 'portrait',
     theme_color: '#ffffff',

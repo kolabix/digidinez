@@ -52,7 +52,7 @@ The QR code feature allows restaurant owners to:
    npm run dev
    ```
 
-4. Access the admin app at `http://localhost:5173/admin`
+4. Access the admin app at `http://localhost:4000`
 
 ## API Integration
 
