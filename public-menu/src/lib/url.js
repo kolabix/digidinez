@@ -6,6 +6,8 @@ import { useCallback, useState } from 'react';
 export function getRestaurantSlug() {
   const path = window.location.pathname;
   const match = path.match(/^\/([^/]+)/);
+  console.log(path);
+  console.log(match);
   return match?.[1];
 }
 
