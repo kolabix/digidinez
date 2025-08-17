@@ -28,7 +28,6 @@ The application now supports a dual-logo system for enhanced branding flexibilit
 
 1. **Full Logo with Name**: Set `primaryLogoUrl`, set `hideRestaurantNameInHeader = true`, optional `brandMarkUrl`
 2. **Symbol + Separate Name**: Set `brandMarkUrl`, leave `hideRestaurantNameInHeader = false`
-3. **Legacy Support**: Existing `logoUrl` field continues to work for backward compatibility
 
 ## Getting Started
 

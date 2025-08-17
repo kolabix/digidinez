@@ -6,7 +6,6 @@ import {
   updateProfile, 
   toggleStatus, 
   getStats,
-  uploadLogo,
   uploadPrimaryLogo,
   uploadBrandMark,
   listActiveRestaurantsForSsg
@@ -47,7 +46,6 @@ router.patch('/status', validateStatusToggle, toggleStatus);
 router.get('/stats', getStats);
 
 // Logo upload routes
-router.post('/logo', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadLogo);
 router.post('/primary-logo', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadPrimaryLogo);
 router.post('/brand-mark', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadBrandMark);
 

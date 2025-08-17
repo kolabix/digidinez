@@ -55,10 +55,6 @@ const restaurantSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  logoUrl: {
-    type: String,
-    default: null
-  },
   primaryLogoUrl: {
     type: String,
     default: null

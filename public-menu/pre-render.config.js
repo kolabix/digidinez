@@ -171,11 +171,11 @@ async function preRenderRestaurant(restaurant) {
     .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>${preloadScript}`)
 
   // Add PWA favicon and manifest links
-  const pwaLinks = generatePWALinks(restaurant.id, restaurant.logoUrl, restaurant.brandMarkUrl)
+  const pwaLinks = generatePWALinks(restaurant.id, restaurant.primaryLogoUrl, restaurant.brandMarkUrl)
   finalHtml = finalHtml.replace('</head>', `    ${pwaLinks}\n  </head>`)
 
   // Generate manifest file
-  generateManifest(restaurant, restaurant.logoUrl, restaurant.brandMarkUrl)
+  generateManifest(restaurant, restaurant.primaryLogoUrl, restaurant.brandMarkUrl)
 
   // Write HTML file
   const htmlPath = path.join(restaurantDir, 'index.html')
@@ -217,7 +217,7 @@ function escapeHtml(str) {
 function generateAppHtml(restaurant, menuData) {
   // Determine which logo to show and whether to show the name
   const shouldHideName = restaurant.hideRestaurantNameInHeader === true && restaurant.primaryLogoUrl;
-  const logoUrl = restaurant.brandMarkUrl || restaurant.primaryLogoUrl || restaurant.logoUrl;
+  const logoUrl = restaurant.brandMarkUrl || restaurant.primaryLogoUrl;
   const showName = !shouldHideName;
 
   return `
@@ -301,15 +301,15 @@ function generateMenuContent(menuData) {
 }
 
 // Function to generate PWA favicon and manifest links
-function generatePWALinks(restaurantId, logoUrl, brandMarkUrl) {
+function generatePWALinks(restaurantId, primaryLogoUrl, brandMarkUrl) {
   // Generate links for PWA icons and manifest
   let links = ''
   
   // Add manifest link
   links += `<link rel="manifest" href="/assets/manifest-${restaurantId}.webmanifest">\n    `
   
-  // Add favicon links - prefer brandMarkUrl for icons, fallback to logoUrl
-  const iconSourceUrl = brandMarkUrl || logoUrl;
+  // Add favicon links - prefer brandMarkUrl for icons, fallback to primaryLogoUrl
+  const iconSourceUrl = brandMarkUrl || primaryLogoUrl;
   
   if (iconSourceUrl) {
     // Extract the base URL from the icon source URL (assuming it's from Vercel Blob)
@@ -337,7 +337,7 @@ function generatePWALinks(restaurantId, logoUrl, brandMarkUrl) {
 }
 
 // Function to generate manifest file
-function generateManifest(restaurant, logoUrl, brandMarkUrl) {
+function generateManifest(restaurant, primaryLogoUrl, brandMarkUrl) {
   const manifest = {
     name: restaurant.name,
     short_name: restaurant.name.length > 12 ? restaurant.name.substring(0, 12) : restaurant.name,
@@ -351,8 +351,8 @@ function generateManifest(restaurant, logoUrl, brandMarkUrl) {
     icons: []
   };
 
-  // Prefer brandMarkUrl for icons, fallback to logoUrl
-  const iconSourceUrl = brandMarkUrl || logoUrl;
+  // Prefer brandMarkUrl for icons, fallback to primaryLogoUrl
+  const iconSourceUrl = brandMarkUrl || primaryLogoUrl;
 
   if (iconSourceUrl) {
     const iconUrlObj = new URL(iconSourceUrl);

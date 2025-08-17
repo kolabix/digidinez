@@ -24,7 +24,7 @@ The admin app now supports a comprehensive dual-logo system:
 
 1. **Full Logo with Name**: Upload primary logo, enable "Hide Restaurant Name" checkbox
 2. **Symbol + Separate Name**: Upload brand mark, leave name visible
-3. **Legacy Support**: Existing logoUrl field continues to work
+
 
 ### Storage
 

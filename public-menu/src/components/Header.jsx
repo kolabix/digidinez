@@ -5,7 +5,7 @@ export default function Header({ restaurant }) {
 
   // Determine which logo to show and whether to show the name
   const shouldHideName = restaurant.hideRestaurantNameInHeader === true && restaurant.primaryLogoUrl;
-  const logoUrl = restaurant.brandMarkUrl || restaurant.primaryLogoUrl || restaurant.logoUrl;
+  const logoUrl = restaurant.brandMarkUrl || restaurant.primaryLogoUrl;
   const showName = !shouldHideName;
 
   return (

@@ -104,23 +104,7 @@ const restaurantService = {
     }
   },
 
-  // Upload restaurant logo (legacy - updates logoUrl field)
-  async uploadLogo(logoFile) {
-    try {
-      const formData = new FormData();
-      formData.append('logo', logoFile);
-      
-      const response = await api.post('/restaurants/logo', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Logo upload error:', error);
-      throw error;
-    }
-  },
+
 
   // Upload restaurant primary logo
   async uploadPrimaryLogo(logoFile) {

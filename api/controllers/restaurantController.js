@@ -32,7 +32,6 @@ export const getProfile = async (req, res) => {
           address: restaurant.address,
           isActive: restaurant.isActive,
           qrCodeUrl: restaurant.qrCodeUrl,
-          logoUrl: restaurant.logoUrl,
           primaryLogoUrl: restaurant.primaryLogoUrl,
           brandMarkUrl: restaurant.brandMarkUrl,
           hideRestaurantNameInHeader: restaurant.hideRestaurantNameInHeader,
@@ -152,7 +151,6 @@ export const updateProfile = async (req, res) => {
           address: updatedRestaurant.address,
           isActive: updatedRestaurant.isActive,
           qrCodeUrl: updatedRestaurant.qrCodeUrl,
-          logoUrl: updatedRestaurant.logoUrl,
           primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
           brandMarkUrl: updatedRestaurant.brandMarkUrl,
           hideRestaurantNameInHeader: updatedRestaurant.hideRestaurantNameInHeader,
@@ -240,7 +238,6 @@ export const toggleStatus = async (req, res) => {
           address: updatedRestaurant.address,
           isActive: updatedRestaurant.isActive,
           qrCodeUrl: updatedRestaurant.qrCodeUrl,
-          logoUrl: updatedRestaurant.logoUrl,
           primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
           brandMarkUrl: updatedRestaurant.brandMarkUrl,
           hideRestaurantNameInHeader: updatedRestaurant.hideRestaurantNameInHeader,
@@ -388,76 +385,6 @@ export const uploadBrandMark = async (req, res) => {
   }
 };
 
-// @desc    Upload restaurant logo (legacy - now updates logoUrl field)
-// @route   POST /api/restaurants/logo
-// @access  Private
-export const uploadLogo = async (req, res) => {
-  try {
-    const restaurantId = req.restaurant.id;
-    
-    // Get current restaurant to check if logo exists
-    const currentRestaurant = await Restaurant.findById(restaurantId);
-    if (!currentRestaurant) {
-      return res.status(404).json({
-        success: false,
-        message: 'Restaurant not found'
-      });
-    }
-
-    // Delete old logo if it exists
-    if (currentRestaurant.logoUrl) {
-      try {
-        await deleteBlobObject(currentRestaurant.logoUrl);
-      } catch (deleteError) {
-        console.warn('Failed to delete old logo:', deleteError);
-        // Continue with upload even if deletion fails
-      }
-    }
-
-    // Upload new logo to Vercel Blob
-    const uploadResult = await uploadBufferToBlob(restaurantId, req.file, 'logos');
-    
-    // Update restaurant with new logo URL
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-      restaurantId,
-      { logoUrl: uploadResult.publicUrl },
-      { 
-        new: true,
-        select: '-password'
-      }
-    );
-
-    // Trigger icon generation in the background (don't wait for it)
-    generateIconsForRestaurant(restaurantId, uploadResult.publicUrl).catch(error => {
-      console.error('Background icon generation failed:', error);
-      // Don't fail the logo upload if icon generation fails
-    });
-
-    res.json({
-      success: true,
-      message: 'Logo uploaded successfully. Icons will be generated automatically.',
-      data: {
-        restaurant: {
-          id: updatedRestaurant._id,
-          name: updatedRestaurant.name,
-          logoUrl: updatedRestaurant.logoUrl,
-          primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
-          brandMarkUrl: updatedRestaurant.brandMarkUrl,
-          hideRestaurantNameInHeader: updatedRestaurant.hideRestaurantNameInHeader,
-          updatedAt: updatedRestaurant.updatedAt
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Logo upload error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while uploading logo'
-    });
-  }
-};
-
 // Helper function to generate icons for a restaurant
 async function generateIconsForRestaurant(restaurantId, logoUrl) {
   try {
@@ -597,12 +524,11 @@ export const getStats = async (req, res) => {
 export const listActiveRestaurantsForSsg = async (req, res) => {
   try {
     const restaurants = await Restaurant.find({ isActive: true })
-      .select('_id name logoUrl primaryLogoUrl brandMarkUrl hideRestaurantNameInHeader brandColor');
+      .select('_id name primaryLogoUrl brandMarkUrl hideRestaurantNameInHeader brandColor');
 
     const entities = restaurants.map(r => ({
       id: r._id,
       name: r.name,
-      logoUrl: r.logoUrl || null,
       primaryLogoUrl: r.primaryLogoUrl || null,
       brandMarkUrl: r.brandMarkUrl || null,
       hideRestaurantNameInHeader: r.hideRestaurantNameInHeader || false,
