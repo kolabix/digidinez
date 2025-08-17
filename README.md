@@ -1,152 +1,98 @@
-# 🍽️ DigiDinez
+# DigiDinez
 
-DigiDinez is a full-stack web application that enables restaurants to digitize their menus via QR codes. Restaurant owners can log in, manage their digital menu, and generate a live QR code that customers can scan to view the menu on their phones — no app required.
+A full-stack web application for Indian restaurants to digitize their menus via QR codes.
 
-## 🧱 Tech Stack
+## Project Structure
 
-- **Frontend**: React 18 (Vite) + Tailwind CSS
-- **Backend**: Node.js 22 + Express
-- **Database**: MongoDB (Mongoose)
-- **QR Code Generation**: `qrcode` npm package
-- **Authentication**: JWT-based with bcrypt password hashing
-- **Image Uploads**: Local file system for MVP
+- **`api/`** - Backend API (Node.js + Express + MongoDB)
+- **`admin/`** - Admin application (React + Vite + Tailwind CSS)
+- **`public-menu/`** - Public menu application (React + Vite + Tailwind CSS)
 
-## 📁 Project Structure
+## Dual-Logo System
 
-```
-digidinez/
-├── backend/                    # Express backend API
-│   ├── controllers/            # Business logic for routes
-│   ├── models/                 # Mongoose schemas (Restaurant, MenuItem)
-│   ├── routes/                 # Express route definitions
-│   ├── middleware/             # Auth middleware, error handling
-│   ├── utils/                  # QR code generation, file uploads
-│   ├── config/                 # DB and environment config
-│   └── server.js               # Express server entry point
-│
-├── frontend/                   # React frontend
-│   ├── public/
-│   └── src/
-│       ├── assets/             # Images, logos, etc.
-│       ├── components/         # Reusable UI components
-│       ├── pages/              # Login, Dashboard, Public Menu View
-│       ├── services/           # Axios API calls
-│       ├── routes/             # React Router definitions
-│       ├── App.jsx
-│       └── main.jsx
-│
-├── README.md
-└── .gitignore
-```
+The application now supports a dual-logo system for enhanced branding flexibility:
 
-## 🚀 Quick Start
+### Logo Fields
+
+- **`primaryLogoUrl`** - Main restaurant logo (any aspect ratio, may include wordmark/name)
+- **`brandMarkUrl`** - Square logo (1:1 ratio) for browser icons and compact placements
+- **`hideRestaurantNameInHeader`** - Boolean to control restaurant name display in public header
+
+### Behavior
+
+- **Public Header**: If `hideRestaurantNameInHeader` is true and `primaryLogoUrl` exists, only the logo is shown. Otherwise, logo + restaurant name are displayed.
+- **Favicon Generation**: Always uses `brandMarkUrl` as the source for browser icons and PWA assets.
+- **Storage**: All logo uploads are stored in Vercel Blob under `restaurants/{restaurantId}/branding/`.
+
+### Usage
+
+1. **Full Logo with Name**: Set `primaryLogoUrl`, set `hideRestaurantNameInHeader = true`, optional `brandMarkUrl`
+2. **Symbol + Separate Name**: Set `brandMarkUrl`, leave `hideRestaurantNameInHeader = false`
+3. **Legacy Support**: Existing `logoUrl` field continues to work for backward compatibility
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 22.17.0 (LTS)
-- MongoDB (local installation or MongoDB Atlas)
+- Node.js 18+
+- MongoDB Atlas account
+- Vercel account (for Blob storage)
 
-### Setup
+### Installation
 
-1. **Clone and Setup Environment**
+1. Clone the repository
+2. Install dependencies in each directory:
    ```bash
-   git clone <repository-url>
-   cd digidinez
-   
-   # Copy environment files
-   cp backend/.env.example backend/.env
-   cp admin/env.example admin/.env
-   cp public-menu/env.example public-menu/.env
+   cd api && npm install
+   cd ../admin && npm install
+   cd ../public-menu && npm install
    ```
 
-2. **Backend Setup**
+3. Set up environment variables (see `env.example` files)
+
+4. Start the backend:
    ```bash
-   cd backend
-   npm install
-   npm run dev
+   cd api && npm run dev
    ```
 
-3. **Admin Frontend Setup** (in a new terminal)
+5. Start the admin app:
    ```bash
-   cd admin
-   npm install
-   npm run dev
+   cd admin && npm run dev
    ```
 
-4. **Public Menu Frontend Setup** (in a new terminal)
+6. Start the public menu app:
    ```bash
-   cd public-menu
-   npm install
-   npm run dev
+   cd public-menu && npm run dev
    ```
 
-5. **Database Setup**
-   - Install MongoDB locally or use MongoDB Atlas
-   - Update `MONGODB_URI` in `backend/.env`
+## Build Commands
 
-## 🔧 API Endpoints
+- **Production Build**: `npm run build:prod`
+- **Full Build**: `npm run build:full`
 
-- `POST /api/auth/register` - Restaurant registration
-- `POST /api/auth/login` - Restaurant login
-- `GET /api/menu/:restaurantId` - Get public menu
-- `POST /api/menu/items` - Add menu item (authenticated)
-- `PUT /api/menu/items/:id` - Update menu item (authenticated)
-- `DELETE /api/menu/items/:id` - Delete menu item (authenticated)
-- `GET /api/qr/:restaurantId` - Generate QR code
+## API Endpoints
 
-## 🎯 Features
+All API routes are prefixed with `/api` and follow the nested response structure:
 
-- [x] Restaurant authentication (JWT)
-- [x] Menu management (CRUD operations)
-- [x] QR code generation
-- [x] Public menu view
-- [ ] Image uploads for menu items
-- [ ] Menu categories
-- [ ] Restaurant customization
-- [ ] Analytics dashboard
+```json
+{
+  "success": true,
+  "data": {
+    "entity": { ... }
+  }
+}
+```
 
-## 🛠️ Development
+## Authentication
 
-### Available Scripts
+- JWT tokens stored in HTTP-only cookies
+- Restaurant authentication uses `req.restaurant.id` (not `_id`)
+- All routes require authentication except public endpoints
 
-**Backend:**
-- `npm run dev` - Start development server with nodemon
-- `npm start` - Start production server
+## Contributing
 
-**Admin Frontend:**
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-
-**Public Menu Frontend:**
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-
-### Environment Variables
-
-**Backend (`backend/.env`):**
-- `PORT` - Server port (default: 5000)
-- `MONGODB_URI` - MongoDB connection string
-- `JWT_SECRET` - JWT signing secret
-- `JWT_EXPIRES_IN` - JWT expiration time
-
-## 📱 Usage
-
-1. Restaurant owners register/login
-2. Add menu items with descriptions and prices
-3. Generate QR code for their restaurant
-4. Customers scan QR code to view live menu
-5. No app download required for customers
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the ISC License.
+1. Follow the established code patterns
+2. Use custom components instead of native HTML elements
+3. Implement proper form validation with the `useForm` hook
+4. Ensure all API responses follow the nested structure
+5. Test thoroughly before submitting changes

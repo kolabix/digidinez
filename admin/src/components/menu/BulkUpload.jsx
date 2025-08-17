@@ -10,14 +10,13 @@ import {
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../common/Button';
-import { Input } from '../common/Input';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { toast } from '../common/Toast';
 import bulkUploadService from '../../services/bulkUploadService';
 
 export const BulkUpload = () => {
   const [file, setFile] = useState(null);
-  const [updateExisting, setUpdateExisting] = useState(false);
+  const [updateExisting, setUpdateExisting] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [uploadResults, setUploadResults] = useState(null);

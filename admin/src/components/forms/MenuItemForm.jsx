@@ -395,7 +395,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                     checked={values.isSpicy}
                     onChange={(e) => {
                       handleChange(e);
-                      if (!e.target.value) {
+                      if (!e.target.checked) {
                         setFieldValue('spicyLevel', 0);
                       }
                     }}
@@ -431,7 +431,7 @@ export const MenuItemForm = ({ item = null, onClose, categories, tags }) => {
                     label="Out of Stock"
                     name="isAvailable"
                     checked={!values.isAvailable}
-                    onChange={(e) => setFieldValue('isAvailable', !e.target.value)}
+                    onChange={(e) => setFieldValue('isAvailable', !e.target.checked)}
                     className="rounded text-primary-600"
                   />
                 </div>

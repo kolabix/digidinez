@@ -7,6 +7,8 @@ import {
   toggleStatus, 
   getStats,
   uploadLogo,
+  uploadPrimaryLogo,
+  uploadBrandMark,
   listActiveRestaurantsForSsg
 } from '../controllers/restaurantController.js';
 import { 
@@ -44,8 +46,10 @@ router.put('/profile', validateUpdateProfile, updateProfile);
 router.patch('/status', validateStatusToggle, toggleStatus);
 router.get('/stats', getStats);
 
-// Logo upload route
+// Logo upload routes
 router.post('/logo', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadLogo);
+router.post('/primary-logo', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadPrimaryLogo);
+router.post('/brand-mark', uploadMenuImage.single('logo'), handleUploadErrors, validateImageUpload, uploadBrandMark);
 
 // QR code management routes
 router.post('/generate-qr', generateQRCode);

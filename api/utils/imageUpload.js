@@ -43,7 +43,7 @@ const buildRestaurantAssetKey = (restaurantId, originalName, category = 'food-im
   const safeExt = path.extname(originalName || '').toLowerCase() || '.bin';
   const unique = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
   // Public Menu uploads structure:
-  // restaurants/{id}/food-images/* or restaurants/{id}/logos/*
+  // restaurants/{id}/food-images/* or restaurants/{id}/logos/* or restaurants/{id}/branding/*
   return `restaurants/${restaurantId}/${category}/${unique}${safeExt}`;
 };
 

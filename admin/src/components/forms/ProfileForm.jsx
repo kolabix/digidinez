@@ -1,14 +1,17 @@
 import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import useForm from '../../hooks/useForm';
 import { Input } from '../common/Input';
-import { LogoUpload } from './LogoUpload';
+import { DualLogoUpload } from './DualLogoUpload';
 import restaurantService from '../../services/restaurantService';
 import { toast } from '../common/Toast';
 
 export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, ref) => {
-  const [logoFile, setLogoFile] = useState(null);
-  const [logoLoading, setLogoLoading] = useState(false);
-  const [currentLogoUrl, setCurrentLogoUrl] = useState(profile?.logoUrl || null);
+  const [primaryLogoFile, setPrimaryLogoFile] = useState(null);
+  const [brandMarkFile, setBrandMarkFile] = useState(null);
+  const [primaryLogoLoading, setPrimaryLogoLoading] = useState(false);
+  const [brandMarkLoading, setBrandMarkLoading] = useState(false);
+  const [currentPrimaryLogoUrl, setCurrentPrimaryLogoUrl] = useState(profile?.primaryLogoUrl || null);
+  const [currentBrandMarkUrl, setCurrentBrandMarkUrl] = useState(profile?.brandMarkUrl || null);
 
   const initialValues = {
     name: '',
@@ -20,7 +23,8 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
       state: '',
       zipCode: '',
       country: 'India'
-    }
+    },
+    hideRestaurantNameInHeader: false
   };
 
   const {
@@ -31,7 +35,8 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
     handleBlur,
     setFormValues,
     validateForm,
-    setFormErrors
+    setFormErrors,
+    setFieldValue
   } = useForm(
     initialValues,
     {
@@ -78,6 +83,9 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
       'address.country': {
         minLength: 2,
         message: 'Country should be at least 2 characters'
+      },
+      hideRestaurantNameInHeader: {
+        type: 'boolean'
       }
     }
   );
@@ -95,7 +103,8 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
           state: profile.address?.state || '',
           zipCode: profile.address?.zipCode || '',
           country: profile.address?.country || 'India'
-        }
+        },
+        hideRestaurantNameInHeader: profile.hideRestaurantNameInHeader || false
       };
       setFormValues(formData);
     } else {
@@ -103,34 +112,58 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
     }
   }, [profile, setFormValues]);
 
-  // Handle logo upload
-  const handleLogoUpload = (file) => {
-    setLogoFile(file);
+  // Handle primary logo upload
+  const handlePrimaryLogoUpload = (file) => {
+    setPrimaryLogoFile(file);
   };
 
-  // Handle logo removal
-  const handleLogoRemove = () => {
-    setLogoFile(null);
-    setCurrentLogoUrl(null);
+  // Handle brand mark upload
+  const handleBrandMarkUpload = (file) => {
+    setBrandMarkFile(file);
   };
 
-  // Upload logo before saving profile
-  const uploadLogoIfNeeded = async () => {
-    if (logoFile) {
-      setLogoLoading(true);
-      try {
-        const response = await restaurantService.uploadLogo(logoFile);
+  // Handle primary logo removal
+  const handlePrimaryLogoRemove = () => {
+    setPrimaryLogoFile(null);
+    setCurrentPrimaryLogoUrl(null);
+  };
+
+  // Handle brand mark removal
+  const handleBrandMarkRemove = () => {
+    setBrandMarkFile(null);
+    setCurrentBrandMarkUrl(null);
+  };
+
+  // Upload logos before saving profile
+  const uploadLogosIfNeeded = async () => {
+    try {
+      // Upload primary logo if needed
+      if (primaryLogoFile) {
+        setPrimaryLogoLoading(true);
+        const response = await restaurantService.uploadPrimaryLogo(primaryLogoFile);
         if (response.success) {
-          setCurrentLogoUrl(response.data.restaurant.logoUrl);
-          setLogoFile(null);
-          toast.success('Logo uploaded successfully!');
+          setCurrentPrimaryLogoUrl(response.data.restaurant.primaryLogoUrl);
+          setPrimaryLogoFile(null);
+          toast.success('Primary logo uploaded successfully!');
         }
-      } catch (error) {
-        toast.error(error.message || 'Failed to upload logo');
-        throw error;
-      } finally {
-        setLogoLoading(false);
       }
+
+      // Upload brand mark if needed
+      if (brandMarkFile) {
+        setBrandMarkLoading(true);
+        const response = await restaurantService.uploadBrandMark(brandMarkFile);
+        if (response.success) {
+          setCurrentBrandMarkUrl(response.data.restaurant.brandMarkUrl);
+          setBrandMarkFile(null);
+          toast.success('Brand mark uploaded successfully!');
+        }
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to upload logo');
+      throw error;
+    } finally {
+      setPrimaryLogoLoading(false);
+      setBrandMarkLoading(false);
     }
   };
 
@@ -139,8 +172,8 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
     submitForm: async () => {
       if (validateForm()) {
         try {
-          // Upload logo first if needed
-          await uploadLogoIfNeeded();
+          // Upload logos first if needed
+          await uploadLogosIfNeeded();
           // Then save profile
           await onSave(values);
         } catch (error) {
@@ -171,12 +204,53 @@ export const ProfileForm = forwardRef(({ profile, onSave, onCancel, loading }, r
       {/* Logo Upload Section */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <LogoUpload
-            currentLogoUrl={currentLogoUrl}
-            onLogoUpload={handleLogoUpload}
-            onLogoRemove={handleLogoRemove}
-            loading={logoLoading}
+          <DualLogoUpload
+            currentPrimaryLogoUrl={currentPrimaryLogoUrl}
+            currentBrandMarkUrl={currentBrandMarkUrl}
+            onPrimaryLogoUpload={handlePrimaryLogoUpload}
+            onPrimaryLogoRemove={handlePrimaryLogoRemove}
+            onBrandMarkUpload={handleBrandMarkUpload}
+            onBrandMarkRemove={handleBrandMarkRemove}
+            loading={primaryLogoLoading}
           />
+        </div>
+      </div>
+
+      {/* Header Display Settings */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
+            Public Menu Header Settings
+          </h3>
+          
+          <div className="space-y-4">
+            {/* Hide Restaurant Name Checkbox */}
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="hideRestaurantNameInHeader"
+                  name="hideRestaurantNameInHeader"
+                  type="checkbox"
+                  checked={values.hideRestaurantNameInHeader || false}
+                  onChange={(e) => {
+                    // Handle checkbox change properly
+                    const { name, checked } = e.target;
+                    // Use setFieldValue to update the form state
+                    setFieldValue(name, checked);
+                  }}
+                  className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
+                />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="hideRestaurantNameInHeader" className="font-medium text-gray-700">
+                  Hide Restaurant Name in Public Menu Header
+                </label>
+                <p className="text-gray-500 mt-1">
+                  If your main logo already includes your restaurant name or you prefer a logo-only header, enable this.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

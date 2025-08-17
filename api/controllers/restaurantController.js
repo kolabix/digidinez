@@ -33,6 +33,9 @@ export const getProfile = async (req, res) => {
           isActive: restaurant.isActive,
           qrCodeUrl: restaurant.qrCodeUrl,
           logoUrl: restaurant.logoUrl,
+          primaryLogoUrl: restaurant.primaryLogoUrl,
+          brandMarkUrl: restaurant.brandMarkUrl,
+          hideRestaurantNameInHeader: restaurant.hideRestaurantNameInHeader,
           fullAddress: restaurant.fullAddress,
           createdAt: restaurant.createdAt,
           updatedAt: restaurant.updatedAt
@@ -63,7 +66,7 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    const { name, email, phone, address } = req.body;
+    const { name, email, phone, address, primaryLogoUrl, brandMarkUrl, hideRestaurantNameInHeader } = req.body;
     const restaurantId = req.restaurant.id;
 
     // Get current restaurant data
@@ -117,9 +120,14 @@ export const updateProfile = async (req, res) => {
         city: address.city?.trim() || '',
         state: address.state?.trim() || '',
         zipCode: address.zipCode?.trim() || '',
-        country: address.country?.trim() || 'US'
+        country: address.country?.trim() || 'India'
       };
     }
+
+    // Add new dual-logo fields
+    if (primaryLogoUrl !== undefined) updateData.primaryLogoUrl = primaryLogoUrl;
+    if (brandMarkUrl !== undefined) updateData.brandMarkUrl = brandMarkUrl;
+    if (hideRestaurantNameInHeader !== undefined) updateData.hideRestaurantNameInHeader = hideRestaurantNameInHeader;
 
     // Update restaurant
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
@@ -145,6 +153,9 @@ export const updateProfile = async (req, res) => {
           isActive: updatedRestaurant.isActive,
           qrCodeUrl: updatedRestaurant.qrCodeUrl,
           logoUrl: updatedRestaurant.logoUrl,
+          primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
+          brandMarkUrl: updatedRestaurant.brandMarkUrl,
+          hideRestaurantNameInHeader: updatedRestaurant.hideRestaurantNameInHeader,
           fullAddress: updatedRestaurant.fullAddress,
           updatedAt: updatedRestaurant.updatedAt
         }
@@ -230,6 +241,9 @@ export const toggleStatus = async (req, res) => {
           isActive: updatedRestaurant.isActive,
           qrCodeUrl: updatedRestaurant.qrCodeUrl,
           logoUrl: updatedRestaurant.logoUrl,
+          primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
+          brandMarkUrl: updatedRestaurant.brandMarkUrl,
+          hideRestaurantNameInHeader: updatedRestaurant.hideRestaurantNameInHeader,
           fullAddress: updatedRestaurant.fullAddress,
           updatedAt: updatedRestaurant.updatedAt
         }
@@ -246,7 +260,135 @@ export const toggleStatus = async (req, res) => {
   }
 };
 
-// @desc    Upload restaurant logo
+// @desc    Upload restaurant primary logo
+// @route   POST /api/restaurants/primary-logo
+// @access  Private
+export const uploadPrimaryLogo = async (req, res) => {
+  try {
+    const restaurantId = req.restaurant.id;
+    
+    // Get current restaurant to check if logo exists
+    const currentRestaurant = await Restaurant.findById(restaurantId);
+    if (!currentRestaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+
+    // Delete old primary logo if it exists
+    if (currentRestaurant.primaryLogoUrl) {
+      try {
+        await deleteBlobObject(currentRestaurant.primaryLogoUrl);
+      } catch (deleteError) {
+        console.warn('Failed to delete old primary logo:', deleteError);
+        // Continue with upload even if deletion fails
+      }
+    }
+
+    // Upload new primary logo to Vercel Blob
+    const uploadResult = await uploadBufferToBlob(restaurantId, req.file, 'branding');
+    
+    // Update restaurant with new primary logo URL
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      restaurantId,
+      { primaryLogoUrl: uploadResult.publicUrl },
+      { 
+        new: true,
+        select: '-password'
+      }
+    );
+
+    res.json({
+      success: true,
+      message: 'Primary logo uploaded successfully',
+      data: {
+        restaurant: {
+          id: updatedRestaurant._id,
+          name: updatedRestaurant.name,
+          primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
+          updatedAt: updatedRestaurant.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Primary logo upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while uploading primary logo'
+    });
+  }
+};
+
+// @desc    Upload restaurant brand mark (square logo)
+// @route   POST /api/restaurants/brand-mark
+// @access  Private
+export const uploadBrandMark = async (req, res) => {
+  try {
+    const restaurantId = req.restaurant.id;
+    
+    // Get current restaurant to check if logo exists
+    const currentRestaurant = await Restaurant.findById(restaurantId);
+    if (!currentRestaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+
+    // Delete old brand mark if it exists
+    if (currentRestaurant.brandMarkUrl) {
+      try {
+        await deleteBlobObject(currentRestaurant.brandMarkUrl);
+      } catch (deleteError) {
+        console.warn('Failed to delete old brand mark:', deleteError);
+        // Continue with upload even if deletion fails
+      }
+    }
+
+    // Upload new brand mark to Vercel Blob
+    const uploadResult = await uploadBufferToBlob(restaurantId, req.file, 'branding');
+    
+    // Update restaurant with new brand mark URL
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      restaurantId,
+      { brandMarkUrl: uploadResult.publicUrl },
+      { 
+        new: true,
+        select: '-password'
+      }
+    );
+
+    // Trigger icon generation in the background using brand mark
+    generateIconsForRestaurant(restaurantId, uploadResult.publicUrl).catch(error => {
+      console.error('Background icon generation failed:', error);
+      // Don't fail the brand mark upload if icon generation fails
+    });
+
+    res.json({
+      success: true,
+      message: 'Brand mark uploaded successfully. Icons will be generated automatically.',
+      data: {
+        restaurant: {
+          id: updatedRestaurant._id,
+          name: updatedRestaurant.name,
+          brandMarkUrl: updatedRestaurant.brandMarkUrl,
+          updatedAt: updatedRestaurant.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Brand mark upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while uploading brand mark'
+    });
+  }
+};
+
+// @desc    Upload restaurant logo (legacy - now updates logoUrl field)
 // @route   POST /api/restaurants/logo
 // @access  Private
 export const uploadLogo = async (req, res) => {
@@ -299,6 +441,9 @@ export const uploadLogo = async (req, res) => {
           id: updatedRestaurant._id,
           name: updatedRestaurant.name,
           logoUrl: updatedRestaurant.logoUrl,
+          primaryLogoUrl: updatedRestaurant.primaryLogoUrl,
+          brandMarkUrl: updatedRestaurant.brandMarkUrl,
+          hideRestaurantNameInHeader: updatedRestaurant.hideRestaurantNameInHeader,
           updatedAt: updatedRestaurant.updatedAt
         }
       }
@@ -416,7 +561,10 @@ export const getStats = async (req, res) => {
           id: restaurant._id,
           name: restaurant.name,
           isActive: restaurant.isActive,
-          hasQrCode: !!restaurant.qrCodeUrl
+          hasQrCode: !!restaurant.qrCodeUrl,
+          primaryLogoUrl: restaurant.primaryLogoUrl,
+          brandMarkUrl: restaurant.brandMarkUrl,
+          hideRestaurantNameInHeader: restaurant.hideRestaurantNameInHeader
         },
         menu: {
           totalItems,
@@ -449,12 +597,15 @@ export const getStats = async (req, res) => {
 export const listActiveRestaurantsForSsg = async (req, res) => {
   try {
     const restaurants = await Restaurant.find({ isActive: true })
-      .select('_id name logoUrl brandColor');
+      .select('_id name logoUrl primaryLogoUrl brandMarkUrl hideRestaurantNameInHeader brandColor');
 
     const entities = restaurants.map(r => ({
       id: r._id,
       name: r.name,
       logoUrl: r.logoUrl || null,
+      primaryLogoUrl: r.primaryLogoUrl || null,
+      brandMarkUrl: r.brandMarkUrl || null,
+      hideRestaurantNameInHeader: r.hideRestaurantNameInHeader || false,
       brandColor: r.brandColor || '#ffffff'
     }));
 

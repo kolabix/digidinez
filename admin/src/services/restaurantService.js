@@ -104,7 +104,7 @@ const restaurantService = {
     }
   },
 
-  // Upload restaurant logo
+  // Upload restaurant logo (legacy - updates logoUrl field)
   async uploadLogo(logoFile) {
     try {
       const formData = new FormData();
@@ -118,6 +118,42 @@ const restaurantService = {
       return response.data;
     } catch (error) {
       console.error('Logo upload error:', error);
+      throw error;
+    }
+  },
+
+  // Upload restaurant primary logo
+  async uploadPrimaryLogo(logoFile) {
+    try {
+      const formData = new FormData();
+      formData.append('logo', logoFile);
+      
+      const response = await api.post('/restaurants/primary-logo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Primary logo upload error:', error);
+      throw error;
+    }
+  },
+
+  // Upload restaurant brand mark (square logo)
+  async uploadBrandMark(logoFile) {
+    try {
+      const formData = new FormData();
+      formData.append('logo', logoFile);
+      
+      const response = await api.post('/restaurants/brand-mark', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Brand mark upload error:', error);
       throw error;
     }
   }

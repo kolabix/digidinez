@@ -1,64 +1,46 @@
 # DigiDinez Admin App
 
-A React-based admin dashboard for restaurant owners to manage their digital menus and QR codes.
+Admin application for restaurant owners to manage their digital menus and branding.
 
 ## Features
 
-- **Authentication**: Secure login/register system
-- **Menu Management**: Create and manage menu categories, items, and tags
-- **QR Code Management**: Generate and manage QR codes for digital menu access
-- **Profile Management**: Update restaurant information
-- **Responsive Design**: Works on desktop and mobile devices
+- Restaurant profile management
+- Menu item CRUD operations
+- Category and tag management
+- QR code generation
+- **Dual-logo system** for enhanced branding
 
-## QR Code Functionality
+## Dual-Logo System
 
-The QR code feature allows restaurant owners to:
+The admin app now supports a comprehensive dual-logo system:
 
-1. **Generate QR Codes**: Create unique QR codes that link to their digital menu
-2. **View QR Code Details**: See generation date, file size, and public URL
-3. **Copy Public URL**: Easily copy the QR code URL for sharing
-4. **Regenerate QR Codes**: Create new QR codes when needed
-5. **Delete QR Codes**: Remove existing QR codes
+### Logo Management
 
-### How QR Codes Work
+- **Primary Logo**: Upload your main restaurant logo (any aspect ratio, may include wordmark/name)
+- **Brand Mark**: Upload a square (1:1) version for browser icons and compact placements
+- **Header Display Control**: Toggle whether to hide the restaurant name in the public menu header
 
-1. Restaurant owners generate a QR code from the admin dashboard
-2. The QR code contains a URL that points to their public digital menu
-3. Customers can scan the QR code with their phone camera
-4. They're taken directly to the restaurant's digital menu
+### Usage
 
-### QR Code Management
+1. **Full Logo with Name**: Upload primary logo, enable "Hide Restaurant Name" checkbox
+2. **Symbol + Separate Name**: Upload brand mark, leave name visible
+3. **Legacy Support**: Existing logoUrl field continues to work
 
-- **Generate**: Creates a new QR code for the restaurant
-- **View**: Displays the QR code image and details
-- **Copy URL**: Copies the public URL to clipboard
-- **Regenerate**: Creates a new QR code (replaces the old one)
-- **Delete**: Removes the QR code completely
+### Storage
+
+All logo uploads are stored in Vercel Blob under `restaurants/{restaurantId}/branding/` for organized asset management.
 
 ## Getting Started
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+1. Install dependencies: `npm install`
+2. Set up environment variables (see `env.example`)
+3. Start development server: `npm run dev`
+4. Build for production: `npm run build:prod`
 
-2. Set up environment variables:
-   ```bash
-   cp env.example .env
-   ```
+## Development
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Access the admin app at `http://localhost:4000`
-
-## API Integration
-
-The app connects to the DigiDinez backend API for:
-- Authentication and user management
-- Menu data management
-- QR code generation and management
-
-Make sure the backend server is running on port 3001 before using the admin app.
+- Built with React 18 + Vite
+- Uses Tailwind CSS for styling
+- Custom component library (Button, Input, Toast, etc.)
+- Form handling with `useForm` hook
+- API integration with restaurant service

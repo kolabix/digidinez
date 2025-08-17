@@ -273,6 +273,21 @@ export const validateUpdateProfile = [
     .isLength({ min: 2, max: 100 })
     .withMessage('Country name must be between 2 and 100 characters'),
   
+  body('hideRestaurantNameInHeader')
+    .optional()
+    .isBoolean()
+    .withMessage('hideRestaurantNameInHeader must be a boolean value'),
+  
+  body('primaryLogoUrl')
+    .optional()
+    .isURL()
+    .withMessage('Primary logo URL must be a valid URL'),
+  
+  body('brandMarkUrl')
+    .optional()
+    .isURL()
+    .withMessage('Brand mark URL must be a valid URL'),
+  
   handleValidationErrors
 ];
 

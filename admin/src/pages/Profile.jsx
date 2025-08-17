@@ -174,30 +174,79 @@ export const Profile = () => {
         />
       ) : (
         <div className="space-y-6">
-          {/* Logo Display */}
-          {profile?.logoUrl && (
+          {/* Primary Logo Display */}
+          {profile?.primaryLogoUrl && (
             <div className="bg-white shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                  Restaurant Logo
+                  Primary Logo
                 </h3>
                 <div className="flex items-center space-x-4">
                   <div className="flex-shrink-0">
                     <img
-                      src={profile.logoUrl}
-                      alt="Restaurant logo"
-                      className="w-24 h-24 rounded-lg object-cover border border-gray-200"
+                      src={profile.primaryLogoUrl}
+                      alt="Primary logo"
+                      className="w-24 h-24 rounded-lg object-contain border border-gray-200"
                     />
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">
-                      Your restaurant logo is displayed to customers on the public menu.
+                      Your main restaurant logo. This can be wide or rectangular and may include your restaurant name.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Brand Mark Display */}
+          {profile?.brandMarkUrl && (
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                  Brand Mark (Square Logo)
+                </h3>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={profile.brandMarkUrl}
+                      alt="Brand mark"
+                      className="w-24 h-24 rounded-lg object-contain border border-gray-200"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      Your square logo used for browser icons, mobile shortcuts, and other compact placements.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Header Display Settings */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                Public Menu Header Settings
+              </h3>
+              <div className="flex items-center space-x-3">
+                <span className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  profile?.hideRestaurantNameInHeader 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {profile?.hideRestaurantNameInHeader ? 'Restaurant Name Hidden' : 'Restaurant Name Visible'}
+                </span>
+                <p className="text-sm text-gray-600">
+                  {profile?.hideRestaurantNameInHeader 
+                    ? 'Your restaurant name will not be displayed separately in the public menu header.'
+                    : 'Your restaurant name will be displayed alongside the logo in the public menu header.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Basic Information */}

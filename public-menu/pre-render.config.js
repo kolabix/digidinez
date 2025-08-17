@@ -171,11 +171,11 @@ async function preRenderRestaurant(restaurant) {
     .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>${preloadScript}`)
 
   // Add PWA favicon and manifest links
-  const pwaLinks = generatePWALinks(restaurant.id, restaurant.logoUrl)
+  const pwaLinks = generatePWALinks(restaurant.id, restaurant.logoUrl, restaurant.brandMarkUrl)
   finalHtml = finalHtml.replace('</head>', `    ${pwaLinks}\n  </head>`)
 
   // Generate manifest file
-  generateManifest(restaurant, restaurant.logoUrl)
+  generateManifest(restaurant, restaurant.logoUrl, restaurant.brandMarkUrl)
 
   // Write HTML file
   const htmlPath = path.join(restaurantDir, 'index.html')
@@ -215,21 +215,30 @@ function escapeHtml(str) {
 
 // Function to generate only the app HTML (root content)
 function generateAppHtml(restaurant, menuData) {
+  // Determine which logo to show and whether to show the name
+  const shouldHideName = restaurant.hideRestaurantNameInHeader === true && restaurant.primaryLogoUrl;
+  const logoUrl = restaurant.brandMarkUrl || restaurant.primaryLogoUrl || restaurant.logoUrl;
+  const showName = !shouldHideName;
+
   return `
     <div class="min-h-screen bg-surface pb-20">
       <header class="sticky top-0 z-40 bg-surface border-b border-border shadow-sm">
         <div class="px-4 py-3">
           <div class="flex items-center gap-3">
             <div class="flex-shrink-0">
-              ${restaurant.logoUrl ? 
-                `<img src="${restaurant.logoUrl}" alt="${restaurant.name} logo" class="w-16 h-16 rounded-lg object-cover">` :
+              ${logoUrl ? 
+                `<img src="${logoUrl}" alt="${restaurant.name} logo" class="rounded-lg object-contain ${
+                  restaurant.brandMarkUrl ? 'w-16 h-16' : 'w-24 h-16'
+                }">` :
                 `<div class="w-16 h-16 rounded-lg bg-primary flex items-center justify-center"></div>`
               }
             </div>
+            ${showName ? `
             <div class="flex-1 min-w-0">
               <h1 class="font-semibold text-lg text-text-primary truncate">${escapeHtml(restaurant.name)}</h1>
               <p class="text-sm text-text-secondary">Digital Menu</p>
             </div>
+            ` : ''}
           </div>
         </div>
       </header>
@@ -292,18 +301,20 @@ function generateMenuContent(menuData) {
 }
 
 // Function to generate PWA favicon and manifest links
-function generatePWALinks(restaurantId, logoUrl) {
+function generatePWALinks(restaurantId, logoUrl, brandMarkUrl) {
   // Generate links for PWA icons and manifest
   let links = ''
   
   // Add manifest link
   links += `<link rel="manifest" href="/assets/manifest-${restaurantId}.webmanifest">\n    `
   
-  // Add favicon links - use Vercel Blob if logo exists, otherwise fallback to local assets
-  if (logoUrl) {
-    // Extract the base URL from the logo URL (assuming it's from Vercel Blob)
-    const logoUrlObj = new URL(logoUrl)
-    const baseBlobUrl = `${logoUrlObj.protocol}//${logoUrlObj.host}`
+  // Add favicon links - prefer brandMarkUrl for icons, fallback to logoUrl
+  const iconSourceUrl = brandMarkUrl || logoUrl;
+  
+  if (iconSourceUrl) {
+    // Extract the base URL from the icon source URL (assuming it's from Vercel Blob)
+    const iconUrlObj = new URL(iconSourceUrl)
+    const baseBlobUrl = `${iconUrlObj.protocol}//${iconUrlObj.host}`
     
     // Add favicon links pointing to Vercel Blob
     links += `<link rel="icon" type="image/png" sizes="16x16" href="${baseBlobUrl}/restaurants/${restaurantId}/icons/favicon-16x16.png">\n    `
@@ -326,7 +337,7 @@ function generatePWALinks(restaurantId, logoUrl) {
 }
 
 // Function to generate manifest file
-function generateManifest(restaurant, logoUrl) {
+function generateManifest(restaurant, logoUrl, brandMarkUrl) {
   const manifest = {
     name: restaurant.name,
     short_name: restaurant.name.length > 12 ? restaurant.name.substring(0, 12) : restaurant.name,
@@ -340,9 +351,12 @@ function generateManifest(restaurant, logoUrl) {
     icons: []
   };
 
-  if (logoUrl) {
-    const logoUrlObj = new URL(logoUrl);
-    const baseBlobUrl = `${logoUrlObj.protocol}//${logoUrlObj.host}`;
+  // Prefer brandMarkUrl for icons, fallback to logoUrl
+  const iconSourceUrl = brandMarkUrl || logoUrl;
+
+  if (iconSourceUrl) {
+    const iconUrlObj = new URL(iconSourceUrl);
+    const baseBlobUrl = `${iconUrlObj.protocol}//${iconUrlObj.host}`;
     
     // Add icons pointing to Vercel Blob
     manifest.icons = [

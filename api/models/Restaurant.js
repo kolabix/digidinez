@@ -59,6 +59,18 @@ const restaurantSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  primaryLogoUrl: {
+    type: String,
+    default: null
+  },
+  brandMarkUrl: {
+    type: String,
+    default: null
+  },
+  hideRestaurantNameInHeader: {
+    type: Boolean,
+    default: false
+  },
   brandColor: {
     type: String,
     default: '#ffffff',

@@ -13,7 +13,7 @@ class QRGenerator {
   }
 
   async generateQRCode(restaurantId) {
-    const menuUrl = `${this.publicMenuUrl}/menu/${restaurantId}`;
+    const menuUrl = `${this.publicMenuUrl}/${restaurantId}`;
 
     // 1) Generate QR PNG buffer
     const options = {
