@@ -308,7 +308,8 @@ function generatePWALinks(restaurantId, primaryLogoUrl, brandMarkUrl) {
   // Add manifest link
   links += `<link rel="manifest" href="/assets/manifest-${restaurantId}.webmanifest">\n    `
   
-  // Add favicon links - prefer brandMarkUrl for icons, fallback to primaryLogoUrl
+  // Add favicon links - brandMarkUrl is the primary source for favicons
+  // Only fall back to primaryLogoUrl if brandMarkUrl doesn't exist
   const iconSourceUrl = brandMarkUrl || primaryLogoUrl;
   
   if (iconSourceUrl) {
@@ -351,7 +352,8 @@ function generateManifest(restaurant, primaryLogoUrl, brandMarkUrl) {
     icons: []
   };
 
-  // Prefer brandMarkUrl for icons, fallback to primaryLogoUrl
+  // brandMarkUrl is the primary source for favicons
+  // Only fall back to primaryLogoUrl if brandMarkUrl doesn't exist
   const iconSourceUrl = brandMarkUrl || primaryLogoUrl;
 
   if (iconSourceUrl) {

@@ -296,6 +296,15 @@ export const uploadPrimaryLogo = async (req, res) => {
       }
     );
 
+    // Only generate icons if there's no brand mark, since brand mark should be the primary source for icons
+    if (!currentRestaurant.brandMarkUrl) {
+      // Trigger icon generation in the background using primary logo as fallback
+      generateIconsForRestaurant(restaurantId, uploadResult.publicUrl).catch(error => {
+        console.error('Background icon generation failed:', error);
+        // Don't fail the primary logo upload if icon generation fails
+      });
+    }
+
     res.json({
       success: true,
       message: 'Primary logo uploaded successfully',
@@ -357,6 +366,10 @@ export const uploadBrandMark = async (req, res) => {
       }
     );
 
+    // Always regenerate icons when brand mark is updated since it's the primary source for favicons
+    // Delete existing icons first to ensure clean generation
+    await deleteExistingIcons(restaurantId);
+    
     // Trigger icon generation in the background using brand mark
     generateIconsForRestaurant(restaurantId, uploadResult.publicUrl).catch(error => {
       console.error('Background icon generation failed:', error);
@@ -386,13 +399,23 @@ export const uploadBrandMark = async (req, res) => {
 };
 
 // Helper function to generate icons for a restaurant
+// This function should always use the logo URL passed to it:
+// - brandMarkUrl when available (primary source for favicons)
+// - primaryLogoUrl as fallback when no brand mark exists
 async function generateIconsForRestaurant(restaurantId, logoUrl) {
   try {
-    console.log(`Starting icon generation for restaurant ${restaurantId}`);
-    
     // Import the icon generation utilities
     const sharp = await import('sharp');
     const { put } = await import('@vercel/blob');
+    
+    // Define icon sizes at the top to avoid hoisting issues
+    const iconSizes = [
+      { size: 16, name: 'favicon-16x16.png' },
+      { size: 32, name: 'favicon-32x32.png' },
+      { size: 180, name: 'apple-touch-icon.png' },
+      { size: 192, name: 'android-chrome-192x192.png' },
+      { size: 512, name: 'android-chrome-512x512.png' }
+    ];
     
     // Download logo
     const response = await fetch(logoUrl);
@@ -402,14 +425,10 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
     
     const logoBuffer = await response.arrayBuffer();
     
-    // Generate icons
-    const iconSizes = [
-      { size: 16, name: 'favicon-16x16.png' },
-      { size: 32, name: 'favicon-32x32.png' },
-      { size: 180, name: 'apple-touch-icon.png' },
-      { size: 192, name: 'android-chrome-192x192.png' },
-      { size: 512, name: 'android-chrome-512x512.png' }
-    ];
+    // Validate that we got a valid image
+    if (logoBuffer.byteLength === 0) {
+      throw new Error('Downloaded logo buffer is empty');
+    }
     
     // Upload each icon to Vercel Blob
     for (const icon of iconSizes) {
@@ -428,8 +447,6 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
         addRandomSuffix: false,
         contentType: 'image/png'
       });
-      
-      console.log(`Uploaded ${icon.name} for restaurant ${restaurantId}`);
     }
     
     // Generate favicon.ico
@@ -448,11 +465,54 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
       contentType: 'image/x-icon'
     });
     
-    console.log(`Icon generation completed for restaurant ${restaurantId}`);
-    
   } catch (error) {
     console.error(`Icon generation failed for restaurant ${restaurantId}:`, error);
     throw error;
+  }
+}
+
+// Helper function to delete existing icons for a restaurant
+async function deleteExistingIcons(restaurantId) {
+  try {
+    // Check if BLOB_PUBLIC_BASE is available
+    if (!process.env.BLOB_PUBLIC_BASE) {
+      console.warn('BLOB_PUBLIC_BASE not set, skipping icon cleanup');
+      return;
+    }
+    
+    // Since Vercel Blob doesn't have a direct list API, we'll try to delete known icon files
+    const iconFiles = [
+      'favicon-16x16.png',
+      'favicon-32x32.png',
+      'apple-touch-icon.png',
+      'android-chrome-192x192.png',
+      'android-chrome-512x512.png',
+      'favicon.ico'
+    ];
+
+    for (const iconName of iconFiles) {
+      try {
+        // Use the same key format that generateIconsForRestaurant uses
+        const iconKey = `restaurants/${restaurantId}/icons/${iconName}`;
+        
+        // For deletion, we need to use the full URL since deleteBlobObject expects either a key or URL
+        // The iconKey is just the key, so we need to construct the full URL
+        const fullIconUrl = `${process.env.BLOB_PUBLIC_BASE}/${iconKey}`;
+        
+        const deleteResult = await deleteBlobObject(fullIconUrl);
+        
+        if (deleteResult) {
+          // Icon was successfully deleted
+        } else {
+          // Icon was not found or already deleted
+        }
+      } catch (deleteError) {
+        // Icon might not exist, which is fine
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to cleanup existing icons:', error);
+    // Continue even if cleanup fails
   }
 }
 
