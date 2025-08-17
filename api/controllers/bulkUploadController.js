@@ -262,7 +262,7 @@ function validateBulkData(data) {
       if (!category.Name) {
         errors.push(`Category ${index + 1}: Name is required`);
       }
-      if (category.Name && category.Name.length > 50) {
+      if (category.Name && String(category.Name).length > 50) {
         errors.push(`Category ${index + 1}: Name cannot exceed 50 characters`);
       }
     });
@@ -274,7 +274,7 @@ function validateBulkData(data) {
       if (!tag.Name) {
         errors.push(`Tag ${index + 1}: Name is required`);
       }
-      if (tag.Name && tag.Name.length > 30) {
+      if (tag.Name && String(tag.Name).length > 30) {
         errors.push(`Tag ${index + 1}: Name cannot exceed 30 characters`);
       }
       if (tag.Color && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(tag.Color)) {
@@ -295,10 +295,10 @@ function validateBulkData(data) {
       if (item.Price && (isNaN(item.Price) || parseFloat(item.Price) <= 0)) {
         errors.push(`Menu Item ${index + 1}: Price must be a positive number`);
       }
-      if (item.Food_Type && !['veg', 'non-veg'].includes(item.Food_Type.toLowerCase())) {
+      if (item['Food Type'] && !['veg', 'non-veg'].includes(String(item['Food Type']).toLowerCase())) {
         errors.push(`Menu Item ${index + 1}: Food Type must be 'veg' or 'non-veg'`);
       }
-      if (item.Spicy_Level && (isNaN(item.Spicy_Level) || item.Spicy_Level < 0 || item.Spicy_Level > 3)) {
+      if (item['Spicy Level'] && (isNaN(item['Spicy Level']) || parseInt(item['Spicy Level']) < 0 || parseInt(item['Spicy Level']) > 3)) {
         errors.push(`Menu Item ${index + 1}: Spicy Level must be between 0 and 3`);
       }
     });
@@ -316,7 +316,7 @@ async function processCategories(categories, restaurantId, updateExisting) {
   for (const categoryData of categories) {
     try {
       const existingCategory = await MenuCategory.findOne({
-        name: categoryData.Name.trim(),
+        name: String(categoryData.Name || '').trim(),
         restaurantId
       });
 
@@ -326,18 +326,18 @@ async function processCategories(categories, restaurantId, updateExisting) {
           await existingCategory.save();
           results.updated++;
         } else {
-          results.errors.push(`Category "${categoryData.Name}" already exists`);
+          results.errors.push(`Category "${String(categoryData.Name || '')}" already exists`);
         }
       } else {
         await MenuCategory.create({
-          name: categoryData.Name.trim(),
+          name: String(categoryData.Name || '').trim(),
           sortOrder: parseInt(categoryData['Sort Order']) || 0,
           restaurantId
         });
         results.created++;
       }
     } catch (error) {
-      results.errors.push(`Category "${categoryData.Name}": ${error.message}`);
+      results.errors.push(`Category "${String(categoryData.Name || '')}": ${error.message}`);
     }
   }
 
@@ -350,7 +350,7 @@ async function processTags(tags, restaurantId, updateExisting) {
   for (const tagData of tags) {
     try {
       const existingTag = await Tag.findOne({
-        name: tagData.Name.trim(),
+        name: String(tagData.Name || '').trim(),
         restaurantId
       });
 
@@ -360,18 +360,18 @@ async function processTags(tags, restaurantId, updateExisting) {
           await existingTag.save();
           results.updated++;
         } else {
-          results.errors.push(`Tag "${tagData.Name}" already exists`);
+          results.errors.push(`Tag "${String(tagData.Name || '')}" already exists`);
         }
       } else {
         await Tag.create({
-          name: tagData.Name.trim(),
+          name: String(tagData.Name || '').trim(),
           color: tagData.Color || '#3B82F6',
           restaurantId
         });
         results.created++;
       }
     } catch (error) {
-      results.errors.push(`Tag "${tagData.Name}": ${error.message}`);
+      results.errors.push(`Tag "${String(tagData.Name || '')}": ${error.message}`);
     }
   }
 
@@ -392,32 +392,32 @@ async function processMenuItems(menuItems, restaurantId, updateExisting) {
     try {
       // Check for existing menu item
       const existingItem = await MenuItem.findOne({
-        name: itemData.Name.trim(),
+        name: String(itemData.Name || '').trim(),
         restaurantId
       });
 
       // Prepare menu item data
       const menuItemData = {
-        name: itemData.Name.trim(),
-        description: itemData.Description?.trim(),
+        name: String(itemData.Name || '').trim(),
+        description: itemData.Description ? String(itemData.Description).trim() : '',
         price: parseFloat(itemData.Price),
-        foodType: itemData.Food_Type?.toLowerCase() || 'veg',
-        isSpicy: itemData.Is_Spicy?.toLowerCase() === 'true',
-        spicyLevel: parseInt(itemData.Spicy_Level) || 0,
-        preparationTime: itemData.Preparation_Time ? parseInt(itemData.Preparation_Time) : null,
-        isAvailable: itemData.Is_Available?.toLowerCase() !== 'false',
+        foodType: String(itemData['Food Type'] || 'veg').toLowerCase(),
+        isSpicy: Boolean(itemData['Is Spicy']),
+        spicyLevel: parseInt(itemData['Spicy Level']) || 0,
+        preparationTime: itemData['Preparation Time'] ? parseInt(itemData['Preparation Time']) : null,
+        isAvailable: itemData['Is Available'] !== false && itemData['Is Available'] !== 'false',
         nutritionInfo: {
           calories: itemData.Calories ? parseInt(itemData.Calories) : null,
           protein: itemData.Protein ? parseFloat(itemData.Protein) : null,
           carbs: itemData.Carbs ? parseFloat(itemData.Carbs) : null,
           fat: itemData.Fat ? parseFloat(itemData.Fat) : null
         },
-        allergens: itemData.Allergens ? itemData.Allergens.split(',').map(a => a.trim()).filter(a => a) : []
+        allergens: itemData.Allergens ? String(itemData.Allergens).split(',').map(a => a.trim()).filter(a => a) : []
       };
 
       // Process categories
       if (itemData.Categories) {
-        const categoryNames = itemData.Categories.split(',').map(c => c.trim());
+        const categoryNames = String(itemData.Categories).split(',').map(c => c.trim());
         const categoryIds = [];
         
         for (const categoryName of categoryNames) {
@@ -425,7 +425,7 @@ async function processMenuItems(menuItems, restaurantId, updateExisting) {
           if (categoryId) {
             categoryIds.push(categoryId);
           } else {
-            results.errors.push(`Menu Item "${itemData.Name}": Category "${categoryName}" not found`);
+            results.errors.push(`Menu Item "${String(itemData.Name || '')}": Category "${categoryName}" not found`);
           }
         }
         
@@ -434,7 +434,7 @@ async function processMenuItems(menuItems, restaurantId, updateExisting) {
 
       // Process tags
       if (itemData.Tags) {
-        const tagNames = itemData.Tags.split(',').map(t => t.trim());
+        const tagNames = String(itemData.Tags).split(',').map(t => t.trim());
         const tagIds = [];
         
         for (const tagName of tagNames) {
@@ -442,7 +442,7 @@ async function processMenuItems(menuItems, restaurantId, updateExisting) {
           if (tagId) {
             tagIds.push(tagId);
           } else {
-            results.errors.push(`Menu Item "${itemData.Name}": Tag "${tagName}" not found`);
+            results.errors.push(`Menu Item "${String(itemData.Name || '')}": Tag "${tagName}" not found`);
           }
         }
         
@@ -465,7 +465,7 @@ async function processMenuItems(menuItems, restaurantId, updateExisting) {
         results.created++;
       }
     } catch (error) {
-      results.errors.push(`Menu Item "${itemData.Name}": ${error.message}`);
+      results.errors.push(`Menu Item "${String(itemData.Name || '')}": ${error.message}`);
     }
   }
 
