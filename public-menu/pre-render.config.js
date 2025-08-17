@@ -217,7 +217,7 @@ function escapeHtml(str) {
 function generateAppHtml(restaurant, menuData) {
   // Determine which logo to show and whether to show the name
   const shouldHideName = restaurant.hideRestaurantNameInHeader === true && restaurant.primaryLogoUrl;
-  const logoUrl = restaurant.brandMarkUrl || restaurant.primaryLogoUrl;
+  const logoUrl = restaurant.primaryLogoUrl || restaurant.brandMarkUrl;
   const showName = !shouldHideName;
 
   return `
@@ -228,7 +228,7 @@ function generateAppHtml(restaurant, menuData) {
             <div class="flex-shrink-0">
               ${logoUrl ? 
                 `<img src="${logoUrl}" alt="${restaurant.name} logo" class="rounded-lg object-contain ${
-                  restaurant.brandMarkUrl ? 'w-16 h-16' : 'w-24 h-16'
+                  restaurant.primaryLogoUrl ? 'w-24 h-16' : 'w-16 h-16'
                 }">` :
                 `<div class="w-16 h-16 rounded-lg bg-primary flex items-center justify-center"></div>`
               }
