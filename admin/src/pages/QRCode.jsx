@@ -4,8 +4,8 @@ import { Button } from '../components/common/Button.jsx';
 import { LoadingSpinner } from '../components/common/LoadingSpinner.jsx';
 import { ConfirmDialog } from '../components/common/ConfirmDialog.jsx';
 import { toast } from '../components/common/Toast.jsx';
-import { useState } from 'react';
-import { PUBLIC_MENU_BASE_URL } from '../utils/constants.js';
+import { useState, useMemo, useEffect } from 'react';
+import { getPublicMenuBaseUrl } from '../utils/constants.js';
 
 export const QRCode = () => {
   const { 
@@ -17,8 +17,32 @@ export const QRCode = () => {
     deleteQRCodeData 
   } = useQRCode();
   
-  const { restaurant } = useAuth();
+  const { restaurant, loading: authLoading } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [baseUrl, setBaseUrl] = useState('');
+
+  // Compute the public menu URL dynamically
+  const publicMenuUrl = useMemo(() => {
+    if (!restaurant?._id || !baseUrl) return '';
+    return `${baseUrl}/${restaurant._id}`;
+  }, [restaurant?._id, baseUrl]);
+
+  // Ensure base URL is computed once component mounts
+  useEffect(() => {
+    const url = getPublicMenuBaseUrl();
+    if (url) {
+      setBaseUrl(url);
+    } else {
+      console.warn('Could not determine public menu base URL');
+    }
+  }, []);
+
+  // Debug logging
+  useEffect(() => {
+    if (restaurant?._id && baseUrl) {
+      console.log('Public menu URL computed:', `${baseUrl}/${restaurant._id}`);
+    }
+  }, [restaurant?._id, baseUrl]);
 
   const handleGenerateQR = () => {
     generateNewQRCode();
@@ -45,7 +69,7 @@ export const QRCode = () => {
 
 
   
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="text-center">
@@ -152,15 +176,15 @@ export const QRCode = () => {
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        value={restaurant ? `${PUBLIC_MENU_BASE_URL}/${restaurant._id}` : 'Loading...'}
+                        value={publicMenuUrl || 'Loading...'}
                         readOnly
                         className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50"
                       />
                       <Button
-                        onClick={() => copyToClipboard(`${PUBLIC_MENU_BASE_URL}/${restaurant._id}`)}
+                        onClick={() => copyToClipboard(publicMenuUrl)}
                         variant="outline"
                         size="sm"
-                        disabled={!restaurant}
+                        disabled={!publicMenuUrl}
                       >
                         Copy
                       </Button>

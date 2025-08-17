@@ -6,11 +6,17 @@ export const getPublicMenuBaseUrl = () => {
   }
   
   // Fallback: use current host with /menu path
-  const currentHost = window.location.origin;
-  return `${currentHost}/menu`;
+  // Only compute this when window is available
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/menu`;
+  }
+  
+  // Return a placeholder during SSR or when window is not available
+  return '';
 };
 
 // For backward compatibility, export the function result
+// Note: This might be empty during SSR, so components should use getPublicMenuBaseUrl() instead
 export const PUBLIC_MENU_BASE_URL = getPublicMenuBaseUrl();
 
 // Route paths
