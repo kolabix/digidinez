@@ -1,11 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { 
   ArrowDownTrayIcon, 
   ArrowUpTrayIcon, 
   DocumentArrowUpIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  XCircleIcon
+  XCircleIcon,
+  CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
@@ -21,6 +23,39 @@ export const BulkUpload = () => {
   const [uploadResults, setUploadResults] = useState(null);
   const [errors, setErrors] = useState([]);
   const fileInputRef = useRef(null);
+
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
+    if (rejectedFiles.length > 0) {
+      const rejectionReasons = rejectedFiles.map(rejection => {
+        if (rejection.errors.some(error => error.code === 'file-too-large')) {
+          return 'File size must be less than 10MB';
+        }
+        if (rejection.errors.some(error => error.code === 'file-invalid-type')) {
+          return 'Please select a valid Excel (.xlsx, .xls) or CSV file';
+        }
+        return 'File rejected';
+      });
+      setErrors(rejectionReasons);
+      return;
+    }
+
+    if (acceptedFiles.length > 0) {
+      const selectedFile = acceptedFiles[0];
+      setFile(selectedFile);
+      setErrors([]);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel': ['.xls'],
+      'text/csv': ['.csv']
+    },
+    maxSize: 10 * 1024 * 1024, // 10MB
+    multiple: false
+  });
 
   const handleFileSelect = (event) => {
     const selectedFile = event.target.files[0];
@@ -74,13 +109,13 @@ export const BulkUpload = () => {
 
       const result = await bulkUploadService.uploadFile(file, updateExisting);
       setUploadResults(result.data);
-      Toast.success('Bulk upload completed successfully!');
+      toast.success('Bulk upload completed successfully!');
     } catch (error) {
       console.error('Upload error:', error);
       const errorMessage = error.response?.data?.message || 'Upload failed';
       const errorDetails = error.response?.data?.errors || [];
       setErrors([errorMessage, ...errorDetails]);
-      Toast.error('Bulk upload failed');
+      toast.error('Bulk upload failed');
     } finally {
       setIsUploading(false);
     }
@@ -258,14 +293,61 @@ export const BulkUpload = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select File
             </label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleFileSelect}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-            />
-            <p className="mt-1 text-sm text-gray-500">
+            
+            {/* Drag and Drop Zone */}
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                isDragActive && !isDragReject
+                  ? 'border-primary-400 bg-primary-50'
+                  : isDragReject
+                  ? 'border-red-400 bg-red-50'
+                  : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              }`}
+            >
+              <input {...getInputProps()} />
+              
+              <CloudArrowUpIcon className={`mx-auto h-12 w-12 mb-4 ${
+                isDragActive && !isDragReject
+                  ? 'text-primary-500'
+                  : isDragReject
+                  ? 'text-red-500'
+                  : 'text-gray-400'
+              }`} />
+              
+              <div className="space-y-2">
+                {isDragActive && !isDragReject ? (
+                  <p className="text-lg font-medium text-primary-600">
+                    Drop your file here...
+                  </p>
+                ) : isDragReject ? (
+                  <p className="text-lg font-medium text-red-600">
+                    Invalid file type or size
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-lg font-medium text-gray-900">
+                      Drag and drop your file here
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      or click to browse files
+                    </p>
+                  </>
+                )}
+                
+                {file && (
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-center">
+                      <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm font-medium text-green-800">
+                        {file.name} ({Math.round(file.size / 1024)} KB)
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-gray-500">
               Supported formats: Excel (.xlsx, .xls) or CSV files (max 10MB)
             </p>
           </div>
