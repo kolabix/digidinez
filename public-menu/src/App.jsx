@@ -30,6 +30,7 @@ export default function App() {
 
         // If SSG injected data exists, use it and avoid API calls
         const preloaded = window.__PRELOADED_MENU__;
+        
         if (preloaded && preloaded.restaurant && Array.isArray(preloaded.menuItems)) {
           const normalizedItems = normalizeMenuItems(preloaded.menuItems);
           const normalizedCategories = normalizeCategories(preloaded.categories || []);

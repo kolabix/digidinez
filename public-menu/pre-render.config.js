@@ -21,6 +21,31 @@ async function fetchRestaurantData(restaurantId) {
   }
 }
 
+/**
+ * Extract unique tags from menu items (same logic as frontend)
+ */
+function extractTagsFromItems(items) {
+  const tagMap = new Map();
+  
+  items.forEach(item => {
+    if (item.tagIds && Array.isArray(item.tagIds)) {
+      item.tagIds.forEach(tag => {
+        // Handle both 'id' and '_id' field names
+        const tagId = tag.id || tag._id;
+        if (tagId && tag.name) {
+          tagMap.set(tagId, {
+            id: tagId,
+            name: tag.name,
+            color: tag.color || '#6b7280'
+          });
+        }
+      });
+    }
+  });
+  
+  return Array.from(tagMap.values());
+}
+
 // Function to fetch all restaurants (internal, secret-protected)
 async function fetchAllRestaurants() {
   try {
@@ -125,11 +150,17 @@ async function preRenderRestaurant(restaurant) {
 
   // Generate app HTML to inject into #root and a preload script
   const appHtml = generateAppHtml(restaurant, menuData)
+  
+  // Extract tags from menu items if not provided by API
+  const extractedTags = menuData.tags && menuData.tags.length > 0 
+    ? menuData.tags 
+    : extractTagsFromItems(menuData.menuItems || []);
+  
   const preloadScript = `\n<script>window.__PRELOADED_MENU__ = ${JSON.stringify({
     restaurant: menuData.restaurant,
     categories: menuData.categories,
     menuItems: menuData.menuItems,
-    tags: menuData.tags || []
+    tags: extractedTags
   })};<\/script>`
 
   // Inject into template: title, root content, and preloaded data
