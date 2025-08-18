@@ -102,38 +102,92 @@ export const bulkUpload = async (req, res) => {
 // @access  Private
 export const downloadTemplate = async (req, res) => {
   try {
-    // Create workbook with sample data
+    const restaurantId = req.restaurant.id;
+
+    // Fetch existing data from the restaurant
+    const [existingCategories, existingTags, existingMenuItems] = await Promise.all([
+      MenuCategory.find({ restaurantId }).sort({ sortOrder: 1 }),
+      Tag.find({ restaurantId }),
+      MenuItem.find({ restaurantId }).populate('categoryIds tagIds')
+    ]);
+
+    // Create workbook
     const workbook = XLSX.utils.book_new();
 
-    // Categories sheet
-    const categoriesData = [
-      ['Name', 'Sort Order'],
-      ['Appetizers', 1],
-      ['Main Course', 2],
-      ['Desserts', 3],
-      ['Beverages', 4]
-    ];
+    // Prepare categories data
+    const categoriesData = [['Name', 'Sort Order']];
+    if (existingCategories.length > 0) {
+      // Use existing categories
+      existingCategories.forEach(category => {
+        categoriesData.push([category.name, category.sortOrder]);
+      });
+    } else {
+      // Use sample data if no existing categories
+      categoriesData.push(
+        ['Appetizers', 1],
+        ['Main Course', 2],
+        ['Desserts', 3],
+        ['Beverages', 4]
+      );
+    }
     const categoriesSheet = XLSX.utils.aoa_to_sheet(categoriesData);
     XLSX.utils.book_append_sheet(workbook, categoriesSheet, 'Categories');
 
-    // Tags sheet
-    const tagsData = [
-      ['Name', 'Color'],
-      ['Spicy', '#FF4444'],
-      ['Vegetarian', '#44FF44'],
-      ['Popular', '#4444FF'],
-      ['Chef Special', '#FFAA44']
-    ];
+    // Prepare tags data
+    const tagsData = [['Name', 'Color']];
+    if (existingTags.length > 0) {
+      // Use existing tags
+      existingTags.forEach(tag => {
+        tagsData.push([tag.name, tag.color]);
+      });
+    } else {
+      // Use sample data if no existing tags
+      tagsData.push(
+        ['Spicy', '#FF4444'],
+        ['Vegetarian', '#44FF44'],
+        ['Popular', '#4444FF'],
+        ['Chef Special', '#FFAA44']
+      );
+    }
     const tagsSheet = XLSX.utils.aoa_to_sheet(tagsData);
     XLSX.utils.book_append_sheet(workbook, tagsSheet, 'Tags');
 
-    // Menu Items sheet
-    const menuItemsData = [
-      ['Name', 'Description', 'Price', 'Categories', 'Tags', 'Food Type', 'Is Spicy', 'Spicy Level', 'Preparation Time', 'Is Available', 'Calories', 'Protein', 'Carbs', 'Fat', 'Allergens'],
-      ['Margherita Pizza', 'Classic tomato and mozzarella pizza', 299.99, 'Main Course', 'Popular,Vegetarian', 'veg', false, 0, 20, true, 800, 25, 80, 30, 'dairy,wheat'],
-      ['Chicken Tikka', 'Spicy grilled chicken tikka', 399.99, 'Main Course', 'Spicy', 'non-veg', true, 2, 25, true, 650, 35, 15, 25, ''],
-      ['Chocolate Cake', 'Rich chocolate cake with cream', 199.99, 'Desserts', 'Popular', 'veg', false, 0, 5, true, 450, 8, 60, 20, 'dairy,eggs,wheat']
-    ];
+    // Prepare menu items data
+    const menuItemsData = [['Name', 'Description', 'Price', 'Categories', 'Tags', 'Food Type', 'Is Spicy', 'Spicy Level', 'Preparation Time', 'Is Available', 'Calories', 'Protein', 'Carbs', 'Fat', 'Allergens']];
+    
+    if (existingMenuItems.length > 0) {
+      // Use existing menu items
+      existingMenuItems.forEach(item => {
+        const categoryNames = item.categoryIds.map(cat => cat.name).join(',');
+        const tagNames = item.tagIds.map(tag => tag.name).join(',');
+        const allergens = item.allergens ? item.allergens.join(',') : '';
+        
+        menuItemsData.push([
+          item.name,
+          item.description || '',
+          item.price,
+          categoryNames,
+          tagNames,
+          item.foodType,
+          item.isSpicy,
+          item.spicyLevel,
+          item.preparationTime || '',
+          item.isAvailable,
+          item.nutritionInfo?.calories || '',
+          item.nutritionInfo?.protein || '',
+          item.nutritionInfo?.carbs || '',
+          item.nutritionInfo?.fat || '',
+          allergens
+        ]);
+      });
+    } else {
+      // Use sample data if no existing menu items
+      menuItemsData.push(
+        ['Margherita Pizza', 'Classic tomato and mozzarella pizza', 299.99, 'Main Course', 'Popular,Vegetarian', 'veg', false, 0, 20, true, 800, 25, 80, 30, 'dairy,wheat'],
+        ['Chicken Tikka', 'Spicy grilled chicken tikka', 399.99, 'Main Course', 'Spicy', 'non-veg', true, 2, 25, true, 650, 35, 15, 25, ''],
+        ['Chocolate Cake', 'Rich chocolate cake with cream', 199.99, 'Desserts', 'Popular', 'veg', false, 0, 5, true, 450, 8, 60, 20, 'dairy,eggs,wheat']
+      );
+    }
     const menuItemsSheet = XLSX.utils.aoa_to_sheet(menuItemsData);
     XLSX.utils.book_append_sheet(workbook, menuItemsSheet, 'Menu Items');
 

@@ -257,7 +257,7 @@ export const BulkUpload = () => {
           <div className="ml-3">
             <h3 className="text-sm font-medium text-blue-800">Download Template</h3>
             <div className="mt-2 text-sm text-blue-700">
-              <p>Download our Excel template with sample data and instructions to help you prepare your menu data.</p>
+              <p>Download our Excel template with your existing menu data (or sample data if empty) and instructions to help you prepare your menu data for bulk upload.</p>
             </div>
             <div className="mt-4">
               <Button
@@ -277,6 +277,9 @@ export const BulkUpload = () => {
                   </>
                 )}
               </Button>
+              <p className="mt-2 text-xs text-blue-600">
+                The template will include your existing menu data if available, or sample data if your menu is empty.
+              </p>
             </div>
           </div>
         </div>
