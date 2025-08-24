@@ -20,7 +20,7 @@ const setAuthCookie = (res, token) => {
 };
 
 // @desc    Register new restaurant
-// @route   POST /api/auth/register
+// @route   POST /auth/register
 // @access  Public
 export const register = async (req, res) => {
   try {
@@ -117,7 +117,7 @@ export const register = async (req, res) => {
 };
 
 // @desc    Login restaurant
-// @route   POST /api/auth/login
+// @route   POST /auth/login
 // @access  Public
 export const login = async (req, res) => {
   try {
@@ -191,7 +191,7 @@ export const login = async (req, res) => {
 };
 
 // @desc    Get current restaurant profile
-// @route   GET /api/auth/me
+// @route   GET /auth/me
 // @access  Private
 export const getMe = async (req, res) => {
   try {
@@ -214,7 +214,7 @@ export const getMe = async (req, res) => {
 };
 
 // @desc    Logout restaurant
-// @route   POST /api/auth/logout
+// @route   POST /auth/logout
 // @access  Private
 export const logout = async (req, res) => {
   try {
@@ -240,7 +240,7 @@ export const logout = async (req, res) => {
 };
 
 // @desc    Refresh JWT token
-// @route   POST /api/auth/refresh
+// @route   POST /auth/refresh
 // @access  Private
 export const refreshToken = async (req, res) => {
   try {

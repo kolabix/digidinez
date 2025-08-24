@@ -1,8 +1,8 @@
 import api from './api';
 
-// Deployment Service for Vercel integration
+// Deployment Service for GitHub Actions integration
 const deploymentService = {
-  // Trigger a new deployment on Vercel
+  // Trigger a new deployment via GitHub Actions
   async triggerDeployment() {
     try {
       const response = await api.post('/deployment/trigger');
@@ -31,6 +31,17 @@ const deploymentService = {
       return response.data;
     } catch (error) {
       console.error('Failed to get recent deployments:', error);
+      throw error;
+    }
+  },
+
+  // Test GitHub configuration
+  async testGitHubConfig() {
+    try {
+      const response = await api.get('/deployment/test-config');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to test GitHub configuration:', error);
       throw error;
     }
   }

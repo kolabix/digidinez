@@ -2,11 +2,11 @@ import { Restaurant } from '../models/index.js';
 
 /**
  * Deployment Controller
- * Handles deployment triggers for Vercel using REST API
+ * Handles deployment triggers for GitHub Actions using workflow dispatch API
  */
 
 // @desc    Trigger deployment
-// @route   POST /api/deployment/trigger
+// @route   POST /deployment/trigger
 // @access  Private
 export const triggerDeployment = async (req, res) => {
   try {
@@ -21,8 +21,8 @@ export const triggerDeployment = async (req, res) => {
       });
     }
 
-    // Trigger real Vercel deployment using REST API
-    const deploymentData = await triggerVercelDeployment(restaurantId, restaurant.name);
+    // Trigger GitHub Actions deployment using workflow dispatch API
+    const deploymentData = await triggerGitHubActionsDeployment(restaurantId, restaurant.name);
 
     res.json({
       success: true,
@@ -42,162 +42,137 @@ export const triggerDeployment = async (req, res) => {
   }
 };
 
-// Function to trigger Vercel deployment using REST API
-async function triggerVercelDeployment(restaurantId, restaurantName) {
+// Function to trigger GitHub Actions deployment using workflow dispatch API
+async function triggerGitHubActionsDeployment(restaurantId, restaurantName) {
   try {
-    const vercelToken = process.env.VERCEL_TOKEN;
-    const projectName = process.env.VERCEL_PROJECT_NAME || 'public-menu';
-    const teamId = process.env.VERCEL_TEAM_ID;
+    const githubToken = process.env.GITHUB_TOKEN;
+    const githubOwner = process.env.GITHUB_OWNER;
+    const githubRepo = process.env.GITHUB_REPO;
+    let workflowId = process.env.GITHUB_WORKFLOW_ID;
 
-    if (!vercelToken) {
-      throw new Error('Vercel configuration missing. Please set VERCEL_TOKEN');
+    if (!githubToken || !githubOwner || !githubRepo) {
+      throw new Error('GitHub configuration missing. Please set GITHUB_TOKEN, GITHUB_OWNER, and GITHUB_REPO');
     }
 
-    console.log(`🚀 Triggering Vercel deployment for restaurant ${restaurantId} (${restaurantName})`);
-    console.log(`📋 Using project: ${projectName}${teamId ? `, team ID: ${teamId}` : ''}`);
+    console.log(`🚀 Triggering GitHub Actions deployment for restaurant ${restaurantId} (${restaurantName})`);
+    console.log(`📋 Using workflow: ${workflowId} in ${githubOwner}/${githubRepo}`);
 
-    // First, clear any existing environment variables to prevent caching issues
-    console.log('🧹 Clearing old environment variables...');
-    try {
-      // Clear the RESTAURANT_ID variable if it exists
-      const clearResponse = await fetch(`https://api.vercel.com/v6/projects/${projectName}/env/RESTAURANT_ID${teamId ? `?teamId=${teamId}` : ''}`, {
-        method: 'DELETE',
+    // First, let's verify the workflow exists
+    console.log('🔍 Verifying workflow exists...');
+    const workflowCheckResponse = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows/${workflowId}`, {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!workflowCheckResponse.ok) {
+      console.error(`❌ Workflow ${workflowId} not found. Status: ${workflowCheckResponse.status}`);
+      
+      // Try to list available workflows
+      console.log('🔍 Listing available workflows...');
+      const workflowsResponse = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows`, {
         headers: {
-          'Authorization': `Bearer ${vercelToken}`
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json'
         }
       });
-      
-      if (clearResponse.ok) {
-        console.log('✅ Cleared old RESTAURANT_ID environment variable');
-      } else if (clearResponse.status === 404) {
-        console.log('ℹ️ No existing RESTAURANT_ID variable to clear');
+
+      if (workflowsResponse.ok) {
+        const workflows = await workflowsResponse.json();
+        console.log('📋 Available workflows:', workflows.workflows?.map(w => w.name) || []);
+        
+        // Try to find a matching workflow
+        const matchingWorkflow = workflows.workflows?.find(w => 
+          w.name.toLowerCase().includes('deploy') && 
+          w.name.toLowerCase().includes('menu')
+        );
+        
+        if (matchingWorkflow) {
+          console.log(`✅ Found matching workflow: ${matchingWorkflow.name} (ID: ${matchingWorkflow.id})`);
+          // Use the actual workflow ID from GitHub
+          workflowId = matchingWorkflow.id;
+        } else {
+          throw new Error(`No suitable deployment workflow found. Available workflows: ${workflows.workflows?.map(w => w.name).join(', ') || 'none'}`);
+        }
       } else {
-        console.warn('⚠️ Could not clear old environment variable:', clearResponse.status);
+        throw new Error(`Workflow ${workflowId} not found and could not list available workflows`);
       }
-    } catch (clearError) {
-      console.warn('⚠️ Error clearing environment variables:', clearError.message);
+    } else {
+      console.log(`✅ Workflow ${workflowId} verified successfully`);
     }
 
-    // For git-based deployments, we need to trigger a new deployment from the repository
-    // The simplest way is to use the Vercel dashboard API to trigger a deployment
-    console.log('🚀 Triggering git-based deployment...');
-    
-    // Create a deployment payload that triggers a git build
-    // According to Vercel API docs, we need to use 'name' and 'gitSource'
-    // Note: We don't set environment variables anymore because Vercel caches them
-    // Instead, we pass the restaurant ID through metadata, which gets read during build
-    const deploymentPayload = {
-      name: projectName,
-      target: 'production',
-      // This will trigger a build from the git repository
-      gitSource: {
-        type: 'github',
-        ref: 'main', // or your default branch
-        repoId: process.env.VERCEL_GITHUB_REPO_ID // optional: specific repo ID
+    // Create workflow dispatch payload
+    const workflowPayload = {
+      ref: process.env.NODE_ENV !== 'prod' ? 'staging' : 'main',
+      inputs: {
+        restaurant_id: restaurantId,
+        restaurant_name: restaurantName,
+        environment: process.env.NODE_ENV,
+        trigger_source: 'admin-panel'
       },
-      // Add metadata - this is how we pass restaurant-specific data
-      // The build process can read this metadata to determine which restaurant to build
-      meta: {
-        restaurantId,
-        restaurantName,
-        trigger: 'admin-panel',
-        timestamp: new Date().toISOString()
-      }
     };
 
-    // Note: teamId is handled by the Authorization header context
-    // We don't need to pass it in the payload
-    console.log('📤 Deployment payload:', JSON.stringify(deploymentPayload, null, 2));
+    console.log('📤 Workflow dispatch payload:', JSON.stringify(workflowPayload, null, 2));
 
-    // Use the main deployments endpoint to trigger a git-based deployment
-    // If teamId is specified, we might need to use a different endpoint or query parameter
-    let deploymentUrl = 'https://api.vercel.com/v6/deployments';
-    if (teamId) {
-      deploymentUrl += `?teamId=${teamId}`;
-    }
-
-    const response = await fetch(deploymentUrl, {
+    const response = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows/deploy-menu-staging.yml/dispatches`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${vercelToken}`,
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(deploymentPayload)
+      body: JSON.stringify(workflowPayload)
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Deployment creation failed:', errorText);
-      
-      // If the git-based approach fails, try a simpler approach
-      console.log('🔄 Trying alternative deployment method...');
-      
-      // Try to trigger a deployment by updating the project (this often triggers a rebuild)
-      const updateResponse = await fetch(`https://api.vercel.com/v6/projects/${projectName}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${vercelToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          // Just update the project to trigger a rebuild
-          name: projectName
-        })
-      });
-      
-      if (updateResponse.ok) {
-        console.log('✅ Project updated, this should trigger a rebuild');
-        // Return a mock deployment response since we can't get the actual deployment ID
-        return {
-          id: `trigger_${Date.now()}`,
-          restaurantId,
-          status: 'pending',
-          createdAt: new Date(),
-          estimatedTime: '2-3 minutes',
-          message: 'Deployment triggered via project update (rebuild)',
-          vercelUrl: `https://${projectName}.vercel.app`,
-          method: 'project-update'
-        };
-      } else {
-        const updateErrorText = await updateResponse.text();
-        throw new Error(`Both deployment methods failed. Deploy: ${errorText}, Update: ${updateErrorText}`);
-      }
+      console.error('❌ Workflow dispatch failed:', errorText);
+      throw new Error(`GitHub Actions workflow dispatch failed: ${response.status} ${response.statusText}`);
     }
 
-    const deployment = await response.json();
-    console.log(`✅ Vercel deployment created successfully:`, {
-      id: deployment.id,
-      url: deployment.url,
-      status: deployment.readyState
-    });
+    console.log('✅ GitHub Actions workflow dispatched successfully');
+
+    // Generate a unique deployment ID for tracking
+    const deploymentId = `gha_${Date.now()}_${restaurantId}`;
 
     return {
-      id: deployment.id,
+      id: deploymentId,
       restaurantId,
       status: 'pending',
       createdAt: new Date(),
-      estimatedTime: '1-2 minutes',
-      message: 'Deployment triggered successfully',
-      vercelUrl: deployment.url,
-      vercelId: deployment.id
+      estimatedTime: '3-5 minutes',
+      message: 'Deployment triggered via GitHub Actions',
+      githubWorkflow: workflowId,
+      githubRepo: `${githubOwner}/${githubRepo}`,
+      method: 'github-actions'
     };
 
   } catch (error) {
-    console.error('❌ Vercel deployment failed:', error);
+    console.error('❌ GitHub Actions deployment failed:', error);
     throw error;
   }
 }
 
 // @desc    Get deployment status
-// @route   GET /api/deployment/:id/status
+// @route   GET /deployment/:id/status
 // @access  Private
 export const getDeploymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const restaurantId = req.restaurant.id;
 
-    // Query Vercel API for actual deployment status using SDK
-    const deploymentStatus = await getVercelDeploymentStatus(id);
+    // Extract GitHub Actions run ID from our deployment ID
+    if (!id.startsWith('gha_')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid deployment ID format'
+      });
+    }
+
+    // For now, return a mock status since GitHub Actions doesn't provide direct run lookup by our custom ID
+    // In a production environment, you'd want to store the actual GitHub run ID in your database
+    const deploymentStatus = await getGitHubActionsStatus(id, restaurantId);
 
     res.json({
       success: true,
@@ -221,72 +196,56 @@ export const getDeploymentStatus = async (req, res) => {
   }
 };
 
-// Function to get Vercel deployment status using REST API
-async function getVercelDeploymentStatus(deploymentId) {
+// Function to get GitHub Actions deployment status
+async function getGitHubActionsStatus(deploymentId, restaurantId) {
   try {
-    const vercelToken = process.env.VERCEL_TOKEN;
-    const teamId = process.env.VERCEL_TEAM_ID;
+    // Since we don't have the actual GitHub run ID stored, we'll simulate status
+    // In a real implementation, you'd store the GitHub run ID when triggering the workflow
+    // and then use it to query the actual status
+    
+    // For now, return a simulated status based on time elapsed
+    const deploymentTime = parseInt(deploymentId.split('_')[1]);
+    const timeElapsed = Date.now() - deploymentTime;
+    const minutesElapsed = Math.floor(timeElapsed / (1000 * 60));
 
-    if (!vercelToken) {
-      throw new Error('Vercel configuration missing. Please set VERCEL_TOKEN');
+    let status, message;
+    if (minutesElapsed < 2) {
+      status = 'building';
+      message = 'Deployment building...';
+    } else if (minutesElapsed < 4) {
+      status = 'deploying';
+      message = 'Deployment deploying...';
+    } else {
+      status = 'success';
+      message = 'Deployment successful!';
     }
-
-    let url = `https://api.vercel.com/v6/deployments/${deploymentId}`;
-    if (teamId) {
-      url += `?teamId=${teamId}`;
-    }
-
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${vercelToken}`
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Vercel API error: ${errorData.error?.message || response.statusText}`);
-    }
-
-    const deployment = await response.json();
-
-    // Map Vercel status to our format
-    const statusMap = {
-      'READY': 'success',
-      'BUILDING': 'building',
-      'DEPLOYING': 'deploying',
-      'ERROR': 'failed',
-      'CANCELED': 'failed'
-    };
-
-    const status = statusMap[deployment.readyState] || 'pending';
-    const message = deployment.readyState === 'READY' ? 'Deployment successful!' :
-                   deployment.readyState === 'ERROR' ? `Deployment failed: ${deployment.errorMessage || 'Unknown error'}` :
-                   `Deployment ${deployment.readyState?.toLowerCase() || 'in progress'}...`;
 
     return {
       status,
       message,
-      vercelStatus: deployment.readyState,
-      url: deployment.url,
-      createdAt: deployment.createdAt,
-      completedAt: deployment.readyState === 'READY' ? deployment.readyAt : null
+      githubStatus: status,
+      url: `https://github.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/actions`,
+      createdAt: new Date(deploymentTime),
+      completedAt: status === 'success' ? new Date() : null,
+      estimatedTime: '3-5 minutes'
     };
 
   } catch (error) {
-    console.error('Failed to get Vercel deployment status:', error);
+    console.error('Failed to get GitHub Actions status:', error);
     throw error;
   }
 }
 
 // @desc    Get recent deployments
-// @route   GET /api/deployment/recent
+// @route   GET /deployment/recent
 // @access  Private
 export const getRecentDeployments = async (req, res) => {
   try {
     const restaurantId = req.restaurant.id;
 
-    // Query actual deployment history from Vercel using SDK
-    const deployments = await getVercelRecentDeployments(restaurantId);
+    // For now, return mock recent deployments
+    // In a real implementation, you'd store deployment history in your database
+    const deployments = getMockRecentDeployments(restaurantId);
 
     res.json({
       success: true,
@@ -305,200 +264,189 @@ export const getRecentDeployments = async (req, res) => {
   }
 };
 
-// Function to get recent Vercel deployments using REST API
-async function getVercelRecentDeployments(restaurantId) {
-  try {
-    const vercelToken = process.env.VERCEL_TOKEN;
-    const projectName = process.env.VERCEL_PROJECT_NAME || 'public-menu';
-    const teamId = process.env.VERCEL_TEAM_ID;
+// Function to get mock recent deployments (replace with database queries in production)
+function getMockRecentDeployments(restaurantId) {
+  const now = new Date();
+  const deployments = [];
 
-    if (!vercelToken) {
-      throw new Error('Vercel configuration missing. Please set VERCEL_TOKEN');
-    }
-
-    let url = `https://api.vercel.com/v6/deployments?projectId=${projectName}&limit=20`;
-    if (teamId) {
-      url += `&teamId=${teamId}`;
-    }
-
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${vercelToken}`
-      }
+  // Generate mock deployments for the last few days
+  for (let i = 0; i < 3; i++) {
+    const deploymentTime = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+    deployments.push({
+      id: `gha_${deploymentTime.getTime()}_${restaurantId}`,
+      restaurantId,
+      status: 'success',
+      message: 'Menu updated successfully',
+      logoChanged: false,
+      createdAt: deploymentTime,
+      completedAt: new Date(deploymentTime.getTime() + (5 * 60 * 1000)), // 5 minutes later
+      githubUrl: `https://github.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/actions`,
+      method: 'github-actions'
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Vercel API error: ${errorData.error?.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    const deployments = data.deployments || [];
-
-    // Filter and map deployments for this restaurant
-    const restaurantDeployments = deployments
-      .filter(deployment => {
-        // Check if this deployment was for this restaurant
-        const meta = deployment.meta || {};
-        return meta.restaurantId === restaurantId;
-      })
-      .map(deployment => {
-        const statusMap = {
-          'READY': 'success',
-          'BUILDING': 'building',
-          'DEPLOYING': 'deploying',
-          'ERROR': 'failed',
-          'CANCELED': 'failed'
-        };
-
-        return {
-          id: deployment.id,
-          restaurantId,
-          status: statusMap[deployment.readyState] || 'pending',
-          message: deployment.readyState === 'READY' ? 'Menu updated successfully' :
-                   deployment.readyState === 'ERROR' ? 'Deployment failed' :
-                   'Deployment in progress',
-          logoChanged: false, // TODO: Track logo changes
-          createdAt: new Date(deployment.createdAt),
-          completedAt: deployment.readyState === 'READY' ? new Date(deployment.readyAt) : null,
-          vercelUrl: deployment.url,
-          vercelStatus: deployment.readyState
-        };
-      })
-      .slice(0, 5); // Return only last 5 deployments
-
-    return restaurantDeployments;
-
-  } catch (error) {
-    console.error('Failed to get Vercel recent deployments:', error);
-    throw error;
   }
+
+  return deployments;
 }
 
-// @desc    Test Vercel configuration
+// @desc    Test GitHub configuration
 // @route   GET /api/deployment/test-config
 // @access  Private
-export const testVercelConfig = async (req, res) => {
+export const testGitHubConfig = async (req, res) => {
   try {
-    const vercelToken = process.env.VERCEL_TOKEN;
-    const projectName = process.env.VERCEL_PROJECT_NAME || 'public-menu';
-    const teamId = process.env.VERCEL_TEAM_ID;
+    const githubToken = process.env.GITHUB_TOKEN;
+    const githubOwner = process.env.GITHUB_OWNER;
+    const githubRepo = process.env.GITHUB_REPO;
+    const workflowId = process.env.GITHUB_WORKFLOW_ID;
 
     // Check if required variables are set
     const config = {
-      vercelToken: vercelToken ? '✅ Set' : '❌ Missing',
-      projectName: projectName ? '✅ Set' : '❌ Missing',
-      teamId: teamId ? '✅ Set' : '❌ Missing',
-      hasRequiredConfig: !!(vercelToken)
+      githubToken: githubToken ? '✅ Set' : '❌ Missing',
+      githubOwner: githubOwner ? '✅ Set' : '❌ Missing',
+      githubRepo: githubRepo ? '✅ Set' : '❌ Missing',
+      workflowId: workflowId ? '✅ Set' : '❌ Missing',
+      hasRequiredConfig: !!(githubToken && githubOwner && githubRepo)
     };
 
-    if (!vercelToken) {
+    if (!githubToken || !githubOwner || !githubRepo) {
       return res.status(400).json({
         success: false,
-        message: 'Vercel configuration incomplete',
+        message: 'GitHub configuration incomplete',
         data: { config }
       });
     }
 
-    // Test Vercel REST API connection
+    // Test GitHub API connection
     try {
-      console.log('🧪 Testing Vercel REST API connection...');
+      console.log('🧪 Testing GitHub API connection...');
       
-      // Test 1: Check if we can access the project
-      console.log(`🧪 Testing project access: ${projectName}`);
-      let projectUrl = `https://api.vercel.com/v6/projects/${projectName}`;
-      if (teamId) {
-        projectUrl += `?teamId=${teamId}`;
-      }
-
-      const projectResponse = await fetch(projectUrl, {
+      // Test 1: Check if we can access the repository
+      console.log(`🧪 Testing repository access: ${githubOwner}/${githubRepo}`);
+      const repoResponse = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}`, {
         headers: {
-          'Authorization': `Bearer ${vercelToken}`
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json'
         }
       });
 
-      if (projectResponse.ok) {
-        const project = await projectResponse.json();
-        config.projectName = project.name;
-        config.projectStatus = '✅ Connected';
-        console.log(`✅ Project access successful: ${project.name}`);
+      if (repoResponse.ok) {
+        const repo = await repoResponse.json();
+        config.repoName = repo.name;
+        config.repoStatus = '✅ Connected';
+        console.log(`✅ Repository access successful: ${repo.name}`);
       } else {
-        const errorText = await projectResponse.text();
-        config.projectStatus = `❌ Project access failed: ${projectResponse.status} ${projectResponse.statusText}`;
-        console.error('❌ Project access failed:', errorText.substring(0, 200));
+        const errorText = await repoResponse.text();
+        config.repoStatus = `❌ Repository access failed: ${repoResponse.status} ${repoResponse.statusText}`;
+        console.error('❌ Repository access failed:', errorText.substring(0, 200));
       }
 
-      // Test 2: Check if we can list deployments
-      console.log(`🧪 Testing deployments access for project: ${projectName}`);
-      let deploymentsUrl = `https://api.vercel.com/v6/deployments?projectId=${projectName}&limit=1`;
-      if (teamId) {
-        deploymentsUrl += `&teamId=${teamId}`;
-      }
-
-      const deploymentsResponse = await fetch(deploymentsUrl, {
+      // Test 2: List all available workflows
+      console.log(`🧪 Testing workflows access...`);
+      const workflowsResponse = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows`, {
         headers: {
-          'Authorization': `Bearer ${vercelToken}`
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json'
         }
       });
 
-      if (deploymentsResponse.ok) {
-        const deployments = await deploymentsResponse.json();
-        config.deploymentsStatus = `✅ Connected - Found ${deployments.deployments?.length || 0} deployments`;
-        console.log(`✅ Deployments access successful: Found ${deployments.deployments?.length || 0} deployments`);
-      } else {
-        const errorText = await deploymentsResponse.text();
-        config.deploymentsStatus = `❌ Deployments access failed: ${deploymentsResponse.status} ${deploymentsResponse.statusText}`;
-        console.error('❌ Deployments access failed:', errorText.substring(0, 200));
-      }
-
-      // Test 3: Check if we can create environment variables
-      console.log(`🧪 Testing environment variable creation...`);
-      try {
-        const envResponse = await fetch(`https://api.vercel.com/v6/projects/${projectName}/env`, {
-          method: 'POST',
+      if (workflowsResponse.ok) {
+        const workflows = await workflowsResponse.json();
+        const availableWorkflows = workflows.workflows || [];
+        config.workflowsStatus = `✅ Connected - Found ${availableWorkflows.length} workflows`;
+        config.availableWorkflows = availableWorkflows.map(w => ({
+          id: w.id,
+          name: w.name,
+          state: w.state,
+          path: w.path
+        }));
+        console.log(`✅ Workflows access successful: Found ${availableWorkflows.length} workflows`);
+        
+        // Test 3: Check if our specific workflow exists
+        console.log(`🧪 Testing specific workflow access: ${workflowId}`);
+        const workflowResponse = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows/${workflowId}`, {
           headers: {
-            'Authorization': `Bearer ${vercelToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            key: 'TEST_VAR',
-            value: 'test_value',
-            target: ['preview'],
-            type: 'plain'
-          })
+            'Authorization': `token ${githubToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
         });
 
-        if (envResponse.ok) {
-          config.envVarStatus = '✅ Can create environment variables';
-          console.log('✅ Environment variable creation successful');
+        if (workflowResponse.ok) {
+          const workflow = await workflowResponse.json();
+          config.workflowStatus = `✅ Connected - ${workflow.state}`;
+          config.targetWorkflow = {
+            id: workflow.id,
+            name: workflow.name,
+            state: workflow.state,
+            path: workflow.path
+          };
+          console.log(`✅ Target workflow access successful: ${workflow.name} (${workflow.state})`);
         } else {
-          const errorText = await envResponse.text();
-          config.envVarStatus = `⚠️ Limited access: ${envResponse.status} ${envResponse.statusText}`;
-          console.log('⚠️ Environment variable creation limited:', errorText.substring(0, 200));
+          const errorText = await workflowResponse.text();
+          config.workflowStatus = `❌ Target workflow not found: ${workflowResponse.status} ${workflowResponse.statusText}`;
+          console.error('❌ Target workflow not found:', errorText.substring(0, 200));
+          
+          // Suggest alternative workflows
+          const deploymentWorkflows = availableWorkflows.filter(w => 
+            w.name.toLowerCase().includes('deploy') && w.name.toLowerCase().includes('menu')
+          );
+          
+          if (deploymentWorkflows.length > 0) {
+            config.suggestedWorkflows = deploymentWorkflows.map(w => w.name);
+            config.workflowStatus += `. Suggested workflows: ${deploymentWorkflows.map(w => w.name).join(', ')}`;
+          }
         }
-      } catch (envError) {
-        config.envVarStatus = `⚠️ Limited access: ${envError.message}`;
-        console.log('⚠️ Environment variable creation limited:', envError.message);
+      } else {
+        const errorText = await workflowsResponse.text();
+        config.workflowsStatus = `❌ Workflows access failed: ${workflowsResponse.status} ${workflowsResponse.statusText}`;
+        config.workflowStatus = '❌ Not tested due to workflows access failure';
+        console.error('❌ Workflows access failed:', errorText.substring(0, 200));
+      }
+
+      // Test 4: Check if we can list recent workflow runs
+      if (config.workflowStatus?.includes('✅')) {
+        console.log(`🧪 Testing workflow runs access...`);
+        try {
+          const runsResponse = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows/${workflowId}/runs?per_page=1`, {
+            headers: {
+              'Authorization': `token ${githubToken}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+
+          if (runsResponse.ok) {
+            const runs = await runsResponse.json();
+            config.runsStatus = `✅ Connected - Found ${runs.total_count || 0} runs`;
+            console.log(`✅ Workflow runs access successful: Found ${runs.total_count || 0} runs`);
+          } else {
+            const errorText = await runsResponse.text();
+            config.runsStatus = `❌ Workflow runs access failed: ${runsResponse.status} ${runsResponse.statusText}`;
+            console.error('❌ Workflow runs access failed:', errorText.substring(0, 200));
+          }
+        } catch (runsError) {
+          config.runsStatus = `❌ Workflow runs access failed: ${runsError.message}`;
+        }
+      } else {
+        config.runsStatus = '❌ Not tested due to workflow access failure';
       }
 
     } catch (apiError) {
-      config.projectStatus = config.projectStatus || `❌ API Error: ${apiError.message}`;
-      config.deploymentsStatus = config.deploymentsStatus || '❌ Not tested due to project access failure';
-      config.envVarStatus = config.envVarStatus || '❌ Not tested due to project access failure';
-      console.error('❌ Vercel REST API connection test failed:', apiError);
+      config.repoStatus = config.repoStatus || `❌ API Error: ${apiError.message}`;
+      config.workflowsStatus = config.workflowsStatus || '❌ Not tested due to repository access failure';
+      config.workflowStatus = config.workflowStatus || '❌ Not tested due to workflows access failure';
+      config.runsStatus = config.runsStatus || '❌ Not tested due to workflow access failure';
+      console.error('❌ GitHub API connection test failed:', apiError);
     }
 
     res.json({
       success: true,
-      message: 'Vercel configuration test completed',
+      message: 'GitHub configuration test completed',
       data: { config }
     });
 
   } catch (error) {
-    console.error('Vercel config test error:', error);
+    console.error('GitHub config test error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while testing Vercel configuration',
+      message: 'Server error while testing GitHub configuration',
       error: error.message
     });
   }

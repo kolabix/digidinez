@@ -4,7 +4,7 @@ import csv from 'csv-parser';
 import { Readable } from 'stream';
 
 // @desc    Upload bulk data from Excel/CSV file
-// @route   POST /api/menu/bulk-upload
+// @route   POST /menu/bulk-upload
 // @access  Private
 export const bulkUpload = async (req, res) => {
   try {
@@ -98,7 +98,7 @@ export const bulkUpload = async (req, res) => {
 };
 
 // @desc    Download Excel template
-// @route   GET /api/menu/bulk-upload/template
+// @route   GET /menu/bulk-upload/template
 // @access  Private
 export const downloadTemplate = async (req, res) => {
   try {

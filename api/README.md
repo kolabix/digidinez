@@ -19,28 +19,29 @@ DigiDinez is a full-stack web application for Indian restaurants to digitize the
 7. [Response Format](#response-format)
 8. [Error Handling](#error-handling)
 9. [Data Models](#data-models)
+10. [AWS S3 Setup](#aws-s3-setup)
 
 ---
 
 ## Authentication
 
 ### Register Restaurant
-**POST** `/api/auth/register`
+**POST** `/auth/register`
 
 Register a new restaurant account.
 
 **Request Body:**
 ```json
 {
-  "name": "Pizza Hut",
-  "email": "admin@pizzahut.com",
-  "phone": "+919876543210",
+  "name": "Demo Restaurant",
+  "email": "demo@digidinez.com",
+  "phone": "+919619636881",
   "password": "coldcold",
   "address": {
     "street": "123 Main Street",
     "city": "Mumbai",
     "state": "Maharashtra",
-    "zipCode": "400001",
+    "zipCode": "400607",
     "country": "India"
   }
 }
@@ -53,10 +54,10 @@ Register a new restaurant account.
   "message": "Restaurant registered successfully",
   "data": {
     "restaurant": {
-      "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-      "name": "Pizza Hut",
-      "email": "admin@pizzahut.com",
-      "phone": "+919876543210",
+      "id": "689dd6cbcfe9621c296217b7",
+      "name": "Demo Restaurant",
+      "email": "demo@digidinez.com",
+      "phone": "+919619636881",
       "isActive": true
     }
   }
@@ -64,14 +65,14 @@ Register a new restaurant account.
 ```
 
 ### Login
-**POST** `/api/auth/login`
+**POST** `/auth/login`
 
 Authenticate restaurant and receive JWT token.
 
 **Request Body:**
 ```json
 {
-  "identifier": "admin@pizzahut.com", // email or phone
+  "identifier": "demo@digidinez.com", // email or phone
   "password": "coldcold"
 }
 ```
@@ -84,9 +85,9 @@ Authenticate restaurant and receive JWT token.
   "data": {
     "restaurant": {
       "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-      "name": "Pizza Hut",
-      "email": "admin@pizzahut.com",
-      "phone": "+919876543210",
+      "name": "Demo Restaurant",
+      "email": "demo@digidinez.com",
+      "phone": "+919619636881",
       "isActive": true
     }
   }
@@ -94,7 +95,7 @@ Authenticate restaurant and receive JWT token.
 ```
 
 ### Get Current User
-**GET** `/api/auth/me`
+**GET** `/auth/me`
 
 Get current authenticated restaurant profile.
 
@@ -107,14 +108,14 @@ Get current authenticated restaurant profile.
   "data": {
     "restaurant": {
       "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-      "name": "Pizza Hut",
-      "email": "admin@pizzahut.com",
-      "phone": "+919876543210",
+      "name": "Demo Restaurant",
+      "email": "demo@digidinez.com",
+      "phone": "+919619636881",
       "address": {
         "street": "123 Main Street",
         "city": "Mumbai",
         "state": "Maharashtra",
-        "zipCode": "400001",
+        "zipCode": "400607",
         "country": "India"
       },
       "isActive": true,
@@ -127,7 +128,7 @@ Get current authenticated restaurant profile.
 ```
 
 ### Logout
-**POST** `/api/auth/logout`
+**POST** `/auth/logout`
 
 Logout and clear authentication cookie.
 
@@ -142,7 +143,7 @@ Logout and clear authentication cookie.
 ```
 
 ### Refresh Token
-**POST** `/api/auth/refresh`
+**POST** `/auth/refresh`
 
 Refresh JWT token.
 
@@ -161,7 +162,7 @@ Refresh JWT token.
 ## Restaurant Management
 
 ### Get Profile
-**GET** `/api/restaurants/profile`
+**GET** `/restaurants/profile`
 
 Get restaurant profile information.
 
@@ -174,14 +175,14 @@ Get restaurant profile information.
   "data": {
     "restaurant": {
       "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-      "name": "Pizza Hut",
-      "email": "admin@pizzahut.com",
-      "phone": "+919876543210",
+      "name": "Demo Restaurant",
+      "email": "demo@digidinez.com",
+      "phone": "+919619636881",
       "address": {
         "street": "123 Main Street",
         "city": "Mumbai",
         "state": "Maharashtra",
-        "zipCode": "400001",
+        "zipCode": "400607",
         "country": "India"
       },
       "isActive": true,
@@ -194,7 +195,7 @@ Get restaurant profile information.
 ```
 
 ### Update Profile
-**PUT** `/api/restaurants/profile`
+**PUT** `/restaurants/profile`
 
 Update restaurant profile information.
 
@@ -203,7 +204,7 @@ Update restaurant profile information.
 **Request Body:**
 ```json
 {
-  "name": "Pizza Hut - Updated",
+  "name": "Demo Restaurant - Updated",
   "address": {
     "street": "456 New Street",
     "city": "Delhi",
@@ -222,9 +223,9 @@ Update restaurant profile information.
   "data": {
     "restaurant": {
       "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-      "name": "Pizza Hut - Updated",
-      "email": "admin@pizzahut.com",
-      "phone": "+919876543210",
+      "name": "Demo Restaurant - Updated",
+      "email": "demo@digidinez.com",
+      "phone": "+919619636881",
       "address": {
         "street": "456 New Street",
         "city": "Delhi",
@@ -242,7 +243,7 @@ Update restaurant profile information.
 ```
 
 ### Toggle Status
-**PATCH** `/api/restaurants/status`
+**PATCH** `/restaurants/status`
 
 Toggle restaurant active/inactive status.
 
@@ -270,7 +271,7 @@ Toggle restaurant active/inactive status.
 ```
 
 ### Get Statistics
-**GET** `/api/restaurants/stats`
+**GET** `/restaurants/stats`
 
 Get restaurant statistics.
 
@@ -298,7 +299,7 @@ Get restaurant statistics.
 ## Menu Management
 
 ### Get Menu Items
-**GET** `/api/menu/items`
+**GET** `/menu/items`
 
 Get all menu items for authenticated restaurant with filtering and pagination.
 
@@ -317,7 +318,7 @@ Get all menu items for authenticated restaurant with filtering and pagination.
 
 **Example Request:**
 ```
-GET /api/menu/items?category=Pizza&isAvailable=true&limit=10&sort=-price
+GET /menu/items?category=Pizza&isAvailable=true&limit=10&sort=-price
 ```
 
 **Response:**
@@ -381,7 +382,7 @@ GET /api/menu/items?category=Pizza&isAvailable=true&limit=10&sort=-price
 ```
 
 ### Get Single Menu Item
-**GET** `/api/menu/items/:id`
+**GET** `/menu/items/:id`
 
 Get a specific menu item by ID.
 
@@ -438,7 +439,7 @@ Get a specific menu item by ID.
 ```
 
 ### Create Menu Item
-**POST** `/api/menu/items`
+**POST** `/menu/items`
 
 Create a new menu item.
 
@@ -513,7 +514,7 @@ Create a new menu item.
 ```
 
 ### Update Menu Item
-**PUT** `/api/menu/items/:id`
+**PUT** `/menu/items/:id`
 
 Update an existing menu item.
 
@@ -546,7 +547,7 @@ Update an existing menu item.
 ```
 
 ### Delete Menu Item
-**DELETE** `/api/menu/items/:id`
+**DELETE** `/menu/items/:id`
 
 Delete a menu item.
 
@@ -561,7 +562,7 @@ Delete a menu item.
 ```
 
 ### Toggle Availability
-**PATCH** `/api/menu/items/:id/toggle`
+**PATCH** `/menu/items/:id/toggle`
 
 Toggle menu item availability.
 
@@ -582,7 +583,7 @@ Toggle menu item availability.
 ```
 
 ### Get Menu Items by Category
-**GET** `/api/menu/items/category/:category`
+**GET** `/menu/items/category/:category`
 
 Get menu items filtered by category name.
 
@@ -606,7 +607,7 @@ Get menu items filtered by category name.
 ```
 
 ### Bulk Update Menu Items
-**PUT** `/api/menu/items/bulk`
+**PUT** `/menu/items/bulk`
 
 Update multiple menu items at once.
 
@@ -643,7 +644,7 @@ Update multiple menu items at once.
 ```
 
 ### Upload Menu Item Image
-**POST** `/api/menu/items/:id/image`
+**POST** `/menu/items/:id/image`
 
 Upload an image for a menu item.
 
@@ -670,7 +671,7 @@ Upload an image for a menu item.
 ```
 
 ### Get Menu Item Image
-**GET** `/api/menu/items/:id/image`
+**GET** `/menu/items/:id/image`
 
 Get the image URL for a menu item.
 
@@ -693,7 +694,7 @@ Get the image URL for a menu item.
 ```
 
 ### Delete Menu Item Image
-**DELETE** `/api/menu/items/:id/image`
+**DELETE** `/menu/items/:id/image`
 
 Delete the image for a menu item.
 
@@ -708,7 +709,7 @@ Delete the image for a menu item.
 ```
 
 ### Get Public Menu
-**GET** `/api/menu/public/:restaurantId`
+**GET** `/menu/public/:restaurantId`
 
 Get public menu for a restaurant (no authentication required).
 
@@ -719,12 +720,12 @@ Get public menu for a restaurant (no authentication required).
   "data": {
     "restaurant": {
       "id": "64f8a1b2c3d4e5f6a7b8c9d0",
-      "name": "Pizza Hut",
+      "name": "Demo Restaurant",
       "address": {
         "street": "123 Main Street",
         "city": "Mumbai",
         "state": "Maharashtra",
-        "zipCode": "400001",
+        "zipCode": "400607",
         "country": "India"
       }
     },
@@ -748,7 +749,7 @@ Get public menu for a restaurant (no authentication required).
 ```
 
 ### Get Menu Categories
-**GET** `/api/menu/categories`
+**GET** `/menu/categories`
 
 Get all menu categories for the authenticated restaurant.
 
@@ -774,7 +775,7 @@ Get all menu categories for the authenticated restaurant.
 ```
 
 ### Create Menu Category
-**POST** `/api/menu/categories`
+**POST** `/menu/categories`
 
 Create a new menu category.
 
@@ -806,7 +807,7 @@ Create a new menu category.
 ```
 
 ### Update Menu Category
-**PUT** `/api/menu/categories/:id`
+**PUT** `/menu/categories/:id`
 
 Update a menu category.
 
@@ -837,7 +838,7 @@ Update a menu category.
 ```
 
 ### Delete Menu Category
-**DELETE** `/api/menu/categories/:id`
+**DELETE** `/menu/categories/:id`
 
 Delete a menu category.
 
@@ -852,7 +853,7 @@ Delete a menu category.
 ```
 
 ### Reorder Categories
-**PATCH** `/api/menu/categories/reorder`
+**PATCH** `/menu/categories/reorder`
 
 Reorder menu categories.
 
@@ -890,7 +891,7 @@ Reorder menu categories.
 ## Tag Management
 
 ### Get Tags
-**GET** `/api/menu/tags`
+**GET** `/menu/tags`
 
 Get all tags for the authenticated restaurant.
 
@@ -917,7 +918,7 @@ Get all tags for the authenticated restaurant.
 ```
 
 ### Create Tag
-**POST** `/api/menu/tags`
+**POST** `/menu/tags`
 
 Create a new tag.
 
@@ -950,7 +951,7 @@ Create a new tag.
 ```
 
 ### Update Tag
-**PUT** `/api/menu/tags/:id`
+**PUT** `/menu/tags/:id`
 
 Update a tag.
 
@@ -983,7 +984,7 @@ Update a tag.
 ```
 
 ### Delete Tag
-**DELETE** `/api/menu/tags/:id`
+**DELETE** `/menu/tags/:id`
 
 Delete a tag.
 
@@ -998,7 +999,7 @@ Delete a tag.
 ```
 
 ### Get Public Tags
-**GET** `/api/menu/tags/public/:restaurantId`
+**GET** `/menu/tags/public/:restaurantId`
 
 Get public tags for a restaurant (no authentication required).
 
@@ -1023,7 +1024,7 @@ Get public tags for a restaurant (no authentication required).
 ## QR Code Management
 
 ### Generate QR Code
-**POST** `/api/restaurants/generate-qr`
+**POST** `/restaurants/generate-qr`
 
 Generate a QR code for the restaurant.
 
@@ -1037,7 +1038,7 @@ Generate a QR code for the restaurant.
   "data": {
     "qrCode": {
       "url": "http://localhost:3001/qr-codes/restaurant_64f8a1b2c3d4e5f6a7b8c9d0.png",
-      "downloadUrl": "http://localhost:3001/api/restaurants/qr/download",
+      "downloadUrl": "http://localhost:3001/restaurants/qr/download",
       "createdAt": "2024-01-15T14:30:00.000Z"
     }
   }
@@ -1045,7 +1046,7 @@ Generate a QR code for the restaurant.
 ```
 
 ### Get QR Code
-**GET** `/api/restaurants/qr`
+**GET** `/restaurants/qr`
 
 Get the current QR code for the restaurant.
 
@@ -1058,7 +1059,7 @@ Get the current QR code for the restaurant.
   "data": {
     "qrCode": {
       "url": "http://localhost:3001/qr-codes/restaurant_64f8a1b2c3d4e5f6a7b8c9d0.png",
-      "downloadUrl": "http://localhost:3001/api/restaurants/qr/download",
+      "downloadUrl": "http://localhost:3001/restaurants/qr/download",
       "createdAt": "2024-01-15T14:30:00.000Z"
     }
   }
@@ -1066,7 +1067,7 @@ Get the current QR code for the restaurant.
 ```
 
 ### Delete QR Code
-**DELETE** `/api/restaurants/qr`
+**DELETE** `/restaurants/qr`
 
 Delete the current QR code for the restaurant.
 
@@ -1081,7 +1082,7 @@ Delete the current QR code for the restaurant.
 ```
 
 ### Get QR Code Image (Public)
-**GET** `/api/restaurants/:id/qr`
+**GET** `/restaurants/:id/qr`
 
 Get QR code image for a restaurant (no authentication required).
 
@@ -1297,7 +1298,7 @@ All API responses follow a consistent format:
 ## Development Notes
 
 ### Test Restaurant Account
-- **Email**: admin@pizzahut.com
+- **Email**: demo@digidinez.com
 - **Password**: coldcold
 
 ### Environment Variables
@@ -1313,3 +1314,183 @@ NODE_ENV=development
 - Credentials enabled
 - Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
 - Headers: Content-Type, Authorization 
+
+---
+
+## AWS S3 Setup
+
+This API uses AWS S3 for file storage instead of Vercel Blob. The following guide will help you set up AWS S3 to replace Vercel Blob for file storage.
+
+### Prerequisites
+
+1. AWS Account
+2. AWS CLI installed and configured (optional, for testing)
+3. Appropriate permissions to create S3 buckets and IAM roles
+
+### Step 1: Create S3 Bucket
+
+1. Go to AWS S3 Console
+2. Click "Create bucket"
+3. Choose a unique bucket name (e.g., `digidinez-restaurant-assets`)
+4. Select your preferred region (e.g., `us-east-1`)
+5. **Important**: Uncheck "Block all public access" since we need public read access for menu images
+6. Enable versioning if desired (optional)
+7. Click "Create bucket"
+
+### Step 2: Configure Bucket for Public Access
+
+1. Select your newly created bucket
+2. Go to "Permissions" tab
+3. Under "Block public access", click "Edit"
+4. Uncheck all options and save
+5. Under "Bucket policy", click "Edit" and add this policy:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
+        }
+    ]
+}
+```
+
+**Replace `YOUR-BUCKET-NAME` with your actual bucket name.**
+
+### Step 3: Create IAM User (for local development)
+
+1. Go to IAM Console
+2. Click "Users" → "Create user"
+3. Give it a name (e.g., `digidinez-api-user`)
+4. Attach the `AmazonS3FullAccess` policy (or create a custom policy with minimal permissions)
+5. Create access keys and download them
+
+### Step 4: Create IAM Role (for Lambda deployment)
+
+1. Go to IAM Console
+2. Click "Roles" → "Create role"
+3. Select "Lambda" as the trusted entity
+4. Attach the `AmazonS3FullAccess` policy (or create a custom policy with minimal permissions)
+5. Give it a name (e.g., `digidinez-api-lambda-role`)
+6. Note the role ARN for your serverless configuration
+
+### Step 5: Environment Variables
+
+Add these to your `.env` file:
+
+```bash
+# AWS S3 Configuration
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+AWS_S3_BUCKET_NAME=your-bucket-name
+```
+
+**Note**: When deploying to Lambda, you don't need the access keys - the Lambda will use the IAM role.
+
+### Step 6: Update Serverless Configuration
+
+If you're using Serverless Framework, update your `serverless.yml`:
+
+```yaml
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+        - s3:DeleteObject
+        - s3:PutObjectAcl
+      Resource: "arn:aws:s3:::your-bucket-name/*"
+```
+
+### Step 7: Test the Setup
+
+1. Start your API server
+2. Try uploading an image through the menu management interface
+3. Check if the image appears in your S3 bucket
+4. Verify the public URL works
+
+### Security Considerations
+
+1. **Public Read Access**: The bucket allows public read access for menu images. This is necessary for the public menu to display images.
+
+2. **IAM Permissions**: Consider creating a custom IAM policy with minimal required permissions instead of `AmazonS3FullAccess`.
+
+3. **CORS Configuration**: If you need CORS for direct browser uploads, add this to your bucket:
+
+```json
+[
+    {
+        "AllowedHeaders": ["*"],
+        "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+        "AllowedOrigins": ["*"],
+        "ExposeHeaders": []
+    }
+]
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Access Denied**: Check IAM permissions and bucket policy
+2. **Bucket Not Found**: Verify bucket name and region
+3. **Public Access Blocked**: Ensure public access is not blocked
+4. **CORS Issues**: Add CORS configuration if needed
+
+#### Testing Commands
+
+Test S3 access using AWS CLI:
+
+```bash
+# List objects in bucket
+aws s3 ls s3://your-bucket-name/
+
+# Upload a test file
+aws s3 cp test.txt s3://your-bucket-name/
+
+# Check public access
+curl https://your-bucket-name.s3.us-east-1.amazonaws.com/test.txt
+```
+
+### Migration from Vercel Blob
+
+The code has been updated to maintain backward compatibility. The following functions now use S3 internally:
+
+- `uploadBufferToBlob()` → Uses S3
+- `deleteBlobObject()` → Uses S3
+- `generateQRCode()` → Uses S3
+- `generateIconsForRestaurant()` → Uses S3
+
+No changes are needed in your existing code - just update the environment variables.
+
+### Lambda Optimization
+
+Since this API is hosted on AWS Lambda with API Gateway, the implementation is optimized for Lambda:
+
+1. **Memory Storage**: Uses `multer.memoryStorage()` to keep files in memory as buffers
+2. **Direct Upload**: Uploads buffers directly to S3 without writing to temporary disk storage
+3. **IAM Role**: Uses IAM role when running on Lambda instead of access keys
+4. **Connection Optimization**: Configured for Lambda cold starts with appropriate retry settings
+
+### Cost Optimization
+
+1. **Lifecycle Rules**: Set up lifecycle rules to move old files to cheaper storage classes
+2. **CloudFront**: Consider using CloudFront for global content delivery
+3. **Monitoring**: Set up CloudWatch alarms for unexpected usage
+
+### Support
+
+If you encounter issues, check:
+1. AWS CloudTrail for API call logs
+2. CloudWatch logs for Lambda execution logs
+3. S3 access logs (if enabled) 

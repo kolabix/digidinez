@@ -8,7 +8,7 @@ import { uploadBufferToBlob, deleteBlobObject } from '../utils/imageUpload.js';
  */
 
 // @desc    Get restaurant profile
-// @route   GET /api/restaurants/profile
+// @route   GET /restaurants/profile
 // @access  Private
 export const getProfile = async (req, res) => {
   try {
@@ -51,7 +51,7 @@ export const getProfile = async (req, res) => {
 };
 
 // @desc    Update restaurant profile
-// @route   PUT /api/restaurants/profile
+// @route   PUT /restaurants/profile
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
@@ -185,7 +185,7 @@ export const updateProfile = async (req, res) => {
 };
 
 // @desc    Toggle restaurant active status
-// @route   PATCH /api/restaurants/status
+// @route   PATCH /restaurants/status
 // @access  Private
 export const toggleStatus = async (req, res) => {
   try {
@@ -258,7 +258,7 @@ export const toggleStatus = async (req, res) => {
 };
 
 // @desc    Upload restaurant primary logo
-// @route   POST /api/restaurants/primary-logo
+// @route   POST /restaurants/primary-logo
 // @access  Private
 export const uploadPrimaryLogo = async (req, res) => {
   try {
@@ -328,7 +328,7 @@ export const uploadPrimaryLogo = async (req, res) => {
 };
 
 // @desc    Upload restaurant brand mark (square logo)
-// @route   POST /api/restaurants/brand-mark
+// @route   POST /restaurants/brand-mark
 // @access  Private
 export const uploadBrandMark = async (req, res) => {
   try {
@@ -406,7 +406,7 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
   try {
     // Import the icon generation utilities
     const sharp = await import('sharp');
-    const { put } = await import('@vercel/blob');
+    const { uploadRawBufferToS3 } = await import('../utils/s3Upload.js');
     
     // Define icon sizes at the top to avoid hoisting issues
     const iconSizes = [
@@ -442,11 +442,7 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
       
       const blobKey = `restaurants/${restaurantId}/icons/${icon.name}`;
       
-      await put(blobKey, iconBuffer, {
-        access: 'public',
-        addRandomSuffix: false,
-        contentType: 'image/png'
-      });
+      await uploadRawBufferToS3(blobKey, iconBuffer, 'image/png');
     }
     
     // Generate favicon.ico
@@ -459,11 +455,7 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
       .toBuffer();
     
     const faviconKey = `restaurants/${restaurantId}/icons/favicon.ico`;
-    await put(faviconKey, faviconBuffer, {
-      access: 'public',
-      addRandomSuffix: false,
-      contentType: 'image/x-icon'
-    });
+    await uploadRawBufferToS3(faviconKey, faviconBuffer, 'image/x-icon');
     
   } catch (error) {
     console.error(`Icon generation failed for restaurant ${restaurantId}:`, error);
@@ -474,9 +466,9 @@ async function generateIconsForRestaurant(restaurantId, logoUrl) {
 // Helper function to delete existing icons for a restaurant
 async function deleteExistingIcons(restaurantId) {
   try {
-    // Check if BLOB_PUBLIC_BASE is available
-    if (!process.env.BLOB_PUBLIC_BASE) {
-      console.warn('BLOB_PUBLIC_BASE not set, skipping icon cleanup');
+    // Check if AWS S3 is configured
+    if (!process.env.AWS_S3_BUCKET_NAME) {
+      console.warn('AWS_S3_BUCKET_NAME not set, skipping icon cleanup');
       return;
     }
     
@@ -496,8 +488,8 @@ async function deleteExistingIcons(restaurantId) {
         const iconKey = `restaurants/${restaurantId}/icons/${iconName}`;
         
         // For deletion, we need to use the full URL since deleteBlobObject expects either a key or URL
-        // The iconKey is just the key, so we need to construct the full URL
-        const fullIconUrl = `${process.env.BLOB_PUBLIC_BASE}/${iconKey}`;
+        // The iconKey is just the key, so we need to construct the full S3 URL
+        const fullIconUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'ap-south-1'}.amazonaws.com/${iconKey}`;
         
         const deleteResult = await deleteBlobObject(fullIconUrl);
         
@@ -517,7 +509,7 @@ async function deleteExistingIcons(restaurantId) {
 }
 
 // @desc    Get restaurant statistics
-// @route   GET /api/restaurants/stats
+// @route   GET /restaurants/stats
 // @access  Private
 export const getStats = async (req, res) => {
   try {
@@ -579,7 +571,7 @@ export const getStats = async (req, res) => {
 };
 
 // @desc    List all active restaurants (minimal public fields) for SSG build
-// @route   GET /api/restaurants/ssg/list
+// @route   GET /restaurants/ssg/list
 // @access  Internal (protected by secret header)
 export const listActiveRestaurantsForSsg = async (req, res) => {
   try {
