@@ -5,6 +5,9 @@ stages:
   staging:
     domain: staging-api.digidinez.com
     certificateArn: ${ssm:/digidinez/staging/CERTIFICATE_ARN}
+  prod:
+    domain: api.digidinez.com
+    certificateArn: ${ssm:/digidinez/prod/CERTIFICATE_ARN}
 
 provider:
   name: aws
@@ -28,20 +31,20 @@ provider:
           - s3:GetObject
           - s3:DeleteObject
           - s3:PutObjectAcl
-          Resource: "arn:aws:s3:::${ssm:/digidinez/staging/AWS_S3_BUCKET_NAME}/*"
+          Resource: "arn:aws:s3:::${ssm:/digidinez/${self:provider.stage}/AWS_S3_BUCKET_NAME}/*"
   environment:
     NODE_ENV: ${self:provider.stage}
-    SSG_BUILD_SECRET: ${ssm:/digidinez/staging/SSG_BUILD_SECRET}
-    MONGODB_URI: ${ssm:/digidinez/staging/MONGODB_URI}
-    JWT_SECRET: ${ssm:/digidinez/staging/JWT_SECRET}
-    JWT_EXPIRES_IN: ${ssm:/digidinez/staging/JWT_EXPIRES_IN}
-    AWS_S3_BUCKET_NAME: ${ssm:/digidinez/staging/AWS_S3_BUCKET_NAME}
-    MAX_FILE_SIZE: ${ssm:/digidinez/staging/MAX_FILE_SIZE}
+    SSG_BUILD_SECRET: ${ssm:/digidinez/${self:provider.stage}/SSG_BUILD_SECRET}
+    MONGODB_URI: ${ssm:/digidinez/${self:provider.stage}/MONGODB_URI}
+    JWT_SECRET: ${ssm:/digidinez/${self:provider.stage}/JWT_SECRET}
+    JWT_EXPIRES_IN: ${ssm:/digidinez/${self:provider.stage}/JWT_EXPIRES_IN}
+    AWS_S3_BUCKET_NAME: ${ssm:/digidinez/${self:provider.stage}/AWS_S3_BUCKET_NAME}
+    MAX_FILE_SIZE: ${ssm:/digidinez/${self:provider.stage}/MAX_FILE_SIZE}
     GITHUB_TOKEN: ${ssm:/digidinez/common/GITHUB_TOKEN}
     GITHUB_OWNER: ${ssm:/digidinez/common/GITHUB_OWNER}
     GITHUB_REPO: ${ssm:/digidinez/common/GITHUB_REPO}
-    GITHUB_WORKFLOW_ID: ${ssm:/digidinez/staging/GITHUB_WORKFLOW_ID}
-    PUBLIC_MENU_URL: ${ssm:/digidinez/staging/PUBLIC_MENU_URL}
+    GITHUB_WORKFLOW_ID: ${ssm:/digidinez/${self:provider.stage}/GITHUB_WORKFLOW_ID}
+    PUBLIC_MENU_URL: ${ssm:/digidinez/${self:provider.stage}/PUBLIC_MENU_URL}
 
 functions:
   api:

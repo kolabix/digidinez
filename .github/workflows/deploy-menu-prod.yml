@@ -1,11 +1,11 @@
-name: Deploy Public Menu to Staging
+name: Deploy Public Menu to Prod
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main]
     paths:
       - 'public-menu/**'
-      - '.github/workflows/deploy-menu-staging.yml'
+      - '.github/workflows/deploy-menu-prod.yml'
   workflow_dispatch:
     inputs:
       restaurant_id:
@@ -21,7 +21,7 @@ on:
       environment:
         description: 'Deployment environment'
         required: false
-        default: 'staging'
+        default: 'prod'
         type: choice
         options:
           - staging
@@ -63,9 +63,9 @@ jobs:
 
       - name: Get SSM Parameters
         run: |
-          echo "S3_BUCKET=$(aws ssm get-parameter --name "/digidinez/staging/MENU_S3_BUCKET" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
-          echo "CLOUDFRONT_DISTRIBUTION_ID=$(aws ssm get-parameter --name "/digidinez/staging/MENU_CLOUDFRONT_DISTRIBUTION_ID" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
-          echo "SSG_BUILD_SECRET=$(aws ssm get-parameter --name "/digidinez/staging/SSG_BUILD_SECRET" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
+          echo "S3_BUCKET=$(aws ssm get-parameter --name "/digidinez/prod/MENU_S3_BUCKET" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$(aws ssm get-parameter --name "/digidinez/prod/MENU_CLOUDFRONT_DISTRIBUTION_ID" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
+          echo "SSG_BUILD_SECRET=$(aws ssm get-parameter --name "/digidinez/prod/SSG_BUILD_SECRET" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
 
       - name: Build application
         run: |
@@ -78,7 +78,7 @@ jobs:
           fi
         working-directory: ./public-menu
         env:
-          VITE_API_URL: https://staging-api.digidinez.com
+          VITE_API_URL: https://api.digidinez.com
 
       - name: Deploy to S3
         run: |
@@ -98,7 +98,7 @@ jobs:
 
       - name: Deployment complete
         run: |
-          echo "Public menu deployed to staging-menu.digidinez.com"
+          echo "Public menu deployed to menu.digidinez.com"
           echo "Restaurant: ${{ github.event.inputs.restaurant_name || 'Auto-deploy from push' }} (ID: ${{ github.event.inputs.restaurant_id || 'auto-deploy' }})"
-          echo "Environment: ${{ github.event.inputs.environment || 'staging' }}"
+          echo "Environment: ${{ github.event.inputs.environment || 'prod' }}"
           echo "Trigger: ${{ github.event.inputs.trigger_source || 'git-push' }}"
