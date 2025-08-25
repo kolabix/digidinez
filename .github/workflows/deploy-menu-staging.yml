@@ -65,7 +65,7 @@ jobs:
         run: |
           echo "S3_BUCKET=$(aws ssm get-parameter --name "/digidinez/staging/MENU_S3_BUCKET" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
           echo "CLOUDFRONT_DISTRIBUTION_ID=$(aws ssm get-parameter --name "/digidinez/staging/MENU_CLOUDFRONT_DISTRIBUTION_ID" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
-          echo "SSG_BUILD_SECRET=$(aws ssm get-parameter --name "/digidinez/staging/SSG_BUILD_SECRET" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
+          echo "SSG_BUILD_SECRET=$(aws ssm get-parameter --name "/digidinez/staging/SSG_BUILD_SECRET" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
 
       - name: Build application
         run: |

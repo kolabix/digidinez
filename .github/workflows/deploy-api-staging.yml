@@ -43,7 +43,7 @@ jobs:
 
       - name: Get SSM Parameters
         run: |
-          echo "SERVERLESS_LICENSE_KEY=$(aws ssm get-parameter --name "/digidinez/common/SERVERLESS_LICENSE_KEY" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
+          echo "SERVERLESS_LICENSE_KEY=$(aws ssm get-parameter --name "/digidinez/common/SERVERLESS_LICENSE_KEY" --with-decryption --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
 
       - name: Deploy to AWS
         run: serverless deploy --stage staging
