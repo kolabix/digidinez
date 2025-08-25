@@ -4,7 +4,7 @@ service: digidinez-api
 stages:
   staging:
     domain: staging-api.digidinez.com
-    certificateArn: ${ssm:/digidinez/staging/STAGING_CERTIFICATE_ARN}
+    certificateArn: ${ssm:/digidinez/staging/CERTIFICATE_ARN}
 
 provider:
   name: aws

@@ -10,7 +10,6 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_LICENSE_KEY }}
 
 jobs:
   deploy:
@@ -41,6 +40,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get SSM Parameters
+        run: |
+          echo "SERVERLESS_LICENSE_KEY=$(aws ssm get-parameter --name "/digidinez/common/SERVERLESS_LICENSE_KEY" --query "Parameter.Value" --output text --region ap-south-1)" >> $GITHUB_ENV
 
       - name: Deploy to AWS
         run: serverless deploy --stage staging
