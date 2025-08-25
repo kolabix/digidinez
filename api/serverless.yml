@@ -11,6 +11,8 @@ provider:
   runtime: nodejs22.x
   region: ap-south-1
   stage: ${opt:stage, 'staging'}
+  httpApi:
+    name: digidinez-${self:provider.stage}-api
   domain:
     name: ${self:stages.${self:provider.stage}.domain}
     certificateArn: ${self:stages.${self:provider.stage}.certificateArn}
