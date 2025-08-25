@@ -1,15 +1,10 @@
 import QRCode from "qrcode";
 import crypto from "crypto";
-import { put, del } from "@vercel/blob"; // npm install @vercel/blob
+import { uploadRawBufferToS3, deleteS3Object } from "./s3Upload.js";
 
 class QRGenerator {
   constructor() {
     this.publicMenuUrl = process.env.PUBLIC_MENU_URL || "http://localhost:4000";
-
-    if (!process.env.BLOB_PUBLIC_BASE) {
-      throw new Error("public storage base path is not set in environment variables");
-    }
-    this.blobPublicBase = process.env.BLOB_PUBLIC_BASE;
   }
 
   async generateQRCode(restaurantId) {
@@ -24,36 +19,27 @@ class QRGenerator {
     };
     const pngBuffer = await QRCode.toBuffer(menuUrl, options);
 
-    // 2) Choose a key for Blob store (restaurants/{id}/qr-images/*)
+    // 2) Choose a key for S3 store (restaurants/{id}/qr-images/*)
     const fileName = `${restaurantId}.png`;
     const key = `restaurants/${restaurantId}/qr-images/${Date.now()}-${crypto
       .randomUUID()
       .slice(0, 8)}-${fileName}`;
 
-    // 3) Upload directly to Blob (public access)
-    const { url } = await put(key, pngBuffer, {
-      access: "public",
-      contentType: "image/png",
-      cacheControl: "public, max-age=31536000, immutable"
-    });
+    // 3) Upload directly to S3 (public access)
+    const result = await uploadRawBufferToS3(key, pngBuffer, "image/png");
 
     return {
       url: menuUrl, // where QR points to
       key,
       fileName,
-      publicUrl: url,
+      publicUrl: result.publicUrl,
       size: pngBuffer.length,
       generatedAt: new Date()
     };
   }
 
   async deleteQRCode(keyOrUrl) {
-    const target =
-      keyOrUrl.startsWith("http") && keyOrUrl.includes(this.blobPublicBase)
-        ? keyOrUrl
-        : `${this.blobPublicBase}/${keyOrUrl}`;
-    await del(target);
-    return true;
+    return await deleteS3Object(keyOrUrl);
   }
 
   async regenerateQRCode(restaurantId, previousKeyOrUrl) {

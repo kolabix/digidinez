@@ -3,7 +3,7 @@ import { validationResult } from 'express-validator';
 import { uploadBufferToBlob, deleteBlobObject } from '../utils/imageUpload.js';
 
 // @desc    Get all menu items for authenticated restaurant
-// @route   GET /api/menu/items
+// @route   GET /menu/items
 // @access  Private
 export const getMenuItems = async (req, res) => {
   try {
@@ -85,7 +85,7 @@ export const getMenuItems = async (req, res) => {
 };
 
 // @desc    Get single menu item
-// @route   GET /api/menu/items/:id
+// @route   GET /menu/items/:id
 // @access  Private
 export const getMenuItem = async (req, res) => {
   try {
@@ -120,7 +120,7 @@ export const getMenuItem = async (req, res) => {
 };
 
 // @desc    Create new menu item
-// @route   POST /api/menu/items
+// @route   POST /menu/items
 // @access  Private
 export const createMenuItem = async (req, res) => {
   try {
@@ -248,7 +248,7 @@ export const createMenuItem = async (req, res) => {
 };
 
 // @desc    Update menu item
-// @route   PUT /api/menu/items/:id
+// @route   PUT /menu/items/:id
 // @access  Private
 export const updateMenuItem = async (req, res) => {
   try {
@@ -381,7 +381,7 @@ export const updateMenuItem = async (req, res) => {
 };
 
 // @desc    Delete menu item
-// @route   DELETE /api/menu/items/:id
+// @route   DELETE /menu/items/:id
 // @access  Private
 export const deleteMenuItem = async (req, res) => {
   try {
@@ -414,7 +414,7 @@ export const deleteMenuItem = async (req, res) => {
 };
 
 // @desc    Toggle menu item availability
-// @route   PATCH /api/menu/items/:id/toggle
+// @route   PATCH /menu/items/:id/toggle
 // @access  Private
 export const toggleAvailability = async (req, res) => {
   try {
@@ -454,7 +454,7 @@ export const toggleAvailability = async (req, res) => {
 };
 
 // @desc    Get menu items by category
-// @route   GET /api/menu/items/category/:category
+// @route   GET /menu/items/category/:category
 // @access  Private
 export const getMenuItemsByCategory = async (req, res) => {
   try {
@@ -486,7 +486,7 @@ export const getMenuItemsByCategory = async (req, res) => {
 };
 
 // @desc    Bulk update menu items (for batch operations)
-// @route   PUT /api/menu/items/bulk
+// @route   PUT /menu/items/bulk
 // @access  Private
 export const bulkUpdateMenuItems = async (req, res) => {
   try {
@@ -538,7 +538,7 @@ export const bulkUpdateMenuItems = async (req, res) => {
 };
 
 // @desc    Upload image for menu item
-// @route   POST /api/menu/items/:id/image
+// @route   POST /menu/items/:id/image
 // @access  Private
 export const uploadMenuItemImage = async (req, res) => {
   try {
@@ -606,7 +606,7 @@ export const uploadMenuItemImage = async (req, res) => {
 };
 
 // @desc    Delete image for menu item
-// @route   DELETE /api/menu/items/:id/image
+// @route   DELETE /menu/items/:id/image
 // @access  Private
 export const deleteMenuItemImage = async (req, res) => {
   try {
@@ -668,7 +668,7 @@ export const deleteMenuItemImage = async (req, res) => {
 };
 
 // @desc    Get image info for menu item
-// @route   GET /api/menu/items/:id/image
+// @route   GET /menu/items/:id/image
 // @access  Private
 export const getMenuItemImage = async (req, res) => {
   try {
@@ -712,7 +712,7 @@ export const getMenuItemImage = async (req, res) => {
 };
 
 // @desc    Get public menu for a restaurant (no authentication required)
-// @route   GET /api/menu/public/:restaurantId
+// @route   GET /menu/public/:restaurantId
 // @access  Public
 export const getPublicMenu = async (req, res) => {
   try {
@@ -782,7 +782,7 @@ export const getPublicMenu = async (req, res) => {
 };
 
 // @desc    Get all menu categories for authenticated restaurant
-// @route   GET /api/menu/categories
+// @route   GET /menu/categories
 // @access  Private
 export const getMenuCategories = async (req, res) => {
   try {
@@ -806,7 +806,7 @@ export const getMenuCategories = async (req, res) => {
 };
 
 // @desc    Create new menu category
-// @route   POST /api/menu/categories
+// @route   POST /menu/categories
 // @access  Private
 export const createMenuCategory = async (req, res) => {
   try {
@@ -853,7 +853,7 @@ export const createMenuCategory = async (req, res) => {
 };
 
 // @desc    Update menu category
-// @route   PUT /api/menu/categories/:id
+// @route   PUT /menu/categories/:id
 // @access  Private
 export const updateMenuCategory = async (req, res) => {
   try {
@@ -896,7 +896,7 @@ export const updateMenuCategory = async (req, res) => {
 };
 
 // @desc    Delete menu category
-// @route   DELETE /api/menu/categories/:id
+// @route   DELETE /menu/categories/:id
 // @access  Private
 export const deleteMenuCategory = async (req, res) => {
   try {
@@ -942,7 +942,7 @@ export const deleteMenuCategory = async (req, res) => {
 };
 
 // @desc    Reorder categories
-// @route   PATCH /api/menu/categories/reorder
+// @route   PATCH /menu/categories/reorder
 // @access  Private
 export const reorderCategories = async (req, res) => {
   try {
@@ -993,7 +993,7 @@ export const reorderCategories = async (req, res) => {
 };
 
 // @desc    Get all tags for authenticated restaurant
-// @route   GET /api/menu/tags
+// @route   GET /menu/tags
 // @access  Private
 export const getTags = async (req, res) => {
   try {
@@ -1017,7 +1017,7 @@ export const getTags = async (req, res) => {
 };
 
 // @desc    Create new tag
-// @route   POST /api/menu/tags
+// @route   POST /menu/tags
 // @access  Private
 export const createTag = async (req, res) => {
   try {
@@ -1055,7 +1055,7 @@ export const createTag = async (req, res) => {
 };
 
 // @desc    Update tag
-// @route   PUT /api/menu/tags/:id
+// @route   PUT /menu/tags/:id
 // @access  Private
 export const updateTag = async (req, res) => {
   try {
@@ -1098,7 +1098,7 @@ export const updateTag = async (req, res) => {
 };
 
 // @desc    Delete tag
-// @route   DELETE /api/menu/tags/:id
+// @route   DELETE /menu/tags/:id
 // @access  Private
 export const deleteTag = async (req, res) => {
   try {

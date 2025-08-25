@@ -43,46 +43,46 @@ router.use(protect);
 
 // Menu Items CRUD
 router.route('/items')
-  .get(validateMenuQuery, getMenuItems)           // GET /api/menu/items
-  .post(validateCreateMenuItem, createMenuItem);  // POST /api/menu/items
+  .get(validateMenuQuery, getMenuItems)           // GET /menu/items
+  .post(validateCreateMenuItem, createMenuItem);  // POST /menu/items
 
 router.route('/items/bulk')
-  .put(bulkUpdateMenuItems);   // PUT /api/menu/items/bulk
+  .put(bulkUpdateMenuItems);   // PUT /menu/items/bulk
 
 router.route('/items/category/:category')
-  .get(validateCategory, validateMenuQuery, getMenuItemsByCategory); // GET /api/menu/items/category/:category
+  .get(validateCategory, validateMenuQuery, getMenuItemsByCategory); // GET /menu/items/category/:category
 
 router.route('/items/:id')
-  .get(validateObjectId, getMenuItem)                           // GET /api/menu/items/:id
-  .put(validateObjectId, validateUpdateMenuItem, updateMenuItem) // PUT /api/menu/items/:id
-  .delete(validateObjectId, deleteMenuItem);                    // DELETE /api/menu/items/:id
+  .get(validateObjectId, getMenuItem)                           // GET /menu/items/:id
+  .put(validateObjectId, validateUpdateMenuItem, updateMenuItem) // PUT /menu/items/:id
+  .delete(validateObjectId, deleteMenuItem);                    // DELETE /menu/items/:id
 
 router.route('/items/:id/toggle')
-  .patch(validateObjectId, toggleAvailability);  // PATCH /api/menu/items/:id/toggle
+  .patch(validateObjectId, toggleAvailability);  // PATCH /menu/items/:id/toggle
 
 // Image upload routes
 router.route('/items/:id/image')
-  .get(validateObjectId, getMenuItemImage)                                    // GET /api/menu/items/:id/image
-  .post(validateObjectId, uploadMenuImage.single('image'), uploadMenuItemImage) // POST /api/menu/items/:id/image
-  .delete(validateObjectId, deleteMenuItemImage);                             // DELETE /api/menu/items/:id/image
+  .get(validateObjectId, getMenuItemImage)                                    // GET /menu/items/:id/image
+  .post(validateObjectId, uploadMenuImage.single('image'), uploadMenuItemImage) // POST /menu/items/:id/image
+  .delete(validateObjectId, deleteMenuItemImage);                             // DELETE /menu/items/:id/image
 
 // Category routes
 router.route('/categories')
-  .get(getMenuCategories)                                 // GET /api/menu/categories
-  .post(validateCreateMenuCategory, createMenuCategory);  // POST /api/menu/categories
+  .get(getMenuCategories)                                 // GET /menu/categories
+  .post(validateCreateMenuCategory, createMenuCategory);  // POST /menu/categories
 
 router.route('/categories/reorder')
-  .patch(reorderCategories);                              // PATCH /api/menu/categories/reorder
+  .patch(reorderCategories);                              // PATCH /menu/categories/reorder
 
 router.route('/categories/:id')
-  .put(validateObjectId, validateUpdateMenuCategory, updateMenuCategory)  // PUT /api/menu/categories/:id
-  .delete(validateObjectId, deleteMenuCategory);                          // DELETE /api/menu/categories/:id
+  .put(validateObjectId, validateUpdateMenuCategory, updateMenuCategory)  // PUT /menu/categories/:id
+  .delete(validateObjectId, deleteMenuCategory);                          // DELETE /menu/categories/:id
 
 // Bulk upload routes
 router.route('/bulk-upload')
-  .post(uploadBulkFile.single('file'), handleBulkUploadErrors, bulkUpload);  // POST /api/menu/bulk-upload
+  .post(uploadBulkFile.single('file'), handleBulkUploadErrors, bulkUpload);  // POST /menu/bulk-upload
 
 router.route('/bulk-upload/template')
-  .get(downloadTemplate);  // GET /api/menu/bulk-upload/template
+  .get(downloadTemplate);  // GET /menu/bulk-upload/template
 
 export default router;

@@ -1,9 +1,9 @@
 import multer from 'multer';
 import path from 'path';
 import crypto from 'crypto';
-import { put, del } from '@vercel/blob';
+import { uploadBufferToS3, deleteS3Object } from './s3Upload.js';
 
-// Multer memory storage (we upload buffers directly to Blob)
+// Multer memory storage (we upload buffers directly to S3)
 const storage = multer.memoryStorage();
 
 // File filter function
@@ -30,55 +30,17 @@ export const uploadMenuImage = multer({
   fileFilter: fileFilter
 });
 
-// ---------- Vercel Blob helpers (public uploads) ----------
+// ---------- AWS S3 helpers (public uploads) ----------
 
-const BLOB_PUBLIC_BASE = process.env.BLOB_PUBLIC_BASE;
-
-if (!BLOB_PUBLIC_BASE) {
-  // Keep lazy validation to avoid crashing import-time in certain contexts
-  // Actual operations will throw if this is missing
-}
-
-const buildRestaurantAssetKey = (restaurantId, originalName, category = 'food-images') => {
-  const safeExt = path.extname(originalName || '').toLowerCase() || '.bin';
-  const unique = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-  // Public Menu uploads structure:
-  // restaurants/{id}/food-images/* or restaurants/{id}/logos/* or restaurants/{id}/branding/*
-  return `restaurants/${restaurantId}/${category}/${unique}${safeExt}`;
-};
-
-// Upload a buffer from multer memory storage to Vercel Blob (public)
+// Upload a buffer from multer memory storage to S3 (public)
 export const uploadBufferToBlob = async (restaurantId, file, category = 'food-images') => {
-  if (!file || !file.buffer) {
-    throw new Error('No file buffer provided');
-  }
-  const key = buildRestaurantAssetKey(restaurantId, file.originalname, category);
-  const { url } = await put(key, file.buffer, {
-    access: 'public',
-    contentType: file.mimetype,
-    cacheControl: 'public, max-age=31536000, immutable'
-  });
-
-  return {
-    key,
-    publicUrl: url,
-    size: file.size,
-    mimetype: file.mimetype,
-    uploadedAt: new Date()
-  };
+  // This function is kept for backward compatibility but now uses S3
+  return await uploadBufferToS3(restaurantId, file, category);
 };
 
-// Delete a previously uploaded Blob object using either key or public URL
+// Delete a previously uploaded S3 object using either key or public URL
 export const deleteBlobObject = async (keyOrUrl) => {
-  if (!keyOrUrl) return false;
-  const base = process.env.BLOB_PUBLIC_BASE;
-  if (!base) throw new Error('BLOB_PUBLIC_BASE is not set');
-
-  const target = keyOrUrl.startsWith('http') && keyOrUrl.includes(base)
-    ? keyOrUrl
-    : `${base}/${keyOrUrl}`;
-
-  await del(target);
-  return true;
+  // This function is kept for backward compatibility but now uses S3
+  return await deleteS3Object(keyOrUrl);
 };
 

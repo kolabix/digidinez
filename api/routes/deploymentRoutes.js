@@ -4,21 +4,23 @@ import {
   triggerDeployment, 
   getDeploymentStatus, 
   getRecentDeployments,
-  testVercelConfig
+  testGitHubConfig
 } from '../controllers/deploymentController.js';
 
 const router = express.Router();
 
 /**
  * Deployment Routes
- * All routes require authentication
  */
 
-// Apply authentication to all routes
+// Public test endpoint (no authentication required)
+router.get('/test-config-public', testGitHubConfig);
+
+// Apply authentication to all other routes
 router.use(protect);
 
-// Test Vercel configuration
-router.get('/test-config', testVercelConfig);
+// Test GitHub Actions configuration
+router.get('/test-config', testGitHubConfig);
 
 // Trigger new deployment
 router.post('/trigger', triggerDeployment);

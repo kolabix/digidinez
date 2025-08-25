@@ -3,7 +3,7 @@ import Tag from '../models/Tag.js';
 import MenuItem from '../models/MenuItem.js';
 
 // @desc    Get all tags for a restaurant
-// @route   GET /api/menu/tags
+// @route   GET /menu/tags
 // @access  Private (Restaurant only)
 const getTags = async (req, res) => {
   try {
@@ -42,7 +42,7 @@ const getTags = async (req, res) => {
 };
 
 // @desc    Create a new tag
-// @route   POST /api/menu/tags
+// @route   POST /menu/tags
 // @access  Private (Restaurant only)
 const createTag = async (req, res) => {
   try {
@@ -114,7 +114,7 @@ const createTag = async (req, res) => {
 };
 
 // @desc    Update a tag
-// @route   PUT /api/menu/tags/:id
+// @route   PUT /menu/tags/:id
 // @access  Private (Restaurant only)
 const updateTag = async (req, res) => {
   try {
@@ -198,7 +198,7 @@ const updateTag = async (req, res) => {
 };
 
 // @desc    Delete a tag
-// @route   DELETE /api/menu/tags/:id
+// @route   DELETE /menu/tags/:id
 // @access  Private (Restaurant only)
 const deleteTag = async (req, res) => {
   try {
@@ -245,7 +245,7 @@ const deleteTag = async (req, res) => {
 };
 
 // @desc    Get tags for public use (no auth required)
-// @route   GET /api/menu/tags/public/:restaurantId
+// @route   GET /menu/tags/public/:restaurantId
 // @access  Public
 const getPublicTags = async (req, res) => {
   try {

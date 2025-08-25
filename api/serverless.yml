@@ -1,0 +1,51 @@
+org: kolabix
+service: digidinez-api
+
+stages:
+  prod:
+    domain: api.digidinez.com
+    certificateArn: ${ssm:/digidinez/prod/CERTIFICATE_ARN}
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ap-south-1
+  stage: ${opt:stage, 'prod'}
+  httpApi:
+    name: digidinez-${self:provider.stage}-api
+  domain:
+    name: ${self:stages.${self:provider.stage}.domain}
+    certificateArn: ${self:stages.${self:provider.stage}.certificateArn}
+    createRoute53Record: false
+    apiType: http
+    endpointType: regional
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          - s3:GetObject
+          - s3:DeleteObject
+          - s3:PutObjectAcl
+          Resource: "arn:aws:s3:::${ssm:/digidinez/${self:provider.stage}/AWS_S3_BUCKET_NAME}/*"
+  environment:
+    NODE_ENV: ${self:provider.stage}
+    SSG_BUILD_SECRET: ${ssm:/digidinez/${self:provider.stage}/SSG_BUILD_SECRET}
+    MONGODB_URI: ${ssm:/digidinez/${self:provider.stage}/MONGODB_URI}
+    JWT_SECRET: ${ssm:/digidinez/${self:provider.stage}/JWT_SECRET}
+    JWT_EXPIRES_IN: ${ssm:/digidinez/${self:provider.stage}/JWT_EXPIRES_IN}
+    AWS_S3_BUCKET_NAME: ${ssm:/digidinez/${self:provider.stage}/AWS_S3_BUCKET_NAME}
+    MAX_FILE_SIZE: ${ssm:/digidinez/${self:provider.stage}/MAX_FILE_SIZE}
+    GITHUB_TOKEN: ${ssm:/digidinez/common/GITHUB_TOKEN}
+    GITHUB_OWNER: ${ssm:/digidinez/common/GITHUB_OWNER}
+    GITHUB_REPO: ${ssm:/digidinez/common/GITHUB_REPO}
+    GITHUB_WORKFLOW_ID: ${ssm:/digidinez/${self:provider.stage}/GITHUB_WORKFLOW_ID}
+    PUBLIC_MENU_URL: ${ssm:/digidinez/${self:provider.stage}/PUBLIC_MENU_URL}
+
+functions:
+  api:
+    name: digidinez-${self:provider.stage}-api
+    handler: lambda.handler
+    events:
+      - httpApi: "*"

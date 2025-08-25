@@ -3,7 +3,7 @@ import { Restaurant } from '../models/index.js';
 
 /**
  * Generate or regenerate QR code for restaurant
- * POST /api/restaurants/generate-qr
+ * POST /restaurants/generate-qr
  */
 export const generateQRCode = async (req, res) => {
   try {
@@ -58,7 +58,7 @@ export const generateQRCode = async (req, res) => {
 
 /**
  * Get current QR code information
- * GET /api/restaurants/qr
+ * GET /restaurants/qr
  */
 export const getQRCode = async (req, res) => {
   try {
@@ -107,7 +107,7 @@ export const getQRCode = async (req, res) => {
 
 /**
  * Delete QR code
- * DELETE /api/restaurants/qr
+ * DELETE /restaurants/qr
  */
 export const deleteQRCode = async (req, res) => {
   try {
@@ -149,7 +149,7 @@ export const deleteQRCode = async (req, res) => {
 
 /**
  * Get QR code image info (public endpoint)
- * GET /api/restaurants/:id/qr
+ * GET /restaurants/:id/qr
  */
 export const getQRCodeImage = async (req, res) => {
   try {

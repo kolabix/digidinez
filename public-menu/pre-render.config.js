@@ -72,9 +72,8 @@ async function preRender() {
   try {
     // Check if we're doing selective building
     const selectiveRestaurantId = process.env.RESTAURANT_ID;
-    const isSelectiveBuild = process.env.SELECTIVE_BUILD === 'true';
     
-    if (isSelectiveBuild && selectiveRestaurantId) {
+    if (selectiveRestaurantId) {
       console.log(`🔄 Selective build for restaurant: ${selectiveRestaurantId}`);
       await preRenderSingleRestaurant(selectiveRestaurantId);
     } else {
