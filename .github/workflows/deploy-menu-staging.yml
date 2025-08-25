@@ -2,7 +2,7 @@ name: Deploy Public Menu to Staging
 
 on:
   push:
-    branches: [main, staging]
+    branches: [staging]
     paths:
       - 'public-menu/**'
       - '.github/workflows/deploy-menu-staging.yml'
