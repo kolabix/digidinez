@@ -104,7 +104,7 @@ async function triggerGitHubActionsDeployment(restaurantId, restaurantName) {
 
     // Create workflow dispatch payload
     const workflowPayload = {
-      ref: process.env.NODE_ENV !== 'prod' ? 'staging' : 'main',
+      ref: 'main',
       inputs: {
         restaurant_id: restaurantId,
         restaurant_name: restaurantName,
@@ -115,7 +115,7 @@ async function triggerGitHubActionsDeployment(restaurantId, restaurantName) {
 
     console.log('📤 Workflow dispatch payload:', JSON.stringify(workflowPayload, null, 2));
 
-    const response = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows/deploy-menu-staging.yml/dispatches`, {
+    const response = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/actions/workflows/deploy-menu-${process.env.NODE_ENV}.yml/dispatches`, {
       method: 'POST',
       headers: {
         'Authorization': `token ${githubToken}`,

@@ -2,9 +2,6 @@ org: kolabix
 service: digidinez-api
 
 stages:
-  staging:
-    domain: staging-api.digidinez.com
-    certificateArn: ${ssm:/digidinez/staging/CERTIFICATE_ARN}
   prod:
     domain: api.digidinez.com
     certificateArn: ${ssm:/digidinez/prod/CERTIFICATE_ARN}
@@ -13,7 +10,7 @@ provider:
   name: aws
   runtime: nodejs22.x
   region: ap-south-1
-  stage: ${opt:stage, 'staging'}
+  stage: ${opt:stage, 'prod'}
   httpApi:
     name: digidinez-${self:provider.stage}-api
   domain:

@@ -24,7 +24,6 @@ on:
         default: 'prod'
         type: choice
         options:
-          - staging
           - prod
       trigger_source:
         description: 'What triggered this deployment'
